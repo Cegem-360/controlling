@@ -1,3 +1,4 @@
+import './../css/app.css';
 import './bootstrap';
 
 // Import logo for Vite to process
