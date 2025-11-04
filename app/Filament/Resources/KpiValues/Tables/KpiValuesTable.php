@@ -16,7 +16,7 @@ final class KpiValuesTable
     {
         return $table
             ->columns([
-                TextColumn::make(\App\Models\Kpi::class)
+                TextColumn::make('kpi.name')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('period')
