@@ -14,6 +14,8 @@ use UnitEnum;
 
 final class SearchConsoleGeneralStats extends Page
 {
+    public string $dateRangeType = '28_days';
+
     public array $stats = [];
 
     public array $topQueries = [];
@@ -37,6 +39,23 @@ final class SearchConsoleGeneralStats extends Page
         $this->loadSearchConsoleData();
     }
 
+    public function setDateRange(string $type): void
+    {
+        $this->dateRangeType = $type;
+        $this->loadSearchConsoleData();
+    }
+
+    public function getStartDate(): \Carbon\Carbon
+    {
+        return match ($this->dateRangeType) {
+            '24_hours' => now()->subHours(24),
+            '7_days' => now()->subDays(7),
+            '28_days' => now()->subDays(28),
+            '3_months' => now()->subMonths(3),
+            default => now()->subDays(28),
+        };
+    }
+
     protected function getHeaderWidgets(): array
     {
         return [
@@ -46,20 +65,20 @@ final class SearchConsoleGeneralStats extends Page
 
     protected function loadSearchConsoleData(): void
     {
-        $thirtyDaysAgo = now()->subDays(30);
+        $startDate = $this->getStartDate();
 
-        // Load general stats from last 30 days
+        // Load general stats
         $this->stats = [
-            'total_impressions' => SearchQuery::where('date', '>=', $thirtyDaysAgo)->sum('impressions'),
-            'total_clicks' => SearchQuery::where('date', '>=', $thirtyDaysAgo)->sum('clicks'),
-            'avg_ctr' => SearchQuery::where('date', '>=', $thirtyDaysAgo)->avg('ctr') ?? 0,
-            'avg_position' => SearchQuery::where('date', '>=', $thirtyDaysAgo)->avg('position') ?? 0,
+            'total_impressions' => SearchQuery::where('date', '>=', $startDate)->sum('impressions'),
+            'total_clicks' => SearchQuery::where('date', '>=', $startDate)->sum('clicks'),
+            'avg_ctr' => SearchQuery::where('date', '>=', $startDate)->avg('ctr') ?? 0,
+            'avg_position' => SearchQuery::where('date', '>=', $startDate)->avg('position') ?? 0,
         ];
 
         // Load top queries
         $this->topQueries = SearchQuery::query()
             ->select('query', DB::raw('SUM(impressions) as total_impressions'), DB::raw('SUM(clicks) as total_clicks'), DB::raw('AVG(ctr) as avg_ctr'), DB::raw('AVG(position) as avg_position'))
-            ->where('date', '>=', $thirtyDaysAgo)
+            ->where('date', '>=', $startDate)
             ->groupBy('query')
             ->orderByDesc('total_clicks')
             ->limit(10)
@@ -76,7 +95,7 @@ final class SearchConsoleGeneralStats extends Page
         // Load top pages
         $this->topPages = SearchPage::query()
             ->select('page_url', DB::raw('SUM(impressions) as total_impressions'), DB::raw('SUM(clicks) as total_clicks'), DB::raw('AVG(ctr) as avg_ctr'), DB::raw('AVG(position) as avg_position'))
-            ->where('date', '>=', $thirtyDaysAgo)
+            ->where('date', '>=', $startDate)
             ->groupBy('page_url')
             ->orderByDesc('total_clicks')
             ->limit(10)
@@ -93,7 +112,7 @@ final class SearchConsoleGeneralStats extends Page
         // Load device breakdown
         $this->deviceBreakdown = SearchQuery::query()
             ->select('device', DB::raw('SUM(impressions) as total_impressions'), DB::raw('SUM(clicks) as total_clicks'))
-            ->where('date', '>=', $thirtyDaysAgo)
+            ->where('date', '>=', $startDate)
             ->groupBy('device')
             ->get()
             ->map(fn ($item) => [
@@ -102,5 +121,8 @@ final class SearchConsoleGeneralStats extends Page
                 'clicks' => (int) $item->total_clicks,
             ])
             ->toArray();
+
+        // Dispatch browser event to refresh widgets
+        $this->dispatch('dateRangeUpdated', startDate: $startDate->toDateString());
     }
 }
