@@ -10,7 +10,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 final class SearchConsoleStatsOverview extends StatsOverviewWidget
 {
-    protected static ?string $pollingInterval = null;
+    protected ?string $pollingInterval = null;
 
     protected $listeners = ['dateRangeUpdated' => '$refresh'];
 

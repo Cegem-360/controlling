@@ -14,7 +14,7 @@ final class SearchConsoleChart extends ChartWidget
 
     protected int|string|array $columnSpan = 'full';
 
-    protected static ?string $pollingInterval = null;
+    protected ?string $pollingInterval = null;
 
     protected $listeners = ['dateRangeUpdated' => '$refresh'];
 
