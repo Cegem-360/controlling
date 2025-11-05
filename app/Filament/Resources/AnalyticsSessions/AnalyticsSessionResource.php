@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\AnalyticsSessions;
 
+use App\Enums\AnalyticsSortEnum;
 use App\Enums\NavigationGroup;
 use App\Filament\Resources\AnalyticsSessions\Pages\CreateAnalyticsSession;
 use App\Filament\Resources\AnalyticsSessions\Pages\EditAnalyticsSession;
@@ -21,6 +22,8 @@ final class AnalyticsSessionResource extends Resource
     protected static ?string $model = AnalyticsSession::class;
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Analytics;
+
+    protected static ?int $navigationSort = AnalyticsSortEnum::AnalyticsSession->value;
 
     public static function form(Schema $schema): Schema
     {

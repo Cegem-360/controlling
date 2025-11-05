@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\AnalyticsEvents;
 
+use App\Enums\AnalyticsSortEnum;
 use App\Enums\NavigationGroup;
 use App\Filament\Resources\AnalyticsEvents\Pages\CreateAnalyticsEvent;
 use App\Filament\Resources\AnalyticsEvents\Pages\EditAnalyticsEvent;
@@ -21,6 +22,8 @@ final class AnalyticsEventResource extends Resource
     protected static ?string $model = AnalyticsEvent::class;
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Analytics;
+
+    protected static ?int $navigationSort = AnalyticsSortEnum::AnalyticsEvent->value;
 
     public static function form(Schema $schema): Schema
     {

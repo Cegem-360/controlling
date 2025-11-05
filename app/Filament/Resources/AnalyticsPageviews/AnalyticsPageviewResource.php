@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\AnalyticsPageviews;
 
+use App\Enums\AnalyticsSortEnum;
 use App\Enums\NavigationGroup;
 use App\Filament\Resources\AnalyticsPageviews\Pages\CreateAnalyticsPageview;
 use App\Filament\Resources\AnalyticsPageviews\Pages\EditAnalyticsPageview;
@@ -21,6 +22,8 @@ final class AnalyticsPageviewResource extends Resource
     protected static ?string $model = AnalyticsPageview::class;
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Analytics;
+
+    protected static ?int $navigationSort = AnalyticsSortEnum::AnalyticsPageview->value;
 
     public static function form(Schema $schema): Schema
     {

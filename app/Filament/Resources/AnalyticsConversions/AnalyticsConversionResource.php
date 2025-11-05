@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\AnalyticsConversions;
 
+use App\Enums\AnalyticsSortEnum;
 use App\Enums\NavigationGroup;
 use App\Filament\Resources\AnalyticsConversions\Pages\CreateAnalyticsConversion;
 use App\Filament\Resources\AnalyticsConversions\Pages\EditAnalyticsConversion;
@@ -21,6 +22,8 @@ final class AnalyticsConversionResource extends Resource
     protected static ?string $model = AnalyticsConversion::class;
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Analytics;
+
+    protected static ?int $navigationSort = AnalyticsSortEnum::AnalyticsConversions->value;
 
     public static function form(Schema $schema): Schema
     {

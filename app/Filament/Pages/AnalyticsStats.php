@@ -4,22 +4,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use Analytics;
+use App\Enums\AnalyticsSortEnum;
 use App\Enums\NavigationGroup;
 use App\Filament\Widgets\SourcePageBreakdown;
 use App\Models\AnalyticsPageview;
 use App\Models\AnalyticsSession;
 use App\Models\Settings;
-use BezhanSalleh\GoogleAnalytics\Widgets\ActiveUsersOneDayWidget;
-use BezhanSalleh\GoogleAnalytics\Widgets\ActiveUsersSevenDayWidget;
-use BezhanSalleh\GoogleAnalytics\Widgets\ActiveUsersTwentyEightDayWidget;
-use BezhanSalleh\GoogleAnalytics\Widgets\MostVisitedPagesWidget;
-use BezhanSalleh\GoogleAnalytics\Widgets\PageViewsWidget;
-use BezhanSalleh\GoogleAnalytics\Widgets\SessionsByCountryWidget;
-use BezhanSalleh\GoogleAnalytics\Widgets\SessionsByDeviceWidget;
-use BezhanSalleh\GoogleAnalytics\Widgets\SessionsDurationWidget;
-use BezhanSalleh\GoogleAnalytics\Widgets\SessionsWidget;
-use BezhanSalleh\GoogleAnalytics\Widgets\TopReferrersListWidget;
-use BezhanSalleh\GoogleAnalytics\Widgets\VisitorsWidget;
 use Exception;
 use Filament\Pages\Page;
 use Google\Client;
@@ -43,7 +34,7 @@ final class AnalyticsStats extends Page
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Analytics;
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = AnalyticsSortEnum::AnalyticsStats->value;
 
     protected static ?string $navigationLabel = 'Analytics Statistics';
 
@@ -57,17 +48,7 @@ final class AnalyticsStats extends Page
     protected function getHeaderWidgets(): array
     {
         return [
-            /*  PageViewsWidget::class,
-            VisitorsWidget::class,
-            ActiveUsersOneDayWidget::class,
-            ActiveUsersSevenDayWidget::class,
-            ActiveUsersTwentyEightDayWidget::class,
-            SessionsWidget::class,
-            SessionsByCountryWidget::class,
-            SessionsDurationWidget::class,
-            SessionsByDeviceWidget::class,
-            MostVisitedPagesWidget::class,
-            TopReferrersListWidget::class, */
+
             SourcePageBreakdown::class,
         ];
     }
