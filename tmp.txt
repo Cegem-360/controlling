@@ -1,5 +1,0 @@
-gcloud compute instances stop VM-INSTANCE-NAME
-
-gcloud compute instances set-service-account VM-INSTANCE-NAME \
-    --service-account controling@controling-474310.iam.gserviceaccount.com  \
-    --scopes="https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.readonly"
