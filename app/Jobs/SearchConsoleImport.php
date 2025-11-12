@@ -7,7 +7,6 @@ namespace App\Jobs;
 use App\Models\SearchPage;
 use App\Models\SearchQuery;
 use App\Models\Settings;
-use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Google\Client;
 use Google\Service\SearchConsole;
@@ -15,6 +14,7 @@ use Google\Service\SearchConsole\SearchAnalyticsQueryRequest;
 use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Storage;
 
 final class SearchConsoleImport implements ShouldQueue
@@ -61,7 +61,7 @@ final class SearchConsoleImport implements ShouldQueue
         $this->importSearchPages($service, $settings->site_url);
 
         // Sync Search Console data to KPI values
-        SyncSearchConsoleKpis::dispatch();
+        dispatch(new SyncSearchConsoleKpis());
 
         Notification::make()
             ->title('Search Console import completed successfully.')
@@ -73,8 +73,8 @@ final class SearchConsoleImport implements ShouldQueue
     private function importSearchQueries(SearchConsole $service, string $siteUrl): void
     {
         $request = new SearchAnalyticsQueryRequest();
-        $request->setStartDate(Carbon::now()->subDays(30)->format('Y-m-d'));
-        $request->setEndDate(Carbon::now()->format('Y-m-d'));
+        $request->setStartDate(Date::now()->subDays(30)->format('Y-m-d'));
+        $request->setEndDate(Date::now()->format('Y-m-d'));
         $request->setDimensions(['date', 'query', 'country', 'device']);
         $request->setRowLimit(25000);
 
@@ -131,7 +131,7 @@ final class SearchConsoleImport implements ShouldQueue
                     'position' => $data['position'] / $data['count'],
                 ]);
             } else {
-                SearchQuery::create([
+                SearchQuery::query()->create([
                     'date' => $data['date'],
                     'query' => $data['query'],
                     'country' => $data['country'],
@@ -148,8 +148,8 @@ final class SearchConsoleImport implements ShouldQueue
     private function importSearchPages(SearchConsole $service, string $siteUrl): void
     {
         $request = new SearchAnalyticsQueryRequest();
-        $request->setStartDate(Carbon::now()->subDays(30)->format('Y-m-d'));
-        $request->setEndDate(Carbon::now()->format('Y-m-d'));
+        $request->setStartDate(Date::now()->subDays(30)->format('Y-m-d'));
+        $request->setEndDate(Date::now()->format('Y-m-d'));
         $request->setDimensions(['date', 'page', 'country', 'device']);
         $request->setRowLimit(25000);
 
@@ -206,7 +206,7 @@ final class SearchConsoleImport implements ShouldQueue
                     'position' => $data['position'] / $data['count'],
                 ]);
             } else {
-                SearchPage::create([
+                SearchPage::query()->create([
                     'date' => $data['date'],
                     'page_url' => $data['page_url'],
                     'country' => $data['country'],

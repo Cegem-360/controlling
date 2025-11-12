@@ -24,7 +24,7 @@ final class ManualSync extends Page
 
     public function performAnalyticsSync(): void
     {
-        AnaliticsImport::dispatch();
+        dispatch(new AnaliticsImport());
 
         Notification::make()
             ->title('Analytics sync started successfully.')
@@ -35,7 +35,7 @@ final class ManualSync extends Page
 
     public function performSearchConsoleSync(): void
     {
-        SearchConsoleImport::dispatch();
+        dispatch(new SearchConsoleImport());
 
         Notification::make()
             ->title('Search Console sync started successfully.')

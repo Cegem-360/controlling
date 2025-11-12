@@ -7,7 +7,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SearchConsoleProperty>
+ * @extends Factory<\App\Models\SearchConsoleProperty>
  */
 final class SearchConsolePropertyFactory extends Factory
 {

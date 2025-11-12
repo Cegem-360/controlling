@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\GoogleAnalitycs\OrderByType;
+use Database\Factories\AnalyticsSettingsFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 final class AnalyticsSettings extends Model
 {
-    /** @use HasFactory<\Database\Factories\AnalyticsSettingsFactory> */
+    /** @use HasFactory<AnalyticsSettingsFactory> */
     use HasFactory;
 
     /**

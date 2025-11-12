@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\SearchPageFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 final class SearchPage extends Model
 {
-    /** @use HasFactory<\Database\Factories\SearchPageFactory> */
+    /** @use HasFactory<SearchPageFactory> */
     use HasFactory;
 
     protected $fillable = [

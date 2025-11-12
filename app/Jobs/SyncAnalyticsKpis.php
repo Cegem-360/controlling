@@ -138,7 +138,7 @@ final class SyncAnalyticsKpis implements ShouldQueue
         ];
 
         foreach ($analyticsKpis as $kpiData) {
-            Kpi::create($kpiData);
+            Kpi::query()->create($kpiData);
         }
     }
 
@@ -252,7 +252,7 @@ final class SyncAnalyticsKpis implements ShouldQueue
             $kpiValue->calculateVariance();
             $kpiValue->save();
         } else {
-            $kpiValue = KpiValue::create([
+            $kpiValue = KpiValue::query()->create([
                 'kpi_id' => $kpi->id,
                 'period' => $period,
                 'actual_value' => $actualValue,

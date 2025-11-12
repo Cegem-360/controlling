@@ -9,7 +9,6 @@ use App\Models\AnalyticsEvent;
 use App\Models\AnalyticsPageview;
 use App\Models\AnalyticsSession;
 use App\Models\Settings;
-use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Google\Client;
 use Google\Service\AnalyticsData;
@@ -22,6 +21,7 @@ use Google\Service\AnalyticsData\RunReportRequest;
 use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Storage;
 
 final class AnaliticsImport implements ShouldQueue
@@ -70,7 +70,7 @@ final class AnaliticsImport implements ShouldQueue
         $this->importConversions($service, $settings->property_id);
 
         // Sync Analytics data to KPI values
-        SyncAnalyticsKpis::dispatch();
+        dispatch(new SyncAnalyticsKpis());
 
         Notification::make()
             ->title('Analytics import completed successfully.')
@@ -125,7 +125,7 @@ final class AnaliticsImport implements ShouldQueue
         $sessionData = [];
 
         foreach ($response->getRows() as $row) {
-            $date = Carbon::createFromFormat('Ymd', $row->getDimensionValues()[0]->getValue())->format('Y-m-d');
+            $date = Date::createFromFormat('Ymd', $row->getDimensionValues()[0]->getValue())->format('Y-m-d');
             $source = $row->getDimensionValues()[1]->getValue();
             $medium = $row->getDimensionValues()[2]->getValue();
             $campaign = $row->getDimensionValues()[3]->getValue();
@@ -177,7 +177,7 @@ final class AnaliticsImport implements ShouldQueue
                     'avg_session_duration' => (int) ($data['avg_session_duration'] / $data['count']),
                 ]);
             } else {
-                AnalyticsSession::create([
+                AnalyticsSession::query()->create([
                     'date' => $data['date'],
                     'source' => $data['source'],
                     'medium' => $data['medium'],
@@ -232,7 +232,7 @@ final class AnaliticsImport implements ShouldQueue
         $pageviewData = [];
 
         foreach ($response->getRows() as $row) {
-            $date = Carbon::createFromFormat('Ymd', $row->getDimensionValues()[0]->getValue())->format('Y-m-d');
+            $date = Date::createFromFormat('Ymd', $row->getDimensionValues()[0]->getValue())->format('Y-m-d');
             $pagePath = $row->getDimensionValues()[1]->getValue();
             $pageTitle = $row->getDimensionValues()[2]->getValue();
             $pageviews = (int) $row->getMetricValues()[0]->getValue();
@@ -277,7 +277,7 @@ final class AnaliticsImport implements ShouldQueue
                     'bounce_rate' => $data['bounce_rate'] / $data['count'],
                 ]);
             } else {
-                AnalyticsPageview::create([
+                AnalyticsPageview::query()->create([
                     'date' => $data['date'],
                     'page_path' => $data['page_path'],
                     'page_title' => $data['page_title'],
@@ -328,7 +328,7 @@ final class AnaliticsImport implements ShouldQueue
         $eventData = [];
 
         foreach ($response->getRows() as $row) {
-            $date = Carbon::createFromFormat('Ymd', $row->getDimensionValues()[0]->getValue())->format('Y-m-d');
+            $date = Date::createFromFormat('Ymd', $row->getDimensionValues()[0]->getValue())->format('Y-m-d');
             $eventName = $row->getDimensionValues()[1]->getValue();
             $eventCount = (int) $row->getMetricValues()[0]->getValue();
             $eventValue = (float) $row->getMetricValues()[1]->getValue();
@@ -362,7 +362,7 @@ final class AnaliticsImport implements ShouldQueue
                     'event_value' => $data['event_value'],
                 ]);
             } else {
-                AnalyticsEvent::create([
+                AnalyticsEvent::query()->create([
                     'date' => $data['date'],
                     'event_name' => $data['event_name'],
                     'event_category' => 'engagement',
@@ -405,7 +405,7 @@ final class AnaliticsImport implements ShouldQueue
         $conversionData = [];
 
         foreach ($response->getRows() as $row) {
-            $date = Carbon::createFromFormat('Ymd', $row->getDimensionValues()[0]->getValue())->format('Y-m-d');
+            $date = Date::createFromFormat('Ymd', $row->getDimensionValues()[0]->getValue())->format('Y-m-d');
             $conversions = (int) $row->getMetricValues()[0]->getValue();
             $revenue = (float) $row->getMetricValues()[1]->getValue();
             $sessions = (int) $row->getMetricValues()[2]->getValue();
@@ -439,7 +439,7 @@ final class AnaliticsImport implements ShouldQueue
                     'conversion_rate' => $conversionRate,
                 ]);
             } else {
-                AnalyticsConversion::create([
+                AnalyticsConversion::query()->create([
                     'date' => $data['date'],
                     'goal_name' => 'All Conversions',
                     'goal_completions' => $data['conversions'],

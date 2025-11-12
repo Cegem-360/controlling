@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\SettingsFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 final class Settings extends Model
 {
-    /** @use HasFactory<\Database\Factories\SettingsFactory> */
+    /** @use HasFactory<SettingsFactory> */
     use HasFactory;
 
     protected $fillable = [

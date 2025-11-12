@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\AnalyticsEventFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 final class AnalyticsEvent extends Model
 {
-    /** @use HasFactory<\Database\Factories\AnalyticsEventFactory> */
+    /** @use HasFactory<AnalyticsEventFactory> */
     use HasFactory;
 
     protected $fillable = [

@@ -91,7 +91,7 @@ final class SyncSearchConsoleKpis implements ShouldQueue
         ];
 
         foreach ($searchConsoleKpis as $kpiData) {
-            Kpi::create($kpiData);
+            Kpi::query()->create($kpiData);
         }
     }
 
@@ -157,7 +157,7 @@ final class SyncSearchConsoleKpis implements ShouldQueue
             $kpiValue->calculateVariance();
             $kpiValue->save();
         } else {
-            $kpiValue = KpiValue::create([
+            $kpiValue = KpiValue::query()->create([
                 'kpi_id' => $kpi->id,
                 'period' => $period,
                 'actual_value' => $actualValue,

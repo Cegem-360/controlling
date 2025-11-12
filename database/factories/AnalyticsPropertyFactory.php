@@ -7,7 +7,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AnalyticsProperty>
+ * @extends Factory<\App\Models\AnalyticsProperty>
  */
 final class AnalyticsPropertyFactory extends Factory
 {

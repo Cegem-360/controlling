@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
-use Analytics;
 use App\Enums\AnalyticsSortEnum;
 use App\Enums\NavigationGroup;
-use App\Filament\Widgets\SourcePageBreakdown;
 use App\Models\AnalyticsPageview;
 use App\Models\AnalyticsSession;
 use App\Models\Settings;
@@ -80,9 +78,9 @@ final class AnalyticsStats extends Page
 
         // Load overall stats
         $this->stats = [
-            'total_pageviews' => AnalyticsPageview::sum('pageviews') ?: 0,
-            'total_sessions' => AnalyticsSession::count() ?: 0,
-            'avg_bounce_rate' => AnalyticsPageview::avg('bounce_rate') ?: 0,
+            'total_pageviews' => AnalyticsPageview::query()->sum('pageviews') ?: 0,
+            'total_sessions' => AnalyticsSession::query()->count() ?: 0,
+            'avg_bounce_rate' => AnalyticsPageview::query()->avg('bounce_rate') ?: 0,
         ];
     }
 

@@ -98,10 +98,7 @@ final class AnalyticsKpiSeeder extends Seeder
         ];
 
         foreach ($analyticsKpis as $kpiData) {
-            Kpi::updateOrCreate(
-                ['code' => $kpiData['code']],
-                $kpiData,
-            );
+            Kpi::query()->updateOrCreate(['code' => $kpiData['code']], $kpiData);
         }
     }
 }

@@ -57,7 +57,7 @@ final class KpiImporter extends Importer
 
     public function resolveRecord(): Kpi
     {
-        return Kpi::firstOrNew([
+        return Kpi::query()->firstOrNew([
             'code' => $this->data['code'],
         ]);
     }

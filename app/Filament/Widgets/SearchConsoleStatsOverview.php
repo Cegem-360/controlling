@@ -20,10 +20,10 @@ final class SearchConsoleStatsOverview extends StatsOverviewWidget
         $startDate = $this->getStartDate();
 
         $stats = [
-            'total_impressions' => SearchQuery::where('date', '>=', $startDate)->sum('impressions'),
-            'total_clicks' => SearchQuery::where('date', '>=', $startDate)->sum('clicks'),
-            'avg_ctr' => SearchQuery::where('date', '>=', $startDate)->avg('ctr') ?? 0,
-            'avg_position' => SearchQuery::where('date', '>=', $startDate)->avg('position') ?? 0,
+            'total_impressions' => SearchQuery::query()->where('date', '>=', $startDate)->sum('impressions'),
+            'total_clicks' => SearchQuery::query()->where('date', '>=', $startDate)->sum('clicks'),
+            'avg_ctr' => SearchQuery::query()->where('date', '>=', $startDate)->avg('ctr') ?? 0,
+            'avg_position' => SearchQuery::query()->where('date', '>=', $startDate)->avg('position') ?? 0,
         ];
 
         return [

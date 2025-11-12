@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\GoogleAnalitycs\OrderByType;
+use App\Models\AnalyticsSettings;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AnalyticsSettings>
+ * @extends Factory<AnalyticsSettings>
  */
 final class AnalyticsSettingsFactory extends Factory
 {
@@ -21,13 +22,13 @@ final class AnalyticsSettingsFactory extends Factory
     {
         $dimensions = [['name' => 'city'], ['name' => 'country'], ['name' => 'deviceCategory']];
         $metrics = [['name' => 'activeUsers'], ['name' => 'newUsers'], ['name' => 'sessions']];
-        $selectedDimensions = $this->faker->randomElements($dimensions, count: 2);
-        $selectedMetrics = $this->faker->randomElements($metrics, count: 2);
-        $selectedOrderByType = $this->faker->randomElement(OrderByType::class);
+        $selectedDimensions = fake()->randomElements($dimensions, count: 2);
+        $selectedMetrics = fake()->randomElements($metrics, count: 2);
+        $selectedOrderByType = fake()->randomElement(OrderByType::class);
         if ($selectedOrderByType === OrderByType::DIMENSION) {
-            $selectedOrderBy = $this->faker->randomElement($selectedDimensions)['name'];
+            $selectedOrderBy = fake()->randomElement($selectedDimensions)['name'];
         } else {
-            $selectedOrderBy = $this->faker->randomElement($selectedMetrics)['name'];
+            $selectedOrderBy = fake()->randomElement($selectedMetrics)['name'];
         }
 
         return [
@@ -35,7 +36,7 @@ final class AnalyticsSettingsFactory extends Factory
             'metrics' => $selectedMetrics,
             'order_by_type' => $selectedOrderByType,
             'order_by' => $selectedOrderBy,
-            'order_by_direction' => $this->faker->randomElement(['asc', 'desc']),
+            'order_by_direction' => fake()->randomElement(['asc', 'desc']),
         ];
     }
 }

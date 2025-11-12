@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\AnalyticsPageviewFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 final class AnalyticsPageview extends Model
 {
-    /** @use HasFactory<\Database\Factories\AnalyticsPageviewFactory> */
+    /** @use HasFactory<AnalyticsPageviewFactory> */
     use HasFactory;
 
     protected $fillable = [

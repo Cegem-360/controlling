@@ -59,7 +59,7 @@ final class SearchPageImporter extends Importer
 
     public function resolveRecord(): SearchPage
     {
-        return SearchPage::firstOrNew([
+        return SearchPage::query()->firstOrNew([
             'page_url' => $this->data['page_url'],
         ]);
     }
