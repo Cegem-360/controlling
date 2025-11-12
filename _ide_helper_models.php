@@ -71,8 +71,8 @@ namespace App\Models{
 /**
  * @property int $id
  * @property \Carbon\CarbonImmutable $date
- * @property string $page_path
- * @property string $page_title
+ * @property string|null $page_path
+ * @property string|null $page_title
  * @property int $pageviews
  * @property int $unique_pageviews
  * @property int $avg_time_on_page
@@ -143,7 +143,7 @@ namespace App\Models{
  * @property array<array-key, mixed>|null $dimensions
  * @property array<array-key, mixed>|null $metrics
  * @property \App\Enums\GoogleAnalitycs\OrderByType|null $order_by_type
- * @property string|null $order_by
+ * @property array<array-key, mixed>|null $order_by
  * @property string|null $order_by_direction
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
@@ -202,23 +202,23 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
- * @property int $App\Models\Kpi
+ * @property int $kpi_id
  * @property \Carbon\CarbonImmutable $period
  * @property numeric|null $planned_value
- * @property numeric $actual_value
- * @property numeric $variance
- * @property numeric $variance_percentage
+ * @property numeric|null $actual_value
+ * @property numeric|null $variance
+ * @property numeric|null $variance_percentage
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at
- * @property-read \App\Models\Kpi|null $kpi
+ * @property-read \App\Models\Kpi $kpi
  * @method static \Database\Factories\KpiValueFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KpiValue newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KpiValue newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KpiValue query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KpiValue whereActualValue($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|KpiValue whereApp\Models\Kpi($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KpiValue whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KpiValue whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|KpiValue whereKpiId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KpiValue wherePeriod($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KpiValue wherePlannedValue($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|KpiValue whereUpdatedAt($value)
@@ -384,26 +384,9 @@ namespace App\Models{
 
 namespace App\Models{
 /**
- * @property int $id
- * @property string $sitemap_url
- * @property \Carbon\CarbonImmutable|null $last_submitted
- * @property bool $is_pending
- * @property int $warnings
- * @property int $errors
- * @property \Carbon\CarbonImmutable|null $created_at
- * @property \Carbon\CarbonImmutable|null $updated_at
- * @method static \Database\Factories\SearchSitemapFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchSitemap newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchSitemap newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchSitemap query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchSitemap whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchSitemap whereErrors($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchSitemap whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchSitemap whereIsPending($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchSitemap whereLastSubmitted($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchSitemap whereSitemapUrl($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchSitemap whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchSitemap whereWarnings($value)
  */
 	final class SearchSitemap extends \Eloquent {}
 }
@@ -460,5 +443,162 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
  */
 	final class User extends \Eloquent implements \Filament\Models\Contracts\FilamentUser {}
+}
+
+namespace App\Support{
+/**
+ * Temporary model for Sushi to work with device breakdown data
+ *
+ * @property int $id
+ * @property string|null $device
+ * @property int|null $impressions
+ * @property int|null $clicks
+ * @property float|null $ctr
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeviceBreakdownModel newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeviceBreakdownModel newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeviceBreakdownModel query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeviceBreakdownModel whereClicks($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeviceBreakdownModel whereCtr($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeviceBreakdownModel whereDevice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeviceBreakdownModel whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DeviceBreakdownModel whereImpressions($value)
+ */
+	final class DeviceBreakdownModel extends \Eloquent {}
+}
+
+namespace App\Support{
+/**
+ * Temporary model for Sushi to work with Google Analytics session sources data
+ *
+ * @property int $id
+ * @property string|null $source
+ * @property string|null $medium
+ * @property int|null $sessions
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SessionSourceModel newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SessionSourceModel newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SessionSourceModel query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SessionSourceModel whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SessionSourceModel whereMedium($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SessionSourceModel whereSessions($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SessionSourceModel whereSource($value)
+ */
+	final class SessionSourceModel extends \Eloquent {}
+}
+
+namespace App\Support{
+/**
+ * Temporary model for Sushi to work with Google Analytics data
+ *
+ * @property int $id
+ * @property string|null $source
+ * @property string|null $medium
+ * @property string|null $page_path
+ * @property string|null $page_title
+ * @property int|null $sessions
+ * @property int|null $users
+ * @property int|null $pageviews
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SourcePageModel newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SourcePageModel newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SourcePageModel query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SourcePageModel whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SourcePageModel whereMedium($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SourcePageModel wherePagePath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SourcePageModel wherePageTitle($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SourcePageModel wherePageviews($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SourcePageModel whereSessions($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SourcePageModel whereSource($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SourcePageModel whereUsers($value)
+ */
+	final class SourcePageModel extends \Eloquent {}
+}
+
+namespace App\Support{
+/**
+ * Temporary model for Sushi to work with Google Analytics top pages data
+ *
+ * @property int $id
+ * @property string|null $page_title
+ * @property string|null $page_path
+ * @property int|null $views
+ * @property int|null $active_users
+ * @property int|null $event_count
+ * @property int|null $bounce_rate
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopPageModel newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopPageModel newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopPageModel query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopPageModel whereActiveUsers($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopPageModel whereBounceRate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopPageModel whereEventCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopPageModel whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopPageModel wherePagePath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopPageModel wherePageTitle($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopPageModel whereViews($value)
+ */
+	final class TopPageModel extends \Eloquent {}
+}
+
+namespace App\Support{
+/**
+ * Temporary model for Sushi to work with aggregated Search Page data
+ *
+ * @property int $id
+ * @property string|null $page_url
+ * @property int|null $impressions
+ * @property int|null $clicks
+ * @property float|null $ctr
+ * @property float|null $position
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchPageModel newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchPageModel newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchPageModel query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchPageModel whereClicks($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchPageModel whereCtr($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchPageModel whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchPageModel whereImpressions($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchPageModel wherePageUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchPageModel wherePosition($value)
+ */
+	final class TopSearchPageModel extends \Eloquent {}
+}
+
+namespace App\Support{
+/**
+ * Temporary model for Sushi to work with aggregated Search Query data
+ *
+ * @property int $id
+ * @property string|null $query
+ * @property int|null $impressions
+ * @property int|null $clicks
+ * @property float|null $ctr
+ * @property float|null $position
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchQueryModel newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchQueryModel newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchQueryModel query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchQueryModel whereClicks($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchQueryModel whereCtr($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchQueryModel whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchQueryModel whereImpressions($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchQueryModel wherePosition($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TopSearchQueryModel whereQuery($value)
+ */
+	final class TopSearchQueryModel extends \Eloquent {}
+}
+
+namespace App\Support{
+/**
+ * Temporary model for Sushi to work with Google Analytics user sources data
+ *
+ * @property int $id
+ * @property string|null $source
+ * @property string|null $medium
+ * @property int|null $users
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSourceModel newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSourceModel newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSourceModel query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSourceModel whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSourceModel whereMedium($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSourceModel whereSource($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserSourceModel whereUsers($value)
+ */
+	final class UserSourceModel extends \Eloquent {}
 }
 
