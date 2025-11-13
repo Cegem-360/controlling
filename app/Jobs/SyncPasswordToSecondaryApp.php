@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -11,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class SyncPasswordToSecondaryApp implements ShouldQueue
+final class SyncPasswordToSecondaryApp implements ShouldQueue
 {
     use InteractsWithQueue;
     use Queueable;
@@ -66,9 +67,9 @@ class SyncPasswordToSecondaryApp implements ShouldQueue
                 Log::info("Password synced successfully for user {$this->email} to secondary app.");
             } else {
                 Log::error("Failed to sync password for user {$this->email}. Status: {$response->status()}");
-                throw new \Exception("Password sync failed with status {$response->status()}");
+                throw new Exception("Password sync failed with status {$response->status()}");
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Exception during password sync for user {$this->email}: {$e->getMessage()}");
             throw $e;
         }

@@ -7,7 +7,7 @@ namespace App\Observers;
 use App\Jobs\SyncPasswordToSecondaryApp;
 use App\Models\User;
 
-class UserObserver
+final class UserObserver
 {
     /**
      * Handle the User "updated" event.
@@ -15,10 +15,7 @@ class UserObserver
     public function updated(User $user): void
     {
         if ($user->wasChanged('password')) {
-            SyncPasswordToSecondaryApp::dispatch(
-                email: $user->email,
-                hashedPassword: $user->password,
-            );
+            dispatch(new SyncPasswordToSecondaryApp(email: $user->email, hashedPassword: $user->password));
         }
     }
 }

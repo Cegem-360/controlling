@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 
-it('dispatches sync password job when password is updated', function () {
+it('dispatches sync password job when password is updated', function (): void {
     Queue::fake();
 
     $user = User::factory()->create([
@@ -19,13 +19,11 @@ it('dispatches sync password job when password is updated', function () {
         'password' => 'new-password',
     ]);
 
-    Queue::assertPushed(SyncPasswordToSecondaryApp::class, function ($job) use ($user) {
-        return $job->email === $user->email
-            && Hash::check('new-password', $job->hashedPassword);
-    });
+    Queue::assertPushed(SyncPasswordToSecondaryApp::class, fn ($job): bool => $job->email === $user->email
+        && Hash::check('new-password', $job->hashedPassword));
 });
 
-it('does not dispatch sync password job when other fields are updated', function () {
+it('does not dispatch sync password job when other fields are updated', function (): void {
     Queue::fake();
 
     $user = User::factory()->create([
@@ -39,7 +37,7 @@ it('does not dispatch sync password job when other fields are updated', function
     Queue::assertNotPushed(SyncPasswordToSecondaryApp::class);
 });
 
-it('sends password sync request to secondary app', function () {
+it('sends password sync request to secondary app', function (): void {
     Http::fake([
         'https://secondary-app.test/api/sync-password' => Http::response(['success' => true], 200),
     ]);
@@ -59,15 +57,13 @@ it('sends password sync request to secondary app', function () {
 
     $job->handle();
 
-    Http::assertSent(function ($request) use ($user, $hashedPassword) {
-        return $request->url() === 'https://secondary-app.test/api/sync-password'
-            && $request->hasHeader('Authorization', 'Bearer a1b2c3d4-e5f6a7b8-c9d0e1f2-a3b4c5d6')
-            && $request['email'] === $user->email
-            && $request['password_hash'] === $hashedPassword;
-    });
+    Http::assertSent(fn ($request): bool => $request->url() === 'https://secondary-app.test/api/sync-password'
+        && $request->hasHeader('Authorization', 'Bearer a1b2c3d4-e5f6a7b8-c9d0e1f2-a3b4c5d6')
+        && $request['email'] === $user->email
+        && $request['password_hash'] === $hashedPassword);
 });
 
-it('skips sync when secondary app configuration is missing', function () {
+it('skips sync when secondary app configuration is missing', function (): void {
     Http::fake();
 
     config([

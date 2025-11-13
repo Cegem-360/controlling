@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\postJson;
 
-beforeEach(function () {
+beforeEach(function (): void {
     config([
         'services.secondary_app.api_key' => 'a1b2c3d4-e5f6a7b8-c9d0e1f2-a3b4c5d6',
     ]);
 });
 
-it('successfully syncs password from secondary app', function () {
+it('successfully syncs password from secondary app', function (): void {
     $user = User::factory()->create([
         'email' => 'test@example.com',
         'password' => 'old-password',
@@ -39,7 +39,7 @@ it('successfully syncs password from secondary app', function () {
     expect(Hash::check('new-password', $user->password))->toBeTrue();
 });
 
-it('does not trigger observer when syncing password from API', function () {
+it('does not trigger observer when syncing password from API', function (): void {
     Queue::fake();
 
     $user = User::factory()->create([
@@ -59,7 +59,7 @@ it('does not trigger observer when syncing password from API', function () {
     Queue::assertNothingPushed();
 });
 
-it('requires valid api key', function () {
+it('requires valid api key', function (): void {
     $user = User::factory()->create([
         'email' => 'test@example.com',
     ]);
@@ -74,7 +74,7 @@ it('requires valid api key', function () {
     $response->assertForbidden();
 });
 
-it('rejects invalid api key format', function () {
+it('rejects invalid api key format', function (): void {
     $user = User::factory()->create([
         'email' => 'test@example.com',
     ]);
@@ -89,7 +89,7 @@ it('rejects invalid api key format', function () {
     $response->assertForbidden();
 });
 
-it('requires email field', function () {
+it('requires email field', function (): void {
     $response = postJson('/api/sync-password', [
         'password_hash' => Hash::make('new-password'),
     ], [
@@ -100,7 +100,7 @@ it('requires email field', function () {
     $response->assertJsonValidationErrors(['email']);
 });
 
-it('requires password_hash field', function () {
+it('requires password_hash field', function (): void {
     $user = User::factory()->create([
         'email' => 'test@example.com',
     ]);
@@ -115,7 +115,7 @@ it('requires password_hash field', function () {
     $response->assertJsonValidationErrors(['password_hash']);
 });
 
-it('requires existing user email', function () {
+it('requires existing user email', function (): void {
     $response = postJson('/api/sync-password', [
         'email' => 'nonexistent@example.com',
         'password_hash' => Hash::make('new-password'),
@@ -127,7 +127,7 @@ it('requires existing user email', function () {
     $response->assertJsonValidationErrors(['email']);
 });
 
-it('requires password_hash to be at least 60 characters', function () {
+it('requires password_hash to be at least 60 characters', function (): void {
     $user = User::factory()->create([
         'email' => 'test@example.com',
     ]);

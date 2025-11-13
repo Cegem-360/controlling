@@ -33,7 +33,7 @@ final class SyncPasswordController extends Controller
             }
 
             // Update password WITHOUT triggering observers to prevent infinite loop
-            User::withoutEvents(function () use ($user, $passwordHash) {
+            User::withoutEvents(function () use ($user, $passwordHash): void {
                 DB::table('users')
                     ->where('id', $user->id)
                     ->update(['password' => $passwordHash]);
