@@ -52,6 +52,19 @@ final class DeviceBreakdownTable extends TableWidget
 
     protected function getTableHeading(): string
     {
-        return 'Eszközök (Elmúlt 30 nap)';
+        return sprintf('Eszközök (%s)', $this->getDateRangeLabel());
+    }
+
+    private function getDateRangeLabel(): string
+    {
+        $dateRangeType = session('search_console_date_range', '28_days');
+
+        return match ($dateRangeType) {
+            '24_hours' => 'Elmúlt 24 óra',
+            '7_days' => 'Elmúlt 7 nap',
+            '28_days' => 'Elmúlt 28 nap',
+            '3_months' => 'Elmúlt 3 hónap',
+            default => 'Elmúlt 28 nap',
+        };
     }
 }
