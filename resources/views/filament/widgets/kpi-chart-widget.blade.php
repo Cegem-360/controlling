@@ -48,14 +48,14 @@
                     <div class="rounded-lg bg-blue-100 p-3 dark:bg-blue-900/30">
                         <div class="text-xs font-semibold uppercase text-blue-900 dark:text-blue-300">Current Value</div>
                         <div class="text-xl font-bold text-gray-900 dark:text-white">
-                            {{ number_format($data['currentValue'], 2) }}
+                            {{ number_format($data['currentValue'], 2, ',', ' ') }}
                         </div>
                     </div>
 
                     <div class="rounded-lg bg-green-100 p-3 dark:bg-green-900/30">
                         <div class="text-xs font-semibold uppercase text-green-900 dark:text-green-300">Target</div>
                         <div class="text-xl font-bold text-gray-900 dark:text-white">
-                            {{ number_format($data['kpi']->target_value, 2) }}
+                            {{ number_format($data['kpi']->target_value, 2, ',', ' ') }}
                         </div>
                     </div>
 
@@ -71,7 +71,7 @@
                     <div class="rounded-lg bg-blue-100 p-4 dark:bg-blue-900/30">
                         <div class="text-xs font-semibold uppercase text-blue-900 dark:text-blue-300">Current Value</div>
                         <div class="text-3xl font-bold text-gray-900 dark:text-white">
-                            {{ number_format($data['currentValue'], 2) }}
+                            {{ number_format($data['currentValue'], 2, ',', ' ') }}
                         </div>
                     </div>
 

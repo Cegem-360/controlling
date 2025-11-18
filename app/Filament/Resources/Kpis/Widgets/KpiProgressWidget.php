@@ -43,17 +43,17 @@ final class KpiProgressWidget extends BaseWidget
         $daysUntilTarget = $kpi->target_date ? (int) now()->diffInDays($kpi->target_date, false) : null;
 
         return [
-            Stat::make('Current Value', number_format($currentValue, 2))
+            Stat::make('Current Value', number_format($currentValue, 2, ',', ' '))
                 ->description($kpi->category->value)
                 ->descriptionIcon('heroicon-o-chart-bar')
                 ->color('info'),
 
-            Stat::make('Comparison Value', number_format($comparisonValue, 2))
-                ->description(($changePercentage > 0 ? '+' : '') . number_format($changePercentage, 1) . '% change')
+            Stat::make('Comparison Value', number_format($comparisonValue, 2, ',', ' '))
+                ->description(($changePercentage > 0 ? '+' : '') . number_format($changePercentage, 1, ',', ' ') . '% change')
                 ->descriptionIcon($changePercentage > 0 ? 'heroicon-o-arrow-trending-up' : 'heroicon-o-arrow-trending-down')
                 ->color($changePercentage > 0 ? 'success' : ($changePercentage < 0 ? 'danger' : 'gray')),
 
-            Stat::make('Progress', number_format($progress, 1) . '%')
+            Stat::make('Progress', number_format($progress, 1, ',', ' ') . '%')
                 ->description($progress >= 100 ? 'Target achieved!' : 'towards goal')
                 ->descriptionIcon($progress >= 100 ? 'heroicon-o-check-circle' : 'heroicon-o-arrow-trending-up')
                 ->color($progress >= 100 ? 'success' : ($progress >= 75 ? 'warning' : 'danger')),
