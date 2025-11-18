@@ -30,6 +30,8 @@ final class KpiFactory extends Factory
             'target_value' => fake()->randomFloat(2, 0, 10000),
             'target_date' => null,
             'from_date' => null,
+            'comparison_start_date' => null,
+            'comparison_end_date' => null,
             'goal_type' => null,
             'value_type' => null,
             'page_path' => null,

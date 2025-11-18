@@ -26,9 +26,7 @@ final class SetAnalyticsKpiGoalAction
             ->stickyModalFooter()
             ->schema(function () use ($getTopPages): array {
                 $topPages = $getTopPages();
-                $pageOptions = collect($topPages)->mapWithKeys(function (array $page): array {
-                    return [$page['page_path'] => "{$page['page_title']} ({$page['page_path']})"];
-                })->toArray();
+                $pageOptions = collect($topPages)->mapWithKeys(fn (array $page): array => [$page['page_path'] => "{$page['page_title']} ({$page['page_path']})"])->toArray();
 
                 return [
                     Select::make('page_path')
@@ -63,6 +61,18 @@ final class SetAnalyticsKpiGoalAction
                         ->displayFormat('Y-m-d')
                         ->minDate(fn ($get) => $get('from_date') ?? now())
                         ->helperText('When you want to achieve the target'),
+                    DatePicker::make('comparison_start_date')
+                        ->label('Comparison Start Date')
+                        ->native(false)
+                        ->displayFormat('Y-m-d')
+                        ->maxDate(fn ($get) => $get('comparison_end_date'))
+                        ->helperText('Start date for comparison period'),
+                    DatePicker::make('comparison_end_date')
+                        ->label('Comparison End Date')
+                        ->native(false)
+                        ->displayFormat('Y-m-d')
+                        ->minDate(fn ($get) => $get('comparison_start_date'))
+                        ->helperText('End date for comparison period'),
                     Select::make('goal_type')
                         ->label('Goal Type')
                         ->options([
@@ -81,11 +91,11 @@ final class SetAnalyticsKpiGoalAction
                         ->native(false)
                         ->live(),
                     TextInput::make('target_value')
-                        ->label(fn ($get) => $get('value_type') === KpiValueType::Percentage->value ? 'Target Percentage (%)' : 'Target Value')
+                        ->label(fn ($get): string => $get('value_type') === KpiValueType::Percentage->value ? 'Target Percentage (%)' : 'Target Value')
                         ->required()
                         ->numeric()
                         ->minValue(0)
-                        ->suffix(fn ($get) => $get('value_type') === KpiValueType::Percentage->value ? '%' : null),
+                        ->suffix(fn ($get): ?string => $get('value_type') === KpiValueType::Percentage->value ? '%' : null),
                 ];
             })
             ->action(function (array $data) use ($getTopPages): void {
@@ -119,6 +129,8 @@ final class SetAnalyticsKpiGoalAction
                         'metric_type' => $metricType,
                         'from_date' => $data['from_date'] ?? now(),
                         'target_date' => $data['target_date'],
+                        'comparison_start_date' => $data['comparison_start_date'] ?? null,
+                        'comparison_end_date' => $data['comparison_end_date'] ?? null,
                         'goal_type' => $data['goal_type'],
                         'value_type' => $data['value_type'],
                         'target_value' => $data['target_value'],

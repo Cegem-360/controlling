@@ -30,19 +30,19 @@ final class KpiForm
                             ->schema([
                                 TextInput::make('code')
                                     ->required()
-                                    ->disabled(fn (string $operation) => $operation === 'edit'),
+                                    ->disabled(fn (string $operation): bool => $operation === 'edit'),
                                 TextInput::make('name')
                                     ->required()
-                                    ->disabled(fn (string $operation) => $operation === 'edit'),
+                                    ->disabled(fn (string $operation): bool => $operation === 'edit'),
                                 Select::make('data_source')
                                     ->options(KpiDataSource::class)
                                     ->required()
                                     ->live()
-                                    ->disabled(fn (string $operation) => $operation === 'edit'),
+                                    ->disabled(fn (string $operation): bool => $operation === 'edit'),
                                 Select::make('category')
                                     ->options(KpiCategory::class)
                                     ->required()
-                                    ->disabled(fn (string $operation) => $operation === 'edit'),
+                                    ->disabled(fn (string $operation): bool => $operation === 'edit'),
                                 Toggle::make('is_active')
                                     ->required(),
                             ]),
@@ -74,16 +74,31 @@ final class KpiForm
                                     ->label('Start Date')
                                     ->native(false)
                                     ->displayFormat('Y-m-d')
-                                    ->maxDate(fn (Get $get) => $get('target_date'))
+                                    ->maxDate(fn (Get $get): mixed => $get('target_date'))
                                     ->helperText('When to start tracking this KPI')
                                     ->required(),
                                 DatePicker::make('target_date')
                                     ->label('Target Date')
                                     ->native(false)
                                     ->displayFormat('Y-m-d')
-                                    ->minDate(fn (Get $get) => $get('from_date'))
+                                    ->minDate(fn (Get $get): mixed => $get('from_date'))
                                     ->helperText('When you want to achieve the target')
                                     ->required(),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                DatePicker::make('comparison_start_date')
+                                    ->label('Comparison Start Date')
+                                    ->native(false)
+                                    ->displayFormat('Y-m-d')
+                                    ->maxDate(fn (Get $get): mixed => $get('comparison_end_date'))
+                                    ->helperText('Start date for comparison period'),
+                                DatePicker::make('comparison_end_date')
+                                    ->label('Comparison End Date')
+                                    ->native(false)
+                                    ->displayFormat('Y-m-d')
+                                    ->minDate(fn (Get $get): mixed => $get('comparison_start_date'))
+                                    ->helperText('End date for comparison period'),
                             ]),
                     ]),
                 Section::make('Data Source Integration')
@@ -91,21 +106,21 @@ final class KpiForm
                         Grid::make(2)
                             ->schema([
                                 TextInput::make('page_path')
-                                    ->label(fn (Get $get) => match ($get('data_source')) {
+                                    ->label(fn (Get $get): string => match ($get('data_source')) {
                                         'search_console' => 'Page URL',
                                         'analytics' => 'Page Path',
                                         default => 'Page Path / URL',
                                     })
-                                    ->helperText(fn (Get $get) => match ($get('data_source')) {
+                                    ->helperText(fn (Get $get): string => match ($get('data_source')) {
                                         'search_console' => 'Search Console page URL being tracked',
                                         'analytics' => 'Analytics page path being tracked',
                                         default => 'Page identifier',
                                     })
-                                    ->visible(fn (Get $get) => in_array($get('data_source'), ['analytics', 'search_console']))
-                                    ->disabled(fn (string $operation) => $operation === 'edit'),
+                                    ->visible(fn (Get $get): bool => in_array($get('data_source'), ['analytics', 'search_console']))
+                                    ->disabled(fn (string $operation): bool => $operation === 'edit'),
                                 Select::make('metric_type')
                                     ->label('Metric Type')
-                                    ->options(fn (Get $get) => match ($get('data_source')) {
+                                    ->options(fn (Get $get): array => match ($get('data_source')) {
                                         'search_console' => [
                                             'impressions' => 'Impressions',
                                             'clicks' => 'Clicks',
@@ -120,14 +135,14 @@ final class KpiForm
                                         default => [],
                                     })
                                     ->helperText('Select the metric you want to track')
-                                    ->visible(fn (Get $get) => in_array($get('data_source'), ['analytics', 'search_console']))
-                                    ->required(fn (Get $get) => in_array($get('data_source'), ['analytics', 'search_console']))
-                                    ->disabled(fn (string $operation) => $operation === 'edit'),
+                                    ->visible(fn (Get $get): bool => in_array($get('data_source'), ['analytics', 'search_console']))
+                                    ->required(fn (Get $get): bool => in_array($get('data_source'), ['analytics', 'search_console']))
+                                    ->disabled(fn (string $operation): bool => $operation === 'edit'),
                             ]),
                     ])
                     ->collapsible()
                     ->collapsed()
-                    ->visible(fn (Get $get) => in_array($get('data_source'), ['analytics', 'search_console'])),
+                    ->visible(fn (Get $get): bool => in_array($get('data_source'), ['analytics', 'search_console'])),
             ]);
     }
 }

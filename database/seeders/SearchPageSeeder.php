@@ -48,7 +48,7 @@ final class SearchPageSeeder extends Seeder
                 }
 
                 // Add some random pages too (for variety)
-                $randomPageCount = rand(2, 5);
+                $randomPageCount = random_int(2, 5);
                 for ($j = 0; $j < $randomPageCount; $j++) {
                     SearchPage::factory()->create([
                         'team_id' => $team->id,

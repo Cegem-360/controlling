@@ -15,7 +15,7 @@ final class KpiValuesChartWidget extends ChartWidget
 {
     public ?Model $record = null;
 
-    public function getHeading(): ?string
+    public function getHeading(): string
     {
         if (! $this->record instanceof Kpi) {
             return 'KPI Progress Over Time';
@@ -48,7 +48,7 @@ final class KpiValuesChartWidget extends ChartWidget
             $missingFields[] = 'Target Date';
         }
 
-        if (! empty($missingFields)) {
+        if ($missingFields !== []) {
             return 'Missing required field(s): ' . implode(', ', $missingFields) . '.';
         }
 

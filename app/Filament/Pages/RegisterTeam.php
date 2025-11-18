@@ -44,7 +44,7 @@ final class RegisterTeam extends RegisterTenant
 
     protected function handleRegistration(array $data): Team
     {
-        $team = Team::create($data);
+        $team = Team::query()->create($data);
 
         $team->users()->attach(auth()->user());
 

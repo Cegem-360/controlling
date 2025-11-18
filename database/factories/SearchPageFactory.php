@@ -37,17 +37,17 @@ final class SearchPageFactory extends Factory
      */
     public function tracked(string $pageUrl, string $device): static
     {
-        $baseImpressions = rand(100, 1000);
-        $variance = rand(80, 120) / 100;
+        $baseImpressions = random_int(100, 1000);
+        $variance = random_int(80, 120) / 100;
 
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'page_url' => $pageUrl,
             'country' => 'US',
             'device' => $device,
             'impressions' => (int) ($baseImpressions * $variance),
-            'clicks' => (int) ($baseImpressions * $variance * rand(5, 15) / 100),
-            'ctr' => rand(500, 1500) / 100,
-            'position' => rand(10, 50) / 10,
+            'clicks' => (int) ($baseImpressions * $variance * random_int(5, 15) / 100),
+            'ctr' => random_int(500, 1500) / 100,
+            'position' => random_int(10, 50) / 10,
         ]);
     }
 }

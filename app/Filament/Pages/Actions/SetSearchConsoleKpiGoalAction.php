@@ -28,13 +28,9 @@ final class SetSearchConsoleKpiGoalAction
                 $topPages = $getTopPages();
                 $topQueries = $getTopQueries();
 
-                $pageOptions = collect($topPages)->mapWithKeys(function (array $page): array {
-                    return [$page['page_url'] => "{$page['page_url']} (Clicks: {$page['clicks']})"];
-                })->toArray();
+                $pageOptions = collect($topPages)->mapWithKeys(fn (array $page): array => [$page['page_url'] => "{$page['page_url']} (Clicks: {$page['clicks']})"])->toArray();
 
-                $queryOptions = collect($topQueries)->mapWithKeys(function (array $query): array {
-                    return [$query['query'] => "{$query['query']} (Clicks: {$query['clicks']})"];
-                })->toArray();
+                $queryOptions = collect($topQueries)->mapWithKeys(fn (array $query): array => [$query['query'] => "{$query['query']} (Clicks: {$query['clicks']})"])->toArray();
 
                 return [
                     Select::make('source_type')
@@ -51,8 +47,8 @@ final class SetSearchConsoleKpiGoalAction
                     Select::make('page_path')
                         ->label('Select Search Console Page')
                         ->options($pageOptions)
-                        ->required(fn ($get) => $get('source_type') === 'page')
-                        ->visible(fn ($get) => $get('source_type') === 'page')
+                        ->required(fn ($get): bool => $get('source_type') === 'page')
+                        ->visible(fn ($get): bool => $get('source_type') === 'page')
                         ->searchable()
                         ->preload()
                         ->helperText('Choose a page from your Search Console data'),
@@ -60,8 +56,8 @@ final class SetSearchConsoleKpiGoalAction
                     Select::make('query')
                         ->label('Select Search Query')
                         ->options($queryOptions)
-                        ->required(fn ($get) => $get('source_type') === 'query')
-                        ->visible(fn ($get) => $get('source_type') === 'query')
+                        ->required(fn ($get): bool => $get('source_type') === 'query')
+                        ->visible(fn ($get): bool => $get('source_type') === 'query')
                         ->searchable()
                         ->preload()
                         ->helperText('Choose a search query from your Search Console data'),
@@ -95,6 +91,20 @@ final class SetSearchConsoleKpiGoalAction
                         ->minDate(fn ($get) => $get('from_date') ?? now())
                         ->helperText('When you want to achieve the target'),
 
+                    DatePicker::make('comparison_start_date')
+                        ->label('Comparison Start Date')
+                        ->native(false)
+                        ->displayFormat('Y-m-d')
+                        ->maxDate(fn ($get) => $get('comparison_end_date'))
+                        ->helperText('Start date for comparison period'),
+
+                    DatePicker::make('comparison_end_date')
+                        ->label('Comparison End Date')
+                        ->native(false)
+                        ->displayFormat('Y-m-d')
+                        ->minDate(fn ($get) => $get('comparison_start_date'))
+                        ->helperText('End date for comparison period'),
+
                     Select::make('goal_type')
                         ->label('Goal Type')
                         ->options([
@@ -115,11 +125,11 @@ final class SetSearchConsoleKpiGoalAction
                         ->live(),
 
                     TextInput::make('target_value')
-                        ->label(fn ($get) => $get('value_type') === KpiValueType::Percentage->value ? 'Target Percentage (%)' : 'Target Value')
+                        ->label(fn ($get): string => $get('value_type') === KpiValueType::Percentage->value ? 'Target Percentage (%)' : 'Target Value')
                         ->required()
                         ->numeric()
                         ->minValue(0)
-                        ->suffix(fn ($get) => $get('value_type') === KpiValueType::Percentage->value ? '%' : null),
+                        ->suffix(fn ($get): ?string => $get('value_type') === KpiValueType::Percentage->value ? '%' : null),
                 ];
             })
             ->action(function (array $data): void {
@@ -152,6 +162,8 @@ final class SetSearchConsoleKpiGoalAction
                         'metric_type' => $metricType,
                         'from_date' => $data['from_date'] ?? now(),
                         'target_date' => $data['target_date'],
+                        'comparison_start_date' => $data['comparison_start_date'] ?? null,
+                        'comparison_end_date' => $data['comparison_end_date'] ?? null,
                         'goal_type' => $data['goal_type'],
                         'value_type' => $data['value_type'],
                         'target_value' => $data['target_value'],

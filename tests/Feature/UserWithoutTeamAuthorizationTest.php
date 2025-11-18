@@ -102,7 +102,7 @@ it('seeded admin user has a default team', function (): void {
     // Run the seeder
     $this->seed();
 
-    $admin = User::where('email', 'admin@admin.com')->first();
+    $admin = User::query()->where('email', 'admin@admin.com')->first();
 
     expect($admin)->not->toBeNull();
     expect($admin->teams)->toHaveCount(1);

@@ -64,7 +64,7 @@ it('automatically attaches creator to new team', function (): void {
         ->set('data.slug', 'creator-test-team')
         ->call('register');
 
-    $team = Team::where('slug', 'creator-test-team')->first();
+    $team = Team::query()->where('slug', 'creator-test-team')->first();
     expect($team->users->contains($this->admin))->toBeTrue();
 });
 

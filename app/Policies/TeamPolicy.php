@@ -12,7 +12,7 @@ final class TeamPolicy
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(): bool
     {
         // All authenticated users can view teams they belong to
         return true;
@@ -39,7 +39,7 @@ final class TeamPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, ?Team $team = null): bool
+    public function update(User $user): bool
     {
         // Only admins can update teams
         return $user->isAdmin();
@@ -48,7 +48,7 @@ final class TeamPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Team $team): bool
+    public function delete(User $user): bool
     {
         // Only admins can delete teams
         return $user->isAdmin();
@@ -57,7 +57,7 @@ final class TeamPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Team $team): bool
+    public function restore(User $user): bool
     {
         // Only admins can restore teams
         return $user->isAdmin();
@@ -66,7 +66,7 @@ final class TeamPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Team $team): bool
+    public function forceDelete(User $user): bool
     {
         // Only admins can permanently delete teams
         return $user->isAdmin();
@@ -75,7 +75,7 @@ final class TeamPolicy
     /**
      * Determine whether the user can manage team members (add/remove users).
      */
-    public function manageUsers(User $user, Team $team): bool
+    public function manageUsers(User $user): bool
     {
         // Only admins can manage team members
         return $user->isAdmin();

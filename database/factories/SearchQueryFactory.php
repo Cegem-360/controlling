@@ -26,7 +26,7 @@ final class SearchQueryFactory extends Factory
         return [
             'team_id' => null,
             'date' => fake()->dateTimeBetween('-6 months', 'now')->format('Y-m-d'),
-            'query' => fake()->words(rand(2, 5), true),
+            'query' => fake()->words(random_int(2, 5), true),
             'country' => fake()->countryCode(),
             'device' => fake()->randomElement(['desktop', 'mobile', 'tablet']),
             'impressions' => $impressions,
@@ -41,17 +41,17 @@ final class SearchQueryFactory extends Factory
      */
     public function tracked(string $queryText, string $device): static
     {
-        $baseImpressions = rand(200, 1500);
-        $variance = rand(70, 130) / 100;
+        $baseImpressions = random_int(200, 1500);
+        $variance = random_int(70, 130) / 100;
 
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'query' => $queryText,
             'country' => 'US',
             'device' => $device,
             'impressions' => (int) ($baseImpressions * $variance),
-            'clicks' => (int) ($baseImpressions * $variance * rand(3, 12) / 100),
-            'ctr' => rand(300, 1200) / 100,
-            'position' => rand(15, 80) / 10,
+            'clicks' => (int) ($baseImpressions * $variance * random_int(3, 12) / 100),
+            'ctr' => random_int(300, 1200) / 100,
+            'position' => random_int(15, 80) / 10,
         ]);
     }
 }

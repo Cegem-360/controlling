@@ -79,7 +79,11 @@ final class User extends Authenticatable implements FilamentUser, HasTenants
      */
     public function isAdmin(): bool
     {
-        return $this->hasRole('admin') || $this->is_super_admin;
+        if ($this->hasRole('admin')) {
+            return true;
+        }
+
+        return (bool) $this->is_super_admin;
     }
 
     /**

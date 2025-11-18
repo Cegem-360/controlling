@@ -60,6 +60,11 @@ it('can create kpi', function (): void {
         ->set('data.description', 'Test Description')
         ->set('data.data_source', 'manual')
         ->set('data.category', 'traffic')
+        ->set('data.target_value', 1000)
+        ->set('data.goal_type', 'increase')
+        ->set('data.value_type', 'fixed')
+        ->set('data.from_date', now()->format('Y-m-d'))
+        ->set('data.target_date', now()->addMonth()->format('Y-m-d'))
         ->set('data.is_active', true)
         ->call('create')
         ->assertHasNoFormErrors();
@@ -78,11 +83,16 @@ it('automatically assigns team_id when creating kpi', function (): void {
         ->set('data.name', 'Auto Assigned KPI')
         ->set('data.data_source', 'analytics')
         ->set('data.category', 'engagement')
+        ->set('data.target_value', 500)
+        ->set('data.goal_type', 'increase')
+        ->set('data.value_type', 'percentage')
+        ->set('data.from_date', now()->format('Y-m-d'))
+        ->set('data.target_date', now()->addMonth()->format('Y-m-d'))
         ->set('data.is_active', true)
         ->call('create')
         ->assertHasNoFormErrors();
 
-    $kpi = Kpi::where('code', 'AUTO_KPI')->first();
+    $kpi = Kpi::query()->where('code', 'AUTO_KPI')->first();
     expect($kpi->team_id)->toBe($this->team->id);
 });
 
@@ -113,15 +123,23 @@ it('can retrieve kpi data for editing', function (): void {
 });
 
 it('can update kpi', function (): void {
-    $kpi = Kpi::factory()->create(['team_id' => $this->team->id]);
+    $kpi = Kpi::factory()->create([
+        'team_id' => $this->team->id,
+        'target_value' => 1000,
+        'goal_type' => 'increase',
+        'value_type' => 'fixed',
+        'from_date' => now(),
+        'target_date' => now()->addMonth(),
+        'is_active' => true,
+    ]);
 
     Livewire::actingAs($this->admin)
         ->test(EditKpi::class, ['record' => $kpi->getRouteKey(), 'tenant' => $this->team])
-        ->set('data.name', 'Updated KPI Name')
+        ->set('data.is_active', false)
         ->call('save')
         ->assertHasNoFormErrors();
 
-    expect($kpi->refresh()->name)->toBe('Updated KPI Name');
+    expect($kpi->refresh()->is_active)->toBe(false);
 });
 
 it('can delete kpi', function (): void {
@@ -134,10 +152,26 @@ it('can delete kpi', function (): void {
     $this->assertModelMissing($kpi);
 });
 
-it('non-admin users cannot create kpis', function (): void {
+it('non-admin users can create kpis', function (): void {
     Livewire::actingAs($this->user)
         ->test(CreateKpi::class, ['tenant' => $this->team])
-        ->assertStatus(403);
+        ->set('data.code', 'USER_KPI')
+        ->set('data.name', 'User Created KPI')
+        ->set('data.data_source', 'manual')
+        ->set('data.category', 'traffic')
+        ->set('data.target_value', 1000)
+        ->set('data.goal_type', 'increase')
+        ->set('data.value_type', 'fixed')
+        ->set('data.from_date', now()->format('Y-m-d'))
+        ->set('data.target_date', now()->addMonth()->format('Y-m-d'))
+        ->set('data.is_active', true)
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $this->assertDatabaseHas(Kpi::class, [
+        'code' => 'USER_KPI',
+        'team_id' => $this->team->id,
+    ]);
 });
 
 it('can search kpis in table', function (): void {
@@ -147,6 +181,6 @@ it('can search kpis in table', function (): void {
     Livewire::actingAs($this->admin)
         ->test(ListKpis::class, ['tenant' => $this->team])
         ->searchTable('Searchable')
-        ->assertCanSeeTableRecords(Kpi::where('name', 'Searchable KPI')->get())
-        ->assertCanNotSeeTableRecords(Kpi::where('name', 'Another KPI')->get());
+        ->assertCanSeeTableRecords(Kpi::query()->where('name', 'Searchable KPI')->get())
+        ->assertCanNotSeeTableRecords(Kpi::query()->where('name', 'Another KPI')->get());
 });

@@ -41,7 +41,7 @@ final class ViewKpi extends ViewRecord
             $missingFields[] = 'Target Date';
         }
 
-        if (! empty($missingFields)) {
+        if ($missingFields !== []) {
             Notification::make()
                 ->warning()
                 ->title('Missing Configuration')
@@ -105,6 +105,14 @@ final class ViewKpi extends ViewRecord
                                 TextEntry::make('target_date')
                                     ->label('Target Date')
                                     ->date(),
+                                TextEntry::make('comparison_start_date')
+                                    ->label('Comparison Start Date')
+                                    ->date()
+                                    ->visible(fn (Kpi $record): bool => $record->comparison_start_date !== null),
+                                TextEntry::make('comparison_end_date')
+                                    ->label('Comparison End Date')
+                                    ->date()
+                                    ->visible(fn (Kpi $record): bool => $record->comparison_end_date !== null),
                                 TextEntry::make('page_path')
                                     ->label('Page Path')
                                     ->visible(fn (Kpi $record): bool => $record->page_path !== null),

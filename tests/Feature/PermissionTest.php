@@ -39,7 +39,7 @@ it('creates all required permissions', function (): void {
     ];
 
     foreach ($expectedPermissions as $permission) {
-        expect(Permission::where('name', $permission)->exists())->toBeTrue();
+        expect(Permission::query()->where('name', $permission)->exists())->toBeTrue();
     }
 });
 

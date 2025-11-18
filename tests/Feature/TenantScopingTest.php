@@ -95,7 +95,7 @@ it('automatically assigns team_id when creating records with tenant set', functi
     Filament::setTenant($this->team1);
 
     // Create KPI without explicitly setting team_id
-    $kpi = Kpi::create([
+    $kpi = Kpi::query()->create([
         'code' => 'TEST_KPI',
         'name' => 'Test KPI',
         'data_source' => 'manual',
@@ -110,7 +110,7 @@ it('automatically assigns team_id when creating records with tenant set', functi
     // Change tenant to team2 and create another KPI
     Filament::setTenant($this->team2);
 
-    $kpi2 = Kpi::create([
+    $kpi2 = Kpi::query()->create([
         'code' => 'TEST_KPI_2',
         'name' => 'Test KPI 2',
         'data_source' => 'manual',
@@ -128,7 +128,7 @@ it('automatically assigns team_id to all tenant-scoped models', function (): voi
     Filament::setTenant($this->team1);
 
     // Create a SearchPage without team_id
-    $searchPage = SearchPage::create([
+    $searchPage = SearchPage::query()->create([
         'date' => now(),
         'page_url' => 'example.com/test',
         'country' => 'HU',
@@ -142,7 +142,7 @@ it('automatically assigns team_id to all tenant-scoped models', function (): voi
     expect($searchPage->team_id)->toBe($this->team1->id);
 
     // Create an AnalyticsPageview without team_id
-    $pageview = AnalyticsPageview::create([
+    $pageview = AnalyticsPageview::query()->create([
         'date' => now(),
         'page_path' => '/test',
         'page_title' => 'Test Page',

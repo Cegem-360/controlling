@@ -76,6 +76,6 @@ it('deleting team deletes pivot records', function (): void {
 
     $this->team->delete();
 
-    expect(Team::find($teamId))->toBeNull()
+    expect(Team::query()->find($teamId))->toBeNull()
         ->and($this->user->fresh()->teams)->toHaveCount(0);
 });

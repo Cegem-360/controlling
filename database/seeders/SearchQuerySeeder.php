@@ -48,7 +48,7 @@ final class SearchQuerySeeder extends Seeder
                 }
 
                 // Add some random queries too (for variety)
-                $randomQueryCount = rand(3, 7);
+                $randomQueryCount = random_int(3, 7);
                 for ($j = 0; $j < $randomQueryCount; $j++) {
                     SearchQuery::factory()->create([
                         'team_id' => $team->id,

@@ -46,7 +46,7 @@ final class RolesTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make()
-                    ->disabled(fn ($record) => in_array($record->name, ['admin', 'user'])),
+                    ->disabled(fn ($record): bool => in_array($record->name, ['admin', 'user'])),
             ])
             ->toolbarActions([
                 CreateAction::make(),

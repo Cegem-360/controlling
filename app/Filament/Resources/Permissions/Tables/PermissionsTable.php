@@ -22,7 +22,7 @@ final class PermissionsTable
                     ->label('Permission Name')
                     ->searchable()
                     ->sortable()
-                    ->description(fn ($record) => 'Used in policies and authorization'),
+                    ->description(fn ($record): string => 'Used in policies and authorization'),
 
                 TextColumn::make('roles_count')
                     ->label('Roles')

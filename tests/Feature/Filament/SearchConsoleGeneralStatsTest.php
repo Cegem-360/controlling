@@ -42,7 +42,7 @@ it('validates required fields when setting kpi goal', function (): void {
     Livewire::actingAs($this->admin)
         ->test(SearchConsoleGeneralStats::class, ['tenant' => $this->team])
         ->mountAction('setKpiGoal')
-        ->setActionData([])
+        ->setActionData(['source_type' => 'page'])
         ->callMountedAction()
         ->assertHasActionErrors([
             'page_path' => 'required',
@@ -56,7 +56,7 @@ it('validates required fields when setting kpi goal', function (): void {
 
 it('can create search console kpi with seo category and format', function (): void {
     // Test that KPIs can be created with required fields including format
-    $kpi = Kpi::create([
+    $kpi = Kpi::query()->create([
         'team_id' => $this->team->id,
         'code' => 'test_kpi_page',
         'name' => 'Test KPI',
@@ -92,7 +92,7 @@ it('sets correct format based on search console metric type', function (): void 
     ];
 
     foreach ($testCases as $index => $case) {
-        $kpi = Kpi::create([
+        $kpi = Kpi::query()->create([
             'team_id' => $this->team->id,
             'code' => "test_format_{$index}",
             'name' => "Test {$case['metric']}",
