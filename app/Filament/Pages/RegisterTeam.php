@@ -8,6 +8,7 @@ use App\Models\Team;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\Tenancy\RegisterTenant;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
@@ -46,7 +47,7 @@ final class RegisterTeam extends RegisterTenant
     {
         $team = Team::query()->create($data);
 
-        $team->users()->attach(auth()->user());
+        $team->users()->attach(Auth::user());
 
         return $team;
     }

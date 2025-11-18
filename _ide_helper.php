@@ -32001,6 +32001,11 @@ namespace Facades\Livewire\Features\SupportFileUploads {
      * @mixin \Livewire\Features\SupportFileUploads\GenerateSignedUploadUrl     */
     class GenerateSignedUploadUrl extends \Livewire\Features\SupportFileUploads\GenerateSignedUploadUrl {}
 }
+namespace Facades\BezhanSalleh\GoogleAnalytics\Support {
+    /**
+     * @mixin \BezhanSalleh\GoogleAnalytics\Support\GADataLookups     */
+    class GADataLookups extends \BezhanSalleh\GoogleAnalytics\Support\GADataLookups {}
+}
 
 
 

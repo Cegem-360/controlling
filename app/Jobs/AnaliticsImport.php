@@ -69,9 +69,6 @@ final class AnaliticsImport implements ShouldQueue
         $this->importEvents($service, $settings->property_id);
         $this->importConversions($service, $settings->property_id);
 
-        // Sync Analytics data to KPI values
-        dispatch_sync(new SyncAnalyticsKpis());
-
         Notification::make()
             ->title('Analytics import completed successfully.')
             ->body('All analytics data has been imported and KPIs have been synced.')

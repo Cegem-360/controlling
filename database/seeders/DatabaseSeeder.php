@@ -28,19 +28,17 @@ final class DatabaseSeeder extends Seeder
             'name' => 'Admin User',
             'email' => 'admin@admin.com',
             'password' => Hash::make('password'),
-            'is_super_admin' => true,
             'is_active' => true,
         ]);
 
-        // Assign admin role to the admin user
-        $admin->assignRole('admin');
+        // Assign Super-Admin role to the admin user
+        $admin->assignRole('Super-Admin');
 
         // Create regular user with single team
         $user = User::factory()->create([
             'name' => 'Regular User',
             'email' => 'user@user.com',
             'password' => Hash::make('password'),
-            'is_super_admin' => false,
             'is_active' => true,
         ]);
 
@@ -52,7 +50,6 @@ final class DatabaseSeeder extends Seeder
             'name' => 'Multi Team User',
             'email' => 'team@team.com',
             'password' => Hash::make('password'),
-            'is_super_admin' => false,
             'is_active' => true,
         ]);
 

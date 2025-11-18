@@ -19,7 +19,6 @@ beforeEach(function (): void {
 it('user without team cannot create new team', function (): void {
     // Create a regular user without team
     $user = User::factory()->create([
-        'is_super_admin' => false,
         'is_active' => true,
     ]);
     $user->assignRole('user');
@@ -37,7 +36,6 @@ it('user without team cannot create new team', function (): void {
 
 it('user without team cannot create team via gate', function (): void {
     $user = User::factory()->create([
-        'is_super_admin' => false,
         'is_active' => true,
     ]);
     $user->assignRole('user');
@@ -49,10 +47,9 @@ it('user without team cannot create team via gate', function (): void {
 
 it('user without team but is admin can create team', function (): void {
     $user = User::factory()->create([
-        'is_super_admin' => true,
         'is_active' => true,
     ]);
-    $user->assignRole('admin');
+    $user->assignRole('Super-Admin');
 
     // User has no teams yet
     expect($user->teams)->toHaveCount(0);
@@ -65,7 +62,6 @@ it('user without team but is admin can create team', function (): void {
 
 it('user without team cannot access filament admin panel', function (): void {
     $user = User::factory()->create([
-        'is_super_admin' => false,
         'is_active' => true,
     ]);
     $user->assignRole('user');
@@ -85,10 +81,9 @@ it('user without team cannot access filament admin panel', function (): void {
 
 it('admin user without team can access team registration', function (): void {
     $user = User::factory()->create([
-        'is_super_admin' => true,
         'is_active' => true,
     ]);
-    $user->assignRole('admin');
+    $user->assignRole('Super-Admin');
 
     actingAs($user);
 

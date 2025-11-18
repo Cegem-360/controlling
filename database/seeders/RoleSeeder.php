@@ -14,6 +14,9 @@ final class RoleSeeder extends Seeder
      */
     public function run(): void
     {
+        // Create Super-Admin role
+        Role::findOrCreate('Super-Admin', 'web');
+
         // Create admin role
         Role::findOrCreate('admin', 'web');
 

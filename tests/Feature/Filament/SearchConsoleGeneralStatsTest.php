@@ -18,9 +18,9 @@ beforeEach(function (): void {
     $this->seed(PermissionSeeder::class);
 
     $this->team = Team::factory()->create(['name' => 'Test Team']);
-    $this->admin = User::factory()->create(['is_super_admin' => true]);
+    $this->admin = User::factory()->create();
     $this->admin->teams()->attach($this->team);
-    $this->admin->assignRole('admin');
+    $this->admin->assignRole('Super-Admin');
 
     actingAs($this->admin);
     Filament::setTenant($this->team);

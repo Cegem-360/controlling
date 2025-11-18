@@ -34,7 +34,6 @@ final class User extends Authenticatable implements FilamentUser, HasTenants
         'name',
         'email',
         'password',
-        'is_super_admin',
         'is_active',
     ];
 
@@ -51,7 +50,7 @@ final class User extends Authenticatable implements FilamentUser, HasTenants
     public function canAccessPanel(Panel $panel): bool
     {
         // Super admins can always access the panel (to create teams)
-        if ($this->is_super_admin) {
+        if ($this->isSuperAdmin()) {
             return true;
         }
 
@@ -75,6 +74,14 @@ final class User extends Authenticatable implements FilamentUser, HasTenants
     }
 
     /**
+     * Check if the user is a super admin.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('Super-Admin');
+    }
+
+    /**
      * Check if the user has admin role.
      */
     public function isAdmin(): bool
@@ -83,7 +90,7 @@ final class User extends Authenticatable implements FilamentUser, HasTenants
             return true;
         }
 
-        return (bool) $this->is_super_admin;
+        return $this->isSuperAdmin();
     }
 
     /**
@@ -96,7 +103,6 @@ final class User extends Authenticatable implements FilamentUser, HasTenants
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_super_admin' => 'boolean',
             'is_active' => 'boolean',
         ];
     }

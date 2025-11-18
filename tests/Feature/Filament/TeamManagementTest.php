@@ -18,11 +18,11 @@ beforeEach(function (): void {
     $this->seed(PermissionSeeder::class);
 
     $this->team = Team::factory()->create(['name' => 'Test Team']);
-    $this->admin = User::factory()->create(['is_super_admin' => true]);
+    $this->admin = User::factory()->create();
     $this->admin->teams()->attach($this->team);
-    $this->admin->assignRole('admin');
+    $this->admin->assignRole('Super-Admin');
 
-    $this->user = User::factory()->create(['is_super_admin' => false]);
+    $this->user = User::factory()->create();
     $this->user->teams()->attach($this->team);
     $this->user->assignRole('user');
 

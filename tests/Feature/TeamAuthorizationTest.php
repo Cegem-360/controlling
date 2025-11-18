@@ -11,12 +11,14 @@ use Spatie\Permission\Models\Role;
 
 beforeEach(function (): void {
     // Create roles for testing
+    Role::findOrCreate('Super-Admin', 'web');
     Role::findOrCreate('admin', 'web');
     Role::findOrCreate('user', 'web');
 });
 
 it('allows admins to create teams', function (): void {
-    $admin = User::factory()->create(['is_super_admin' => true]);
+    $admin = User::factory()->create();
+    $admin->assignRole('Super-Admin');
 
     actingAs($admin);
 
@@ -24,7 +26,7 @@ it('allows admins to create teams', function (): void {
 });
 
 it('prevents non-admins from creating teams', function (): void {
-    $user = User::factory()->create(['is_super_admin' => false]);
+    $user = User::factory()->create();
 
     actingAs($user);
 
@@ -32,7 +34,8 @@ it('prevents non-admins from creating teams', function (): void {
 });
 
 it('allows admins to update teams', function (): void {
-    $admin = User::factory()->create(['is_super_admin' => true]);
+    $admin = User::factory()->create();
+    $admin->assignRole('Super-Admin');
     $team = Team::factory()->create();
 
     actingAs($admin);
@@ -41,7 +44,7 @@ it('allows admins to update teams', function (): void {
 });
 
 it('prevents non-admins from updating teams', function (): void {
-    $user = User::factory()->create(['is_super_admin' => false]);
+    $user = User::factory()->create();
     $team = Team::factory()->create();
 
     actingAs($user);
@@ -50,7 +53,8 @@ it('prevents non-admins from updating teams', function (): void {
 });
 
 it('allows admins to delete teams', function (): void {
-    $admin = User::factory()->create(['is_super_admin' => true]);
+    $admin = User::factory()->create();
+    $admin->assignRole('Super-Admin');
     $team = Team::factory()->create();
 
     actingAs($admin);
@@ -59,7 +63,7 @@ it('allows admins to delete teams', function (): void {
 });
 
 it('prevents non-admins from deleting teams', function (): void {
-    $user = User::factory()->create(['is_super_admin' => false]);
+    $user = User::factory()->create();
     $team = Team::factory()->create();
 
     actingAs($user);
@@ -68,7 +72,8 @@ it('prevents non-admins from deleting teams', function (): void {
 });
 
 it('allows admins to manage team users', function (): void {
-    $admin = User::factory()->create(['is_super_admin' => true]);
+    $admin = User::factory()->create();
+    $admin->assignRole('Super-Admin');
     $team = Team::factory()->create();
 
     actingAs($admin);
@@ -77,7 +82,7 @@ it('allows admins to manage team users', function (): void {
 });
 
 it('prevents non-admins from managing team users', function (): void {
-    $user = User::factory()->create(['is_super_admin' => false]);
+    $user = User::factory()->create();
     $team = Team::factory()->create();
 
     actingAs($user);
@@ -86,7 +91,7 @@ it('prevents non-admins from managing team users', function (): void {
 });
 
 it('allows users to view teams they belong to', function (): void {
-    $user = User::factory()->create(['is_super_admin' => false]);
+    $user = User::factory()->create();
     $team = Team::factory()->create();
     $user->teams()->attach($team);
 
@@ -96,7 +101,7 @@ it('allows users to view teams they belong to', function (): void {
 });
 
 it('prevents users from viewing teams they do not belong to', function (): void {
-    $user = User::factory()->create(['is_super_admin' => false]);
+    $user = User::factory()->create();
     $team = Team::factory()->create();
 
     actingAs($user);
@@ -105,7 +110,7 @@ it('prevents users from viewing teams they do not belong to', function (): void 
 });
 
 it('allows all authenticated users to view any teams', function (): void {
-    $user = User::factory()->create(['is_super_admin' => false]);
+    $user = User::factory()->create();
 
     actingAs($user);
 
@@ -113,7 +118,7 @@ it('allows all authenticated users to view any teams', function (): void {
 });
 
 it('allows users with admin role to create teams', function (): void {
-    $admin = User::factory()->create(['is_super_admin' => false]);
+    $admin = User::factory()->create();
     $admin->assignRole('admin');
 
     actingAs($admin);
@@ -122,7 +127,7 @@ it('allows users with admin role to create teams', function (): void {
 });
 
 it('allows users with admin role to update teams', function (): void {
-    $admin = User::factory()->create(['is_super_admin' => false]);
+    $admin = User::factory()->create();
     $admin->assignRole('admin');
     $team = Team::factory()->create();
 
@@ -132,7 +137,7 @@ it('allows users with admin role to update teams', function (): void {
 });
 
 it('allows users with admin role to delete teams', function (): void {
-    $admin = User::factory()->create(['is_super_admin' => false]);
+    $admin = User::factory()->create();
     $admin->assignRole('admin');
     $team = Team::factory()->create();
 
@@ -142,7 +147,7 @@ it('allows users with admin role to delete teams', function (): void {
 });
 
 it('allows users with admin role to manage team users', function (): void {
-    $admin = User::factory()->create(['is_super_admin' => false]);
+    $admin = User::factory()->create();
     $admin->assignRole('admin');
     $team = Team::factory()->create();
 
