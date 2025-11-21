@@ -5,28 +5,26 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\UserSyncCreateRequest;
+use App\Http\Requests\Api\UserSyncRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
-class UserSyncController extends Controller
+final class UserSyncController extends Controller
 {
-    public function create(Request $request): JsonResponse
+    public function create(UserSyncCreateRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'email' => 'required|email|unique:users,email',
-            'name' => 'required|string|max:255',
-            'password_hash' => 'required|string',
-            'role' => 'required|string|in:subscriber,manager',
-        ]);
+        $validated = $request->validated();
 
         $user = User::create([
             'email' => $validated['email'],
             'name' => $validated['name'],
             'password' => $validated['password_hash'],
-            'role' => $validated['role'],
-            'email_verified_at' => now(),
         ]);
+
+        $user->email_verified_at = now();
+        $user->save();
+        $user->assignRole($validated['role']);
 
         return response()->json([
             'message' => 'User created successfully',
@@ -34,25 +32,24 @@ class UserSyncController extends Controller
         ], 201);
     }
 
-    public function sync(Request $request): JsonResponse
+    public function sync(UserSyncRequest $request): JsonResponse
     {
-        $user = User::where('email', $request->email)->first();
+        $validated = $request->validated();
 
-        if (! $user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
+        $user = User::where('email', $validated['email'])->firstOrFail();
 
-        if ($request->has('new_email')) {
-            $user->email = $request->new_email;
+        if (isset($validated['new_email'])) {
+            $user->email = $validated['new_email'];
         }
-        if ($request->has('password_hash')) {
-            $user->password = $request->password_hash;
-        }
-        if ($request->has('role')) {
-            $user->role = $request->role;
+        if (isset($validated['password_hash'])) {
+            $user->password = $validated['password_hash'];
         }
 
         $user->save();
+
+        if (isset($validated['role'])) {
+            $user->syncRoles([$validated['role']]);
+        }
 
         return response()->json(['message' => 'User synced successfully']);
     }

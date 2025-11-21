@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -65,19 +66,35 @@ final class PermissionSeeder extends Seeder
             Permission::findOrCreate($permission, 'web');
         }
 
-        // Assign all permissions to admin role
-        $adminRole = Role::findByName('admin', 'web');
+        // Assign all permissions to super_admin and admin roles
+        $superAdminRole = Role::findByName(UserRole::SuperAdmin->value, 'web');
+        $superAdminRole->givePermissionTo(Permission::all());
+
+        $adminRole = Role::findByName(UserRole::Admin->value, 'web');
         $adminRole->givePermissionTo(Permission::all());
 
-        // Assign limited permissions to user role
-        $userRole = Role::findByName('user', 'web');
-        $userRole->givePermissionTo([
+        // Assign management permissions to manager role
+        $managerRole = Role::findByName(UserRole::Manager->value, 'web');
+        $managerRole->givePermissionTo([
             'view teams',
+            'manage team users',
             'view users',
             'view kpis',
             'create kpis',
             'update kpis',
             'delete kpis',
+            'view analytics',
+            'manage analytics',
+            'view search data',
+            'manage search data',
+        ]);
+
+        // Assign limited permissions to subscriber role
+        $subscriberRole = Role::findByName(UserRole::Subscriber->value, 'web');
+        $subscriberRole->givePermissionTo([
+            'view teams',
+            'view users',
+            'view kpis',
             'view analytics',
             'view search data',
         ]);

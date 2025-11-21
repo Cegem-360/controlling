@@ -20,7 +20,11 @@ final class SettingsFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'google_service_account' => ['type' => 'service_account', 'project_id' => fake()->word()],
+            'property_id' => (string) fake()->randomNumber(9),
+            'google_tag_id' => 'G-' . mb_strtoupper(fake()->bothify('########')),
+            'site_url' => fake()->url(),
+            'last_sync_at' => fake()->dateTimeThisMonth(),
         ];
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
 use App\Models\Settings;
 use App\Models\Team;
 use App\Models\User;
@@ -32,7 +33,7 @@ final class DatabaseSeeder extends Seeder
         ]);
 
         // Assign Super-Admin role to the admin user
-        $admin->assignRole('Super-Admin');
+        $admin->assignRole(UserRole::SuperAdmin);
 
         // Create regular user with single team
         $user = User::factory()->create([
@@ -42,8 +43,8 @@ final class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        // Assign user role to the regular user
-        $user->assignRole('user');
+        // Assign subscriber role to the regular user
+        $user->assignRole(UserRole::Subscriber);
 
         // Create multi-team user (not admin, but has 2 teams)
         $multiTeamUser = User::factory()->create([
@@ -53,8 +54,8 @@ final class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        // Assign user role to the multi-team user
-        $multiTeamUser->assignRole('user');
+        // Assign subscriber role to the multi-team user
+        $multiTeamUser->assignRole(UserRole::Subscriber);
 
         // Create default team for admin and user
         $team = Team::factory()->create([
