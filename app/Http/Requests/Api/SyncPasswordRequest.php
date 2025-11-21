@@ -14,15 +14,7 @@ final class SyncPasswordRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $apiKey = $this->bearerToken();
-        $expectedApiKey = config('services.secondary_app.api_key');
-
-        // Validate API key format (8-8-8-8 hexadecimal format)
-        if ($apiKey && ! preg_match('/^[a-f0-9]{8}-[a-f0-9]{8}-[a-f0-9]{8}-[a-f0-9]{8}$/', $apiKey)) {
-            return false;
-        }
-
-        return $apiKey && $expectedApiKey && $apiKey === $expectedApiKey;
+        return true;
     }
 
     /**

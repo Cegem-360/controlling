@@ -10,6 +10,7 @@ use App\Filament\Pages\RegisterTeam;
 use App\Http\Middleware\ApplyTenantScopes;
 use App\Models\Team;
 use BezhanSalleh\GoogleAnalytics\GoogleAnalyticsPlugin;
+use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -24,6 +25,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 final class AdminPanelServiceProvider extends PanelProvider
@@ -35,11 +37,17 @@ final class AdminPanelServiceProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(Login::class)
-            ->profile()
+            ->profile(null)
+            ->userMenuItems([
+                'profile' => Action::make('profile')
+                    ->label('Profile')
+                    ->icon('heroicon-o-user-circle')
+                    ->url('https://cegem360.eu/admin/profile'),
+            ])
             ->tenant(Team::class, slugAttribute: 'slug')
             ->tenantRegistration(RegisterTeam::class)
             ->tenantProfile(EditTeamProfile::class)
-            ->tenantMenu(fn () => auth()->check() && (auth()->user()->isAdmin() || auth()->user()->teams()->count() > 1))
+            ->tenantMenu(fn () => Auth::check() && (Auth::user()->isAdmin() || Auth::user()->teams()->count() > 1))
             ->tenantMiddleware([
                 ApplyTenantScopes::class,
             ], isPersistent: true)
