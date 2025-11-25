@@ -23,7 +23,7 @@ final class UserSyncController extends Controller
         ]);
 
         $user->email_verified_at = now();
-        $user->save();
+        $user->saveQuietly();
         $user->assignRole($validated['role']);
 
         return response()->json([
@@ -45,7 +45,7 @@ final class UserSyncController extends Controller
             $user->password = $validated['password_hash'];
         }
 
-        $user->save();
+        $user->saveQuietly();
 
         if (isset($validated['role'])) {
             $user->syncRoles([$validated['role']]);

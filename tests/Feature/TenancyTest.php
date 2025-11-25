@@ -8,6 +8,10 @@ use Filament\Facades\Filament;
 
 use function Pest\Laravel\actingAs;
 
+/**
+ * @property Team $team
+ * @property User $user
+ */
 beforeEach(function (): void {
     $this->team = Team::factory()->create();
     $this->user = User::factory()->create();
