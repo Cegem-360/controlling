@@ -16,14 +16,18 @@ final class UserSyncController extends Controller
     {
         $validated = $request->validated();
 
-        $user = User::create([
+        $user = User::query()->create([
             'email' => $validated['email'],
             'name' => $validated['name'],
-            'password' => $validated['password_hash'],
+            'password' => 'temporary',
         ]);
 
-        $user->email_verified_at = now();
-        $user->saveQuietly();
+        // Bypass the hashed cast - password is already hashed
+        User::where('id', $user->id)->update([
+            'password' => $validated['password_hash'],
+            'email_verified_at' => now(),
+        ]);
+
         $user->assignRole($validated['role']);
 
         return response()->json([
@@ -38,14 +42,19 @@ final class UserSyncController extends Controller
 
         $user = User::where('email', $validated['email'])->firstOrFail();
 
+        $updateData = [];
+
         if (isset($validated['new_email'])) {
-            $user->email = $validated['new_email'];
+            $updateData['email'] = $validated['new_email'];
         }
         if (isset($validated['password_hash'])) {
-            $user->password = $validated['password_hash'];
+            $updateData['password'] = $validated['password_hash'];
         }
 
-        $user->saveQuietly();
+        if ($updateData !== []) {
+            // Bypass the hashed cast - password is already hashed
+            User::where('id', $user->id)->update($updateData);
+        }
 
         if (isset($validated['role'])) {
             $user->syncRoles([$validated['role']]);
