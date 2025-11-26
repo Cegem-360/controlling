@@ -28,6 +28,9 @@ final class UserResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    // Disable tenant scoping - Super-Admin should see all users
+    protected static bool $isScopedToTenant = false;
+
     public static function canAccess(): bool
     {
         /** @var User|null $user */
