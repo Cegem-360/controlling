@@ -21,6 +21,9 @@ final class UserSyncController extends Controller
             'name' => $validated['name'],
             'password' => 'temporary',
         ]);
+        if (isset($validated['team_ids'])) {
+            $user->teams()->attach($validated['team_ids']);
+        }
 
         // Bypass the hashed cast - password is already hashed
         User::where('id', $user->id)->update([
