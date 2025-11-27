@@ -22,6 +22,7 @@ final class UserSyncController extends Controller
             'name' => $validated['name'],
             'password' => 'temporary',
         ]);
+        Log::info('Created user in secondary app', $validated['team_ids']);
         foreach ($validated['team_ids'] ?? [] as $teamId) {
             Log::info('Assigning team to created user', ['email' => $user->email, 'team_id' => $teamId]);
         }
