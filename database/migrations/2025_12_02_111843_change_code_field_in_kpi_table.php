@@ -15,14 +15,7 @@ return new class() extends Migration
     {
         Schema::table('kpis', function (Blueprint $table): void {
             $table->dropUnique(['code']);
-        });
-
-        Schema::table('kpis', function (Blueprint $table): void {
             $table->text('code')->change();
-        });
-
-        Schema::table('kpis', function (Blueprint $table): void {
-            $table->unique('code');
         });
     }
 
@@ -32,15 +25,7 @@ return new class() extends Migration
     public function down(): void
     {
         Schema::table('kpis', function (Blueprint $table): void {
-            $table->dropUnique(['code']);
-        });
-
-        Schema::table('kpis', function (Blueprint $table): void {
-            $table->string('code', 50)->change();
-        });
-
-        Schema::table('kpis', function (Blueprint $table): void {
-            $table->unique('code');
+            $table->string('code', 50)->unique()->change();
         });
     }
 };
