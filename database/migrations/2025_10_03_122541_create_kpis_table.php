@@ -15,7 +15,7 @@ return new class() extends Migration
     {
         Schema::create('kpis', function (Blueprint $table): void {
             $table->id();
-            $table->string('code', 50)->unique();
+            $table->text('code');
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('data_source', 50)->index();
