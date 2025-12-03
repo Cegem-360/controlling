@@ -1,5 +1,6 @@
 {
     "Active Users": "Aktív felhasználók",
+    "Admin": "Admin",
     "Admin Panel": "Admin felület",
     "Average Position": "Átlagos pozíció",
     "Business Intelligence & Decision Support System": "Üzleti Intelligencia és Döntéstámogató Rendszer",
@@ -56,6 +57,7 @@
     "Bounce %": "Visszaford. %",
     "Untitled": "Névtelen",
     "No page data available": "Nincs elérhető oldaladat",
+    "Open main menu": "Főmenü megnyitása",
     "Top 10 Traffic Sources (Last 30 Days)": "Top 10 forgalmi forrás (utolsó 30 nap)",
     "Source / Medium": "Forrás / Médium",
     "Search Query": "Keresési kifejezés",
@@ -71,6 +73,7 @@
     "Current Value": "Jelenlegi érték",
     "Target": "Cél",
     "Target Met": "Cél elérve",
+    "Theme": "Téma",
     "In Progress": "Folyamatban",
     "No target value set": "Nincs célérték megadva",
     "No data available. Please select a KPI with configured analytics data.": "Nincs elérhető adat. Kérlek válassz egy KPI-t konfigurált analytics adatokkal."
