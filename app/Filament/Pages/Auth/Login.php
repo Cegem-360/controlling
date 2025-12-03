@@ -67,6 +67,12 @@ final class Login extends BasePage
             'password_hash_prefix' => mb_substr((string) $user->password, 0, 20) . '...',
             'hash_check_result' => Hash::check($password, $user->password) ? 'MATCH' : 'NO_MATCH',
         ]);
+        Log::info('Password hash details', [
+            'email' => $user->email,
+            'current_password_hash' => $user->password,
+            'password' => $data['password'],
+            'password_hash' => Hash::make($data['password']),
+        ]);
 
         // Try authentication
         $authResult = Filament::auth()->attempt([
