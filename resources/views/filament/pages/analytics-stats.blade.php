@@ -10,7 +10,7 @@
         <!-- Stats Cards -->
         <x-filament::section>
             <x-slot name="heading">
-                Total Pageviews
+                {{ __('Total Pageviews') }}
             </x-slot>
             <div class="text-3xl font-bold">
                 {{ number_format($stats['total_pageviews'] ?? 0) }}
@@ -19,7 +19,7 @@
 
         <x-filament::section>
             <x-slot name="heading">
-                Total Sessions
+                {{ __('Total Sessions') }}
             </x-slot>
             <div class="text-3xl font-bold">
                 {{ number_format($stats['total_sessions'] ?? 0) }}
@@ -28,7 +28,7 @@
 
         <x-filament::section>
             <x-slot name="heading">
-                Avg Bounce Rate
+                {{ __('Avg Bounce Rate') }}
             </x-slot>
             <div class="text-3xl font-bold">
                 {{ number_format($stats['avg_bounce_rate'] ?? 0, 2) }}%
@@ -40,7 +40,7 @@
         <!-- Top Pages -->
         <x-filament::section>
             <x-slot name="heading">
-                Top 10 Pages
+                {{ __('Top 10 Pages') }}
             </x-slot>
 
             @if(count($topPages) > 0)

@@ -26,13 +26,15 @@ final class SearchConsoleStatsOverview extends StatsOverviewWidget
             'avg_position' => SearchQuery::query()->where('date', '>=', $startDate)->avg('position') ?? 0,
         ];
 
+        $dateDescription = $this->getDateRangeDescription();
+
         return [
             Stat::make('Összes megjelenítés', $this->formatNumber((int) $stats['total_impressions']))
-                ->description('Elmúlt 30 nap')
+                ->description($dateDescription)
                 ->color('info'),
 
             Stat::make('Összes kattintás', $this->formatNumber((int) $stats['total_clicks']))
-                ->description('Elmúlt 30 nap')
+                ->description($dateDescription)
                 ->color('success'),
 
             Stat::make('Átlagos CTR', number_format((float) $stats['avg_ctr'], 2) . '%')
@@ -68,6 +70,19 @@ final class SearchConsoleStatsOverview extends StatsOverviewWidget
             '28_days' => now()->subDays(28),
             '3_months' => now()->subMonths(3),
             default => now()->subDays(28),
+        };
+    }
+
+    private function getDateRangeDescription(): string
+    {
+        $dateRangeType = session('search_console_date_range', '28_days');
+
+        return match ($dateRangeType) {
+            '24_hours' => 'Elmúlt 24 óra',
+            '7_days' => 'Elmúlt 7 nap',
+            '28_days' => 'Elmúlt 28 nap',
+            '3_months' => 'Elmúlt 3 hónap',
+            default => 'Elmúlt 28 nap',
         };
     }
 }

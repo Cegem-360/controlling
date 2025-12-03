@@ -75,6 +75,7 @@ final class SetSearchConsoleKpiGoalAction
                         ->helperText('Choose which metric to track'),
 
                     DatePicker::make('from_date')
+                        ->live()
                         ->label('Start Date')
                         ->required()
                         ->native(false)
@@ -84,6 +85,7 @@ final class SetSearchConsoleKpiGoalAction
                         ->helperText('When to start tracking this KPI'),
 
                     DatePicker::make('target_date')
+                        ->live()
                         ->label('Target Date')
                         ->required()
                         ->native(false)
@@ -92,6 +94,7 @@ final class SetSearchConsoleKpiGoalAction
                         ->helperText('When you want to achieve the target'),
 
                     DatePicker::make('comparison_start_date')
+                        ->live()
                         ->label('Comparison Start Date')
                         ->native(false)
                         ->displayFormat('Y-m-d')
@@ -99,6 +102,7 @@ final class SetSearchConsoleKpiGoalAction
                         ->helperText('Start date for comparison period'),
 
                     DatePicker::make('comparison_end_date')
+                        ->live()
                         ->label('Comparison End Date')
                         ->native(false)
                         ->displayFormat('Y-m-d')

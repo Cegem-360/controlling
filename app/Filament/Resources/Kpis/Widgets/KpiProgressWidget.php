@@ -37,8 +37,7 @@ final class KpiProgressWidget extends BaseWidget
             $changePercentage = (($currentValue - $comparisonValue) / $comparisonValue) * 100;
         }
 
-        $targetValue = (float) ($kpi->target_value ?? 0);
-        $progress = $targetValue > 0 ? ($currentValue / $targetValue) * 100 : 0;
+        $progress = $this->calculateProgress($currentValue, $comparisonValue);
 
         $daysUntilTarget = $kpi->target_date ? (int) now()->diffInDays($kpi->target_date, false) : null;
 
@@ -56,7 +55,7 @@ final class KpiProgressWidget extends BaseWidget
             Stat::make('Progress', number_format($progress, 1, ',', ' ') . '%')
                 ->description($progress >= 100 ? 'Target achieved!' : 'towards goal')
                 ->descriptionIcon($progress >= 100 ? 'heroicon-o-check-circle' : 'heroicon-o-arrow-trending-up')
-                ->color($progress >= 100 ? 'success' : ($progress >= 75 ? 'warning' : 'danger')),
+                ->color($progress >= 100 ? 'success' : 'info'),
 
             Stat::make('Days Until Target', $daysUntilTarget !== null ? abs($daysUntilTarget) : 'No target date')
                 ->description($daysUntilTarget !== null ? ($daysUntilTarget >= 0 ? 'days remaining' : 'days overdue') : '')
@@ -89,6 +88,15 @@ final class KpiProgressWidget extends BaseWidget
         }
 
         return $this->getValueForPeriod($kpi, $kpi->comparison_start_date, $kpi->comparison_end_date);
+    }
+
+    private function calculateProgress(float $currentValue, float $comparisonValue): float
+    {
+        if ($comparisonValue <= 0) {
+            return 0;
+        }
+
+        return $currentValue / $comparisonValue * 100;
     }
 
     private function getValueForPeriod(Kpi $kpi, DateTimeInterface $startDate, DateTimeInterface $endDate): float

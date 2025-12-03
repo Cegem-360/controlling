@@ -18,8 +18,6 @@ final class KpisTable
     {
         return $table
             ->columns([
-                TextColumn::make('code')
-                    ->searchable(),
                 TextColumn::make('name')
                     ->searchable(),
                 TextColumn::make('data_source')

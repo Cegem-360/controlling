@@ -8,6 +8,8 @@ use App\Enums\KpiCategory;
 use App\Enums\KpiDataSource;
 use App\Enums\KpiGoalType;
 use App\Enums\KpiValueType;
+use App\Models\AnalyticsPageview;
+use App\Models\SearchPage;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -24,6 +26,59 @@ final class KpiForm
     {
         return $schema
             ->components([
+                Section::make('Data Source Integration')
+                    ->columnSpanFull()
+                    ->schema([
+                        Grid::make(1)
+                            ->schema([
+                                Select::make('page_path')
+                                    ->label(fn (Get $get): string => match ($get('data_source')) {
+                                        KpiDataSource::SearchConsole, KpiDataSource::SearchConsole->value => 'Page URL',
+                                        KpiDataSource::Analytics, KpiDataSource::Analytics->value => 'Page Path',
+                                        default => 'Page Path / URL',
+                                    })
+                                    ->options(fn (Get $get): array => match ($get('data_source')) {
+                                        KpiDataSource::SearchConsole, KpiDataSource::SearchConsole->value => SearchPage::query()
+                                            ->distinct()
+                                            ->pluck('page_url', 'page_url')
+                                            ->toArray(),
+                                        KpiDataSource::Analytics, KpiDataSource::Analytics->value => AnalyticsPageview::query()
+                                            ->distinct()
+                                            ->pluck('page_path', 'page_path')
+                                            ->toArray(),
+                                        default => [],
+                                    })
+                                    ->searchable()
+                                    ->helperText(fn (Get $get): string => match ($get('data_source')) {
+                                        KpiDataSource::SearchConsole, KpiDataSource::SearchConsole->value => 'Search Console page URL being tracked',
+                                        KpiDataSource::Analytics, KpiDataSource::Analytics->value => 'Analytics page path being tracked',
+                                        default => 'Page identifier',
+                                    })
+                                    ->visible(fn (Get $get): bool => KpiDataSource::isIntegrationSource($get('data_source'))),
+                                Select::make('metric_type')
+                                    ->label('Metric Type')
+                                    ->options(fn (Get $get): array => match ($get('data_source')) {
+                                        KpiDataSource::SearchConsole, KpiDataSource::SearchConsole->value => [
+                                            'impressions' => 'Impressions',
+                                            'clicks' => 'Clicks',
+                                            'ctr' => 'CTR (%)',
+                                            'position' => 'Position',
+                                        ],
+                                        KpiDataSource::Analytics, KpiDataSource::Analytics->value => [
+                                            'pageviews' => 'Pageviews',
+                                            'unique_pageviews' => 'Unique Pageviews',
+                                            'bounce_rate' => 'Bounce Rate',
+                                        ],
+                                        default => [],
+                                    })
+                                    ->helperText('Select the metric you want to track')
+                                    ->visible(fn (Get $get): bool => KpiDataSource::isIntegrationSource($get('data_source')))
+                                    ->required(fn (Get $get): bool => KpiDataSource::isIntegrationSource($get('data_source'))),
+                            ]),
+                    ])
+                    ->collapsible()
+                    ->collapsed()
+                    ->visible(fn (Get $get): bool => KpiDataSource::isIntegrationSource($get('data_source'))),
                 Section::make('Basic Information')
                     ->schema([
                         Grid::make(2)
@@ -103,48 +158,6 @@ final class KpiForm
                                     ->required(),
                             ]),
                     ]),
-                Section::make('Data Source Integration')
-                    ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('page_path')
-                                    ->label(fn (Get $get): string => match ($get('data_source')) {
-                                        'search_console' => 'Page URL',
-                                        'analytics' => 'Page Path',
-                                        default => 'Page Path / URL',
-                                    })
-                                    ->helperText(fn (Get $get): string => match ($get('data_source')) {
-                                        'search_console' => 'Search Console page URL being tracked',
-                                        'analytics' => 'Analytics page path being tracked',
-                                        default => 'Page identifier',
-                                    })
-                                    ->visible(fn (Get $get): bool => in_array($get('data_source'), ['analytics', 'search_console']))
-                                    ->disabled(fn (string $operation): bool => $operation === 'edit'),
-                                Select::make('metric_type')
-                                    ->label('Metric Type')
-                                    ->options(fn (Get $get): array => match ($get('data_source')) {
-                                        'search_console' => [
-                                            'impressions' => 'Impressions',
-                                            'clicks' => 'Clicks',
-                                            'ctr' => 'CTR (%)',
-                                            'position' => 'Position',
-                                        ],
-                                        'analytics' => [
-                                            'pageviews' => 'Pageviews',
-                                            'unique_pageviews' => 'Unique Pageviews',
-                                            'bounce_rate' => 'Bounce Rate',
-                                        ],
-                                        default => [],
-                                    })
-                                    ->helperText('Select the metric you want to track')
-                                    ->visible(fn (Get $get): bool => in_array($get('data_source'), ['analytics', 'search_console']))
-                                    ->required(fn (Get $get): bool => in_array($get('data_source'), ['analytics', 'search_console']))
-                                    ->disabled(fn (string $operation): bool => $operation === 'edit'),
-                            ]),
-                    ])
-                    ->collapsible()
-                    ->collapsed()
-                    ->visible(fn (Get $get): bool => in_array($get('data_source'), ['analytics', 'search_console'])),
             ]);
     }
 }

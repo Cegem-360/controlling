@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
-use App\Enums\AnalyticsSortEnum;
 use App\Enums\NavigationGroup;
 use App\Filament\Pages\Actions\SetAnalyticsKpiGoalAction;
 use App\Models\AnalyticsPageview;
@@ -33,7 +32,7 @@ final class AnalyticsStats extends Page
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Analytics;
 
-    protected static ?int $navigationSort = AnalyticsSortEnum::AnalyticsStats->value;
+    protected static ?int $navigationSort = 0;
 
     protected static ?string $navigationLabel = 'Analytics Statistics';
 

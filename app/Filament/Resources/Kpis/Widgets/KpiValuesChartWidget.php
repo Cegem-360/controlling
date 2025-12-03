@@ -4,29 +4,24 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Kpis\Widgets;
 
+use App\Enums\KpiDataSource;
 use App\Models\AnalyticsPageview;
 use App\Models\Kpi;
 use App\Models\SearchPage;
 use App\Models\SearchQuery;
+use Carbon\CarbonInterface;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 final class KpiValuesChartWidget extends ChartWidget
 {
+    private const MAX_DAYS = 365;
+
     public ?Model $record = null;
 
     public function getHeading(): string
     {
-        if (! $this->record instanceof Kpi) {
-            return 'KPI Progress Over Time';
-        }
-
-        $kpi = $this->record;
-
-        if (! $kpi->from_date || ! $kpi->target_date) {
-            return 'Missing Configuration';
-        }
-
         return 'KPI Progress Over Time';
     }
 
@@ -38,30 +33,21 @@ final class KpiValuesChartWidget extends ChartWidget
 
         $kpi = $this->record;
 
-        $missingFields = [];
-
-        if (! $kpi->from_date) {
-            $missingFields[] = 'Start Date';
-        }
-
-        if (! $kpi->target_date) {
-            $missingFields[] = 'Target Date';
-        }
+        $missingFields = array_filter([
+            $kpi->from_date ? null : 'Start Date',
+            $kpi->target_date ? null : 'Target Date',
+        ]);
 
         if ($missingFields !== []) {
             return 'Missing required field(s): ' . implode(', ', $missingFields) . '.';
         }
 
-        // Check for invalid date range
-        if ($kpi->from_date && $kpi->target_date) {
-            if ($kpi->from_date->gt($kpi->target_date)) {
-                return 'Invalid date range: Start date must be before target date.';
-            }
+        if ($kpi->from_date->gt($kpi->target_date)) {
+            return 'Invalid date range: Start date must be before target date.';
+        }
 
-            $daysDiff = $kpi->from_date->diffInDays($kpi->target_date);
-            if ($daysDiff > 365) {
-                return 'Date range too large (max 365 days). Please adjust your date range.';
-            }
+        if ($kpi->from_date->diffInDays($kpi->target_date) > self::MAX_DAYS) {
+            return 'Date range too large (max 365 days). Please adjust your date range.';
         }
 
         return null;
@@ -69,391 +55,43 @@ final class KpiValuesChartWidget extends ChartWidget
 
     protected function getData(): array
     {
+        $emptyResult = ['datasets' => [], 'labels' => []];
+
         if (! $this->record instanceof Kpi) {
-            return [
-                'datasets' => [],
-                'labels' => [],
-            ];
+            return $emptyResult;
         }
 
         $kpi = $this->record;
 
-        // Ha nincs from_date és target_date, akkor ne mutassunk semmit
-        if (! $kpi->from_date || ! $kpi->target_date) {
-            return [
-                'datasets' => [],
-                'labels' => [],
-            ];
+        if (! $this->isValidKpiConfiguration($kpi)) {
+            return $emptyResult;
         }
 
-        // Get data based on data source
-        if (! $kpi->page_path || ! $kpi->metric_type) {
-            return [
-                'datasets' => [],
-                'labels' => [],
-            ];
-        }
+        $fullDateRange = $this->generateDateRange($kpi);
+        $sourceData = $this->fetchSourceData($kpi);
+        $labels = $this->buildLabels($fullDateRange);
+        $actualData = $this->buildActualData($kpi, $fullDateRange, $sourceData);
+        $metricLabel = $this->getMetricLabel($kpi);
 
-        // Search Console data
-        if ($kpi->data_source->value === 'search_console') {
-            // Validate date range
-            if ($kpi->from_date->gt($kpi->target_date)) {
-                return [
-                    'datasets' => [],
-                    'labels' => [],
-                ];
+        $datasets = [
+            $this->buildCurrentDataset($metricLabel, $actualData, $kpi->data_source),
+        ];
+
+        if ($kpi->comparison_start_date && $kpi->comparison_end_date) {
+            $comparisonData = $this->fetchComparisonData($kpi);
+            $comparisonValues = $this->buildComparisonData($kpi, $fullDateRange, $comparisonData);
+            $datasets[] = $this->buildComparisonDataset($metricLabel, $comparisonValues);
+
+            // Add target line (average of comparison period)
+            $comparisonTotal = $this->calculateComparisonTotal($kpi, $comparisonData);
+            if ($comparisonTotal > 0) {
+                $datasets[] = $this->buildTargetDataset($kpi, $actualData, $comparisonTotal);
             }
-
-            // Limit date range to prevent performance issues (max 365 days)
-            $daysDiff = $kpi->from_date->diffInDays($kpi->target_date);
-            if ($daysDiff > 365) {
-                return [
-                    'datasets' => [],
-                    'labels' => [],
-                ];
-            }
-
-            // Determine the full date range (from earliest to latest date)
-            $startDate = $kpi->from_date;
-            $endDate = $kpi->target_date;
-
-            if ($kpi->comparison_start_date && $kpi->comparison_end_date) {
-                $startDate = min($kpi->from_date, $kpi->comparison_start_date);
-                $endDate = max($kpi->target_date, $kpi->comparison_end_date);
-            }
-
-            // Generate all dates in the full range
-            $fullDateRange = [];
-            $fullDaysDiff = $startDate->diffInDays($endDate);
-            $maxDays = min($fullDaysDiff + 1, 365); // Safety limit
-
-            for ($i = 0; $i < $maxDays; $i++) {
-                $fullDateRange[] = $startDate->copy()->addDays($i);
-            }
-
-            // Fetch actual data based on source_type (page or query)
-            if ($kpi->source_type === 'query') {
-                // Search Query data
-                $searchData = SearchQuery::query()
-                    ->where('team_id', $kpi->team_id)
-                    ->where('query', $kpi->page_path) // page_path stores the query text for queries
-                    ->whereBetween('date', [$kpi->from_date, $kpi->target_date])
-                    ->orderBy('date')
-                    ->get()
-                    ->keyBy(fn ($record) => $record->date->format('Y-m-d'));
-            } else {
-                // Search Page data (default)
-                $searchData = SearchPage::query()
-                    ->where('team_id', $kpi->team_id)
-                    ->where('page_url', $kpi->page_path)
-                    ->whereBetween('date', [$kpi->from_date, $kpi->target_date])
-                    ->orderBy('date')
-                    ->get()
-                    ->keyBy(fn ($record) => $record->date->format('Y-m-d'));
-            }
-
-            // Build labels and data for all dates
-            $labels = [];
-            $actualData = [];
-
-            foreach ($fullDateRange as $date) {
-                $dateKey = $date->format('Y-m-d');
-                $labels[] = $date->format('M d');
-
-                // Only show data if date is within current period
-                if ($date >= $kpi->from_date && $date <= $kpi->target_date && isset($searchData[$dateKey])) {
-                    $record = $searchData[$dateKey];
-                    $actualData[] = (float) match ($kpi->metric_type) {
-                        'impressions' => $record->impressions,
-                        'clicks' => $record->clicks,
-                        'ctr' => $record->ctr,
-                        'position' => $record->position,
-                        default => 0,
-                    };
-                } else {
-                    // No data for this date, use null so the line shows gaps
-                    $actualData[] = null;
-                }
-            }
-
-            $metricLabel = match ($kpi->metric_type) {
-                'impressions' => 'Impressions',
-                'clicks' => 'Clicks',
-                'ctr' => 'CTR (%)',
-                'position' => 'Position',
-                default => 'Value',
-            };
-
-            $datasets = [
-                [
-                    'label' => $metricLabel . ' (Current)',
-                    'data' => $actualData,
-                    'borderColor' => 'rgb(59, 130, 246)',
-                    'backgroundColor' => 'rgba(59, 130, 246, 0.1)',
-                    'tension' => 0.3,
-                ],
-            ];
-
-            // Add target value line if available
-            if ($kpi->target_value) {
-                // Calculate dynamic target values based on actual data
-                $targetData = [];
-                foreach ($actualData as $value) {
-                    if ($value === null) {
-                        $targetData[] = null;
-
-                        continue;
-                    }
-
-                    // Calculate target based on goal_type and value_type
-                    if ($kpi->value_type === 'percentage') {
-                        if ($kpi->goal_type === 'increase') {
-                            $targetData[] = $value * (1 + $kpi->target_value / 100);
-                        } else {
-                            $targetData[] = $value * (1 - $kpi->target_value / 100);
-                        }
-                    } elseif ($kpi->goal_type === 'increase') {
-                        // fixed value
-                        $targetData[] = $value + $kpi->target_value;
-                    } else {
-                        $targetData[] = $value - $kpi->target_value;
-                    }
-                }
-
-                $datasets[] = [
-                    'label' => 'Target',
-                    'data' => $targetData,
-                    'borderColor' => 'rgb(34, 197, 94)',
-                    'backgroundColor' => 'transparent',
-                    'borderDash' => [5, 5],
-                    'tension' => 0,
-                    'pointRadius' => 0,
-                ];
-            }
-
-            // Add comparison period data if available
-            if ($kpi->comparison_start_date && $kpi->comparison_end_date) {
-                if ($kpi->source_type === 'query') {
-                    $comparisonData = SearchQuery::query()
-                        ->where('team_id', $kpi->team_id)
-                        ->where('query', $kpi->page_path)
-                        ->whereBetween('date', [$kpi->comparison_start_date, $kpi->comparison_end_date])
-                        ->orderBy('date')
-                        ->get()
-                        ->keyBy(fn ($record) => $record->date->format('Y-m-d'));
-                } else {
-                    $comparisonData = SearchPage::query()
-                        ->where('team_id', $kpi->team_id)
-                        ->where('page_url', $kpi->page_path)
-                        ->whereBetween('date', [$kpi->comparison_start_date, $kpi->comparison_end_date])
-                        ->orderBy('date')
-                        ->get()
-                        ->keyBy(fn ($record) => $record->date->format('Y-m-d'));
-                }
-
-                $comparisonValues = [];
-                foreach ($fullDateRange as $date) {
-                    $dateKey = $date->format('Y-m-d');
-
-                    // Only show data if date is within comparison period
-                    if ($date >= $kpi->comparison_start_date && $date <= $kpi->comparison_end_date && isset($comparisonData[$dateKey])) {
-                        $record = $comparisonData[$dateKey];
-                        $comparisonValues[] = (float) match ($kpi->metric_type) {
-                            'impressions' => $record->impressions,
-                            'clicks' => $record->clicks,
-                            'ctr' => $record->ctr,
-                            'position' => $record->position,
-                            default => 0,
-                        };
-                    } else {
-                        $comparisonValues[] = null;
-                    }
-                }
-
-                $datasets[] = [
-                    'label' => $metricLabel . ' (Comparison)',
-                    'data' => $comparisonValues,
-                    'borderColor' => 'rgb(168, 85, 247)',
-                    'backgroundColor' => 'rgba(168, 85, 247, 0.1)',
-                    'tension' => 0.3,
-                ];
-            }
-
-            return [
-                'datasets' => $datasets,
-                'labels' => $labels,
-            ];
-        }
-
-        // Analytics data
-        if ($kpi->data_source->value === 'analytics') {
-            // Validate date range
-            if ($kpi->from_date->gt($kpi->target_date)) {
-                return [
-                    'datasets' => [],
-                    'labels' => [],
-                ];
-            }
-
-            // Limit date range to prevent performance issues (max 365 days)
-            $daysDiff = $kpi->from_date->diffInDays($kpi->target_date);
-            if ($daysDiff > 365) {
-                return [
-                    'datasets' => [],
-                    'labels' => [],
-                ];
-            }
-
-            // Determine the full date range (from earliest to latest date)
-            $startDate = $kpi->from_date;
-            $endDate = $kpi->target_date;
-
-            if ($kpi->comparison_start_date && $kpi->comparison_end_date) {
-                $startDate = min($kpi->from_date, $kpi->comparison_start_date);
-                $endDate = max($kpi->target_date, $kpi->comparison_end_date);
-            }
-
-            // Generate all dates in the full range
-            $fullDateRange = [];
-            $fullDaysDiff = $startDate->diffInDays($endDate);
-            $maxDays = min($fullDaysDiff + 1, 365); // Safety limit
-
-            for ($i = 0; $i < $maxDays; $i++) {
-                $fullDateRange[] = $startDate->copy()->addDays($i);
-            }
-
-            // Fetch actual data
-            $analyticsData = AnalyticsPageview::query()
-                ->where('team_id', $kpi->team_id)
-                ->where('page_path', $kpi->page_path)
-                ->whereBetween('date', [$kpi->from_date, $kpi->target_date])
-                ->orderBy('date')
-                ->get()
-                ->keyBy(fn ($record) => $record->date->format('Y-m-d'));
-
-            // Build labels and data for all dates
-            $labels = [];
-            $actualData = [];
-
-            foreach ($fullDateRange as $date) {
-                $dateKey = $date->format('Y-m-d');
-                $labels[] = $date->format('M d');
-
-                // Only show data if date is within current period
-                if ($date >= $kpi->from_date && $date <= $kpi->target_date && isset($analyticsData[$dateKey])) {
-                    $record = $analyticsData[$dateKey];
-                    $actualData[] = (float) match ($kpi->metric_type) {
-                        'pageviews' => $record->pageviews,
-                        'unique_pageviews' => $record->unique_pageviews,
-                        'bounce_rate' => $record->bounce_rate,
-                        default => 0,
-                    };
-                } else {
-                    // No data for this date, use null so the line shows gaps
-                    $actualData[] = null;
-                }
-            }
-
-            $metricLabel = match ($kpi->metric_type) {
-                'pageviews' => 'Pageviews',
-                'unique_pageviews' => 'Unique Pageviews',
-                'bounce_rate' => 'Bounce Rate',
-                default => 'Value',
-            };
-
-            $datasets = [
-                [
-                    'label' => $metricLabel . ' (Current)',
-                    'data' => $actualData,
-                    'borderColor' => 'rgb(34, 197, 94)',
-                    'backgroundColor' => 'rgba(34, 197, 94, 0.1)',
-                    'tension' => 0.3,
-                ],
-            ];
-
-            // Add target value line if available
-            if ($kpi->target_value) {
-                // Calculate dynamic target values based on actual data
-                $targetData = [];
-                foreach ($actualData as $value) {
-                    if ($value === null) {
-                        $targetData[] = null;
-
-                        continue;
-                    }
-
-                    // Calculate target based on goal_type and value_type
-                    if ($kpi->value_type === 'percentage') {
-                        if ($kpi->goal_type === 'increase') {
-                            $targetData[] = $value * (1 + $kpi->target_value / 100);
-                        } else {
-                            $targetData[] = $value * (1 - $kpi->target_value / 100);
-                        }
-                    } elseif ($kpi->goal_type === 'increase') {
-                        // fixed value
-                        $targetData[] = $value + $kpi->target_value;
-                    } else {
-                        $targetData[] = $value - $kpi->target_value;
-                    }
-                }
-
-                $datasets[] = [
-                    'label' => 'Target',
-                    'data' => $targetData,
-                    'borderColor' => 'rgb(59, 130, 246)',
-                    'backgroundColor' => 'transparent',
-                    'borderDash' => [5, 5],
-                    'tension' => 0,
-                    'pointRadius' => 0,
-                ];
-            }
-
-            // Add comparison period data if available
-            if ($kpi->comparison_start_date && $kpi->comparison_end_date) {
-                $comparisonData = AnalyticsPageview::query()
-                    ->where('team_id', $kpi->team_id)
-                    ->where('page_path', $kpi->page_path)
-                    ->whereBetween('date', [$kpi->comparison_start_date, $kpi->comparison_end_date])
-                    ->orderBy('date')
-                    ->get()
-                    ->keyBy(fn ($record) => $record->date->format('Y-m-d'));
-
-                $comparisonValues = [];
-                foreach ($fullDateRange as $date) {
-                    $dateKey = $date->format('Y-m-d');
-
-                    // Only show data if date is within comparison period
-                    if ($date >= $kpi->comparison_start_date && $date <= $kpi->comparison_end_date && isset($comparisonData[$dateKey])) {
-                        $record = $comparisonData[$dateKey];
-                        $comparisonValues[] = (float) match ($kpi->metric_type) {
-                            'pageviews' => $record->pageviews,
-                            'unique_pageviews' => $record->unique_pageviews,
-                            'bounce_rate' => $record->bounce_rate,
-                            default => 0,
-                        };
-                    } else {
-                        $comparisonValues[] = null;
-                    }
-                }
-
-                $datasets[] = [
-                    'label' => $metricLabel . ' (Comparison)',
-                    'data' => $comparisonValues,
-                    'borderColor' => 'rgb(168, 85, 247)',
-                    'backgroundColor' => 'rgba(168, 85, 247, 0.1)',
-                    'tension' => 0.3,
-                ];
-            }
-
-            return [
-                'datasets' => $datasets,
-                'labels' => $labels,
-            ];
         }
 
         return [
-            'datasets' => [],
-            'labels' => [],
+            'datasets' => $datasets,
+            'labels' => $labels,
         ];
     }
 
@@ -472,20 +110,14 @@ final class KpiValuesChartWidget extends ChartWidget
                 ],
             ],
             'scales' => [
-                'y' => [
-                    'beginAtZero' => true,
-                ],
+                'y' => ['beginAtZero' => true],
                 'x' => [
                     'display' => true,
-                    'grid' => [
-                        'display' => true,
-                    ],
+                    'grid' => ['display' => true],
                 ],
             ],
             'elements' => [
-                'line' => [
-                    'spanGaps' => false, // Show gaps where data is missing
-                ],
+                'line' => ['spanGaps' => true],
                 'point' => [
                     'radius' => 3,
                     'hoverRadius' => 5,
@@ -495,6 +127,244 @@ final class KpiValuesChartWidget extends ChartWidget
                 'intersect' => false,
                 'mode' => 'index',
             ],
+        ];
+    }
+
+    private function isValidKpiConfiguration(Kpi $kpi): bool
+    {
+        if (! $kpi->from_date || ! $kpi->target_date) {
+            return false;
+        }
+
+        if (! $kpi->page_path || ! $kpi->metric_type) {
+            return false;
+        }
+
+        if ($kpi->from_date->gt($kpi->target_date)) {
+            return false;
+        }
+
+        if ($kpi->from_date->diffInDays($kpi->target_date) > self::MAX_DAYS) {
+            return false;
+        }
+
+        return KpiDataSource::isIntegrationSource($kpi->data_source);
+    }
+
+    /**
+     * @return array<CarbonInterface>
+     */
+    private function generateDateRange(Kpi $kpi): array
+    {
+        $startDate = $kpi->from_date;
+        $endDate = $kpi->target_date;
+
+        if ($kpi->comparison_start_date && $kpi->comparison_end_date) {
+            $startDate = min($kpi->from_date, $kpi->comparison_start_date);
+            $endDate = max($kpi->target_date, $kpi->comparison_end_date);
+        }
+
+        $maxDays = min($startDate->diffInDays($endDate) + 1, self::MAX_DAYS);
+        $dates = [];
+
+        for ($i = 0; $i < $maxDays; $i++) {
+            $dates[] = $startDate->copy()->addDays($i);
+        }
+
+        return $dates;
+    }
+
+    private function fetchSourceData(Kpi $kpi): Collection
+    {
+        $query = match ($kpi->data_source) {
+            KpiDataSource::SearchConsole => $kpi->source_type === 'query'
+                ? SearchQuery::query()->where('query', $kpi->page_path)
+                : SearchPage::query()->where('page_url', $kpi->page_path),
+            KpiDataSource::Analytics => AnalyticsPageview::query()->where('page_path', $kpi->page_path),
+            default => null,
+        };
+
+        if (! $query) {
+            return collect();
+        }
+
+        return $query
+            ->where('team_id', $kpi->team_id)
+            ->whereBetween('date', [$kpi->from_date, $kpi->target_date])
+            ->orderBy('date')
+            ->get()
+            ->keyBy(fn ($record) => $record->date->format('Y-m-d'));
+    }
+
+    private function fetchComparisonData(Kpi $kpi): Collection
+    {
+        $query = match ($kpi->data_source) {
+            KpiDataSource::SearchConsole => $kpi->source_type === 'query'
+                ? SearchQuery::query()->where('query', $kpi->page_path)
+                : SearchPage::query()->where('page_url', $kpi->page_path),
+            KpiDataSource::Analytics => AnalyticsPageview::query()->where('page_path', $kpi->page_path),
+            default => null,
+        };
+
+        if (! $query) {
+            return collect();
+        }
+
+        return $query
+            ->where('team_id', $kpi->team_id)
+            ->whereBetween('date', [$kpi->comparison_start_date, $kpi->comparison_end_date])
+            ->orderBy('date')
+            ->get()
+            ->keyBy(fn ($record) => $record->date->format('Y-m-d'));
+    }
+
+    /**
+     * @param  array<CarbonInterface>  $dates
+     * @return array<string>
+     */
+    private function buildLabels(array $dates): array
+    {
+        return array_map(fn (CarbonInterface $date) => $date->format('M d'), $dates);
+    }
+
+    /**
+     * @param  array<CarbonInterface>  $fullDateRange
+     * @return array<float|null>
+     */
+    private function buildActualData(Kpi $kpi, array $fullDateRange, Collection $sourceData): array
+    {
+        return array_map(function (CarbonInterface $date) use ($kpi, $sourceData) {
+            $dateKey = $date->format('Y-m-d');
+
+            if ($date < $kpi->from_date || $date > $kpi->target_date || ! isset($sourceData[$dateKey])) {
+                return;
+            }
+
+            return $this->extractMetricValue($sourceData[$dateKey], $kpi->metric_type);
+        }, $fullDateRange);
+    }
+
+    /**
+     * @param  array<CarbonInterface>  $fullDateRange
+     * @return array<float|null>
+     */
+    private function buildComparisonData(Kpi $kpi, array $fullDateRange, Collection $comparisonData): array
+    {
+        return array_map(function (CarbonInterface $date) use ($kpi, $comparisonData) {
+            $dateKey = $date->format('Y-m-d');
+
+            if ($date < $kpi->comparison_start_date || $date > $kpi->comparison_end_date || ! isset($comparisonData[$dateKey])) {
+                return;
+            }
+
+            return $this->extractMetricValue($comparisonData[$dateKey], $kpi->metric_type);
+        }, $fullDateRange);
+    }
+
+    private function extractMetricValue(mixed $record, string $metricType): float
+    {
+        return (float) match ($metricType) {
+            'impressions' => $record->impressions,
+            'clicks' => $record->clicks,
+            'ctr' => $record->ctr,
+            'position' => $record->position,
+            'pageviews' => $record->pageviews,
+            'unique_pageviews' => $record->unique_pageviews,
+            'bounce_rate' => $record->bounce_rate,
+            default => 0,
+        };
+    }
+
+    private function getMetricLabel(Kpi $kpi): string
+    {
+        return match ($kpi->metric_type) {
+            'impressions' => __('Impressions'),
+            'clicks' => __('Clicks'),
+            'ctr' => __('CTR (%)'),
+            'position' => __('Position'),
+            'pageviews' => __('Pageviews'),
+            'unique_pageviews' => __('Unique Pageviews'),
+            'bounce_rate' => __('Bounce Rate'),
+            default => __('Value'),
+        };
+    }
+
+    /**
+     * @param  array<float|null>  $data
+     * @return array<string, mixed>
+     */
+    private function buildCurrentDataset(string $label, array $data, KpiDataSource $dataSource): array
+    {
+        $color = $dataSource === KpiDataSource::SearchConsole
+            ? 'rgb(59, 130, 246)'
+            : 'rgb(34, 197, 94)';
+
+        return [
+            'label' => $label . ' (Current)',
+            'data' => $data,
+            'borderColor' => $color,
+            'backgroundColor' => str_replace('rgb', 'rgba', $color) . ', 0.1)',
+            'tension' => 0.3,
+        ];
+    }
+
+    private function calculateComparisonTotal(Kpi $kpi, Collection $comparisonData): float
+    {
+        $metricType = $kpi->metric_type;
+
+        // For metrics that should be averaged (like CTR, position, bounce_rate)
+        if (in_array($metricType, ['ctr', 'position', 'bounce_rate'])) {
+            $values = $comparisonData->map(fn ($record): float => $this->extractMetricValue($record, $metricType));
+
+            return $values->count() > 0 ? $values->avg() : 0;
+        }
+
+        // For metrics that should be summed
+        return $comparisonData->sum(fn ($record): float => $this->extractMetricValue($record, $metricType));
+    }
+
+    /**
+     * @param  array<float|null>  $actualData
+     * @return array<string, mixed>
+     */
+    private function buildTargetDataset(Kpi $kpi, array $actualData, float $targetValue): array
+    {
+        // Create a flat line at the target value for all current period data points
+        $targetData = array_map(function (?float $value) use ($targetValue) {
+            if ($value === null) {
+                return;
+            }
+
+            return $targetValue;
+        }, $actualData);
+
+        $color = $kpi->data_source === KpiDataSource::SearchConsole
+            ? 'rgb(34, 197, 94)'
+            : 'rgb(59, 130, 246)';
+
+        return [
+            'label' => 'Target',
+            'data' => $targetData,
+            'borderColor' => $color,
+            'backgroundColor' => 'transparent',
+            'borderDash' => [5, 5],
+            'tension' => 0,
+            'pointRadius' => 0,
+        ];
+    }
+
+    /**
+     * @param  array<float|null>  $data
+     * @return array<string, mixed>
+     */
+    private function buildComparisonDataset(string $label, array $data): array
+    {
+        return [
+            'label' => $label . ' (Comparison)',
+            'data' => $data,
+            'borderColor' => 'rgb(168, 85, 247)',
+            'backgroundColor' => 'rgba(168, 85, 247, 0.1)',
+            'tension' => 0.3,
         ];
     }
 }

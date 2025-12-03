@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
-use App\Enums\AnalyticsSortEnum;
 use App\Enums\NavigationGroup;
 use App\Filament\Pages\Actions\SetSearchConsoleKpiGoalAction;
 use App\Filament\Widgets\SearchConsoleStatsOverview;
@@ -32,7 +31,7 @@ final class SearchConsoleGeneralStats extends Page
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::SearchConsole;
 
-    protected static ?int $navigationSort = AnalyticsSortEnum::SearchConsoleGeneralStats->value;
+    protected static ?int $navigationSort = -10;
 
     protected static ?string $navigationLabel = 'General Search Console';
 

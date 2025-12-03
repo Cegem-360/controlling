@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
-use App\Enums\AnalyticsSortEnum;
 use App\Enums\NavigationGroup;
 use App\Filament\Widgets\GeneralStatsOverview;
 use Filament\Pages\Page;
@@ -16,7 +15,7 @@ final class AnalyticsGeneralStats extends Page
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Analytics;
 
-    protected static ?int $navigationSort = AnalyticsSortEnum::AnalyticsGeneralStats->value;
+    protected static ?int $navigationSort = -5;
 
     protected static ?string $navigationLabel = 'General Analytics';
 
