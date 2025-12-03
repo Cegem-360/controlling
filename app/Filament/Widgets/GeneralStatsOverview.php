@@ -88,7 +88,7 @@ final class GeneralStatsOverview extends StatsOverviewWidget
             }, $metrics));
 
             $response = $service->properties->runReport(
-                'properties/' . $settings->property_id,
+                "properties/{$settings->property_id}",
                 $request,
             );
 

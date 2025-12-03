@@ -75,10 +75,10 @@ final class TopPageModel extends Model
 
                 return $metric;
             }, $metrics));
-            $request->setLimit(100);
+            $request->setLimit('100');
 
             $response = $service->properties->runReport(
-                'properties/' . $settings->property_id,
+                "properties/{$settings->property_id}",
                 $request,
             );
 

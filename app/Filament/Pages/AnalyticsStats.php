@@ -171,7 +171,7 @@ final class AnalyticsStats extends Page
             }, $metrics));
 
             $response = $service->properties->runReport(
-                property: 'properties/' . $settings->property_id,
+                property: "properties/{$settings->property_id}",
                 postBody: $request,
             );
 
