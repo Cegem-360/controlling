@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\TeamCreateRequest;
 use App\Models\Team;
@@ -37,6 +38,7 @@ final class TeamController extends Controller
             ]);
             if ($user) {
                 $user->teams()->attach($team);
+                $user->assignRole(UserRole::Subscriber);
             }
         }
         Log::info('User attached to team', ['user_email' => $validated['user_email'] ?? 'N/A', 'team_id' => $team->id]);
