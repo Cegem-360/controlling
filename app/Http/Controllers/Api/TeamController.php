@@ -25,12 +25,9 @@ final class TeamController extends Controller
         ]);
         Log::info('Team created', ['team_id' => $team->id]);
         Log::info('Team details', ['name' => $team->name, 'slug' => $team->slug]);
-        // Attach user to team if email provided
+        // Attach user to team if email provided and user exists
         if (isset($validated['user_email'])) {
-            $user = User::query()->where('email', $validated['user_email'])->firstOrCreate([
-                'email' => $validated['user_email'],
-                'name' => $validated['user_name'],
-            ]);
+            $user = User::query()->where('email', $validated['user_email'])->first();
             if ($user) {
                 $user->teams()->attach($team);
             }
