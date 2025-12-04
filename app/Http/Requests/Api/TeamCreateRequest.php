@@ -21,7 +21,7 @@ final class TeamCreateRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:teams,slug'],
-            'user_email' => ['sometimes', 'email', 'exists:users,email'],
+            'user_email' => ['sometimes', 'email'],
         ];
     }
 }
