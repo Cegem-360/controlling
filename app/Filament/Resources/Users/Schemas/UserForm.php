@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -40,6 +41,9 @@ final class UserForm
                         Toggle::make('is_active')
                             ->label('Active')
                             ->default(true),
+                        DatePicker::make('email_verified_at')
+                            ->label('Email Verified')
+                            ->nullable(),
                     ])
                     ->columns(2),
 
