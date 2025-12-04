@@ -81,15 +81,18 @@ describe('create', function (): void {
             ->assertJsonValidationErrors('slug');
     });
 
-    it('validates user_email exists', function (): void {
+    it('creates team without attaching user when user_email does not exist', function (): void {
         $response = postJson('/api/create-team', [
             'name' => 'Test Team',
             'slug' => 'test-team',
             'user_email' => 'nonexistent@example.com',
         ], ['Authorization' => 'Bearer test-api-key']);
 
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors('user_email');
+        $response->assertCreated();
+
+        $team = Team::query()->where('slug', 'test-team')->first();
+        expect($team)->not->toBeNull();
+        expect($team->users)->toBeEmpty();
     });
 });
 

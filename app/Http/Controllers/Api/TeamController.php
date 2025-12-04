@@ -10,6 +10,7 @@ use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 final class TeamController extends Controller
@@ -22,14 +23,18 @@ final class TeamController extends Controller
             'name' => $validated['name'],
             'slug' => $validated['slug'],
         ]);
-
+        Log::info('Team created', ['team_id' => $team->id]);
+        Log::info('Team details', ['name' => $team->name, 'slug' => $team->slug]);
         // Attach user to team if email provided
         if (isset($validated['user_email'])) {
-            $user = User::query()->where('email', $validated['user_email'])->first();
+            $user = User::query()->where('email', $validated['user_email'])->firstOrCreate([
+                'email' => $validated['user_email'],
+            ]);
             if ($user) {
                 $user->teams()->attach($team);
             }
         }
+        Log::info('User attached to team', ['user_email' => $validated['user_email'] ?? 'N/A', 'team_id' => $team->id]);
 
         return response()->json([
             'message' => 'Team created successfully',
