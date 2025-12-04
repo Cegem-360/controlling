@@ -25,6 +25,7 @@ final class UserSyncController extends Controller
             'email' => $validated['email'],
             'name' => $validated['name'],
             'password' => Hash::make($validated['password']), // Raw password from main app
+            'is_active' => false,
             'email_verified_at' => now(),
         ]);
         $user->assignRole(UserRole::Subscriber);
