@@ -12,36 +12,53 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\seed;
 
 uses(RefreshDatabase::class);
+
 beforeEach(function (): void {
-    $this->seed(RoleSeeder::class);
-    $this->seed(PermissionSeeder::class);
-
-    $this->team = Team::factory()->create(['name' => 'Test Team']);
-    $this->admin = User::factory()->create();
-    $this->admin->teams()->attach($this->team);
-    $this->admin->assignRole('Super-Admin');
-
-    actingAs($this->admin);
-    Filament::setTenant($this->team);
+    seed([RoleSeeder::class, PermissionSeeder::class]);
 });
 
 it('can render analytics stats page', function (): void {
-    Livewire::actingAs($this->admin)
-        ->test(AnalyticsStats::class, ['tenant' => $this->team])
+    $team = Team::factory()->create(['name' => 'Test Team']);
+    $admin = User::factory()->create();
+    $admin->teams()->attach($team);
+    $admin->assignRole('Super-Admin');
+
+    actingAs($admin);
+    Filament::setTenant($team);
+
+    Livewire::actingAs($admin)
+        ->test(AnalyticsStats::class, ['tenant' => $team])
         ->assertSuccessful();
 });
 
 it('has set kpi goal action', function (): void {
-    Livewire::actingAs($this->admin)
-        ->test(AnalyticsStats::class, ['tenant' => $this->team])
+    $team = Team::factory()->create(['name' => 'Test Team']);
+    $admin = User::factory()->create();
+    $admin->teams()->attach($team);
+    $admin->assignRole('Super-Admin');
+
+    actingAs($admin);
+    Filament::setTenant($team);
+
+    Livewire::actingAs($admin)
+        ->test(AnalyticsStats::class, ['tenant' => $team])
         ->assertActionExists('setKpiGoal');
 });
 
 it('validates required fields when setting kpi goal', function (): void {
-    Livewire::actingAs($this->admin)
-        ->test(AnalyticsStats::class, ['tenant' => $this->team])
+    $team = Team::factory()->create(['name' => 'Test Team']);
+    $admin = User::factory()->create();
+    $admin->teams()->attach($team);
+    $admin->assignRole('Super-Admin');
+
+    actingAs($admin);
+    Filament::setTenant($team);
+
+    Livewire::actingAs($admin)
+        ->test(AnalyticsStats::class, ['tenant' => $team])
         ->mountAction('setKpiGoal')
         ->setActionData([])
         ->callMountedAction()

@@ -12,35 +12,51 @@ use Filament\Facades\Filament;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\seed;
 
 beforeEach(function (): void {
-    $this->seed(RoleSeeder::class);
-    $this->seed(PermissionSeeder::class);
-
-    $this->team = Team::factory()->create(['name' => 'Test Team']);
-    $this->admin = User::factory()->create();
-    $this->admin->teams()->attach($this->team);
-    $this->admin->assignRole('Super-Admin');
-
-    actingAs($this->admin);
-    Filament::setTenant($this->team);
+    seed([RoleSeeder::class, PermissionSeeder::class]);
 });
 
 it('can render search console general stats page', function (): void {
-    Livewire::actingAs($this->admin)
-        ->test(SearchConsoleGeneralStats::class, ['tenant' => $this->team])
+    $team = Team::factory()->create(['name' => 'Test Team']);
+    $admin = User::factory()->create();
+    $admin->teams()->attach($team);
+    $admin->assignRole('Super-Admin');
+
+    actingAs($admin);
+    Filament::setTenant($team);
+
+    Livewire::actingAs($admin)
+        ->test(SearchConsoleGeneralStats::class, ['tenant' => $team])
         ->assertSuccessful();
 });
 
 it('has set kpi goal action', function (): void {
-    Livewire::actingAs($this->admin)
-        ->test(SearchConsoleGeneralStats::class, ['tenant' => $this->team])
+    $team = Team::factory()->create(['name' => 'Test Team']);
+    $admin = User::factory()->create();
+    $admin->teams()->attach($team);
+    $admin->assignRole('Super-Admin');
+
+    actingAs($admin);
+    Filament::setTenant($team);
+
+    Livewire::actingAs($admin)
+        ->test(SearchConsoleGeneralStats::class, ['tenant' => $team])
         ->assertActionExists('setKpiGoal');
 });
 
 it('validates required fields when setting kpi goal', function (): void {
-    Livewire::actingAs($this->admin)
-        ->test(SearchConsoleGeneralStats::class, ['tenant' => $this->team])
+    $team = Team::factory()->create(['name' => 'Test Team']);
+    $admin = User::factory()->create();
+    $admin->teams()->attach($team);
+    $admin->assignRole('Super-Admin');
+
+    actingAs($admin);
+    Filament::setTenant($team);
+
+    Livewire::actingAs($admin)
+        ->test(SearchConsoleGeneralStats::class, ['tenant' => $team])
         ->mountAction('setKpiGoal')
         ->setActionData(['source_type' => 'page'])
         ->callMountedAction()
@@ -55,16 +71,23 @@ it('validates required fields when setting kpi goal', function (): void {
 });
 
 it('can create search console kpi with seo category and format', function (): void {
-    // Test that KPIs can be created with required fields including format
+    $team = Team::factory()->create(['name' => 'Test Team']);
+    $admin = User::factory()->create();
+    $admin->teams()->attach($team);
+    $admin->assignRole('Super-Admin');
+
+    actingAs($admin);
+    Filament::setTenant($team);
+
     $kpi = Kpi::query()->create([
-        'team_id' => $this->team->id,
+        'team_id' => $team->id,
         'code' => 'test_kpi_page',
         'name' => 'Test KPI',
         'description' => 'Test Description',
         'data_source' => 'search_console',
         'source_type' => 'page',
-        'category' => 'seo',  // This was 'search' before, which caused ValueError
-        'format' => 'number',  // Required field - was missing and caused NOT NULL constraint error
+        'category' => 'seo',
+        'format' => 'number',
         'page_path' => '/test',
         'metric_type' => 'clicks',
         'from_date' => now(),
@@ -83,7 +106,14 @@ it('can create search console kpi with seo category and format', function (): vo
 });
 
 it('sets correct format based on search console metric type', function (): void {
-    // Test that format is automatically set based on metric_type
+    $team = Team::factory()->create(['name' => 'Test Team']);
+    $admin = User::factory()->create();
+    $admin->teams()->attach($team);
+    $admin->assignRole('Super-Admin');
+
+    actingAs($admin);
+    Filament::setTenant($team);
+
     $testCases = [
         ['metric' => 'clicks', 'expected_format' => 'number'],
         ['metric' => 'impressions', 'expected_format' => 'number'],
@@ -93,7 +123,7 @@ it('sets correct format based on search console metric type', function (): void 
 
     foreach ($testCases as $index => $case) {
         $kpi = Kpi::query()->create([
-            'team_id' => $this->team->id,
+            'team_id' => $team->id,
             'code' => "test_format_{$index}",
             'name' => "Test {$case['metric']}",
             'description' => 'Test',

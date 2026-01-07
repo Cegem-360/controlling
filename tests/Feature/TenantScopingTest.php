@@ -11,28 +11,19 @@ use Filament\Facades\Filament;
 
 use function Pest\Laravel\actingAs;
 
-beforeEach(function (): void {
-    $this->team1 = Team::factory()->create(['name' => 'Team 1']);
-    $this->team2 = Team::factory()->create(['name' => 'Team 2']);
-
-    $this->user = User::factory()->create();
-    $this->user->teams()->attach([$this->team1->id, $this->team2->id]);
-
-    actingAs($this->user);
-});
-
 it('scopes kpis to current tenant', function (): void {
-    // Create KPIs for both teams
-    $kpi1 = Kpi::factory()->create(['team_id' => $this->team1->id, 'name' => 'Team 1 KPI']);
-    $kpi2 = Kpi::factory()->create(['team_id' => $this->team2->id, 'name' => 'Team 2 KPI']);
+    $team1 = Team::factory()->create(['name' => 'Team 1']);
+    $team2 = Team::factory()->create(['name' => 'Team 2']);
+    $user = User::factory()->create();
+    $user->teams()->attach([$team1->id, $team2->id]);
+    actingAs($user);
 
-    // Set tenant to team1
-    Filament::setTenant($this->team1);
+    $kpi1 = Kpi::factory()->create(['team_id' => $team1->id, 'name' => 'Team 1 KPI']);
+    Kpi::factory()->create(['team_id' => $team2->id, 'name' => 'Team 2 KPI']);
 
-    // Manually apply the scope (simulating middleware)
-    Kpi::addGlobalScope('team', fn ($query) => $query->where('team_id', $this->team1->id));
+    Filament::setTenant($team1);
+    Kpi::addGlobalScope('team', fn ($query) => $query->where('team_id', $team1->id));
 
-    // Should only see team1's KPI
     $kpis = Kpi::all();
 
     expect($kpis)->toHaveCount(1)
@@ -41,17 +32,18 @@ it('scopes kpis to current tenant', function (): void {
 });
 
 it('scopes search pages to current tenant', function (): void {
-    // Create search pages for both teams
-    $page1 = SearchPage::factory()->create(['team_id' => $this->team1->id, 'page_url' => 'team1.com']);
-    $page2 = SearchPage::factory()->create(['team_id' => $this->team2->id, 'page_url' => 'team2.com']);
+    $team1 = Team::factory()->create(['name' => 'Team 1']);
+    $team2 = Team::factory()->create(['name' => 'Team 2']);
+    $user = User::factory()->create();
+    $user->teams()->attach([$team1->id, $team2->id]);
+    actingAs($user);
 
-    // Set tenant to team2
-    Filament::setTenant($this->team2);
+    SearchPage::factory()->create(['team_id' => $team1->id, 'page_url' => 'team1.com']);
+    $page2 = SearchPage::factory()->create(['team_id' => $team2->id, 'page_url' => 'team2.com']);
 
-    // Manually apply the scope
-    SearchPage::addGlobalScope('team', fn ($query) => $query->where('team_id', $this->team2->id));
+    Filament::setTenant($team2);
+    SearchPage::addGlobalScope('team', fn ($query) => $query->where('team_id', $team2->id));
 
-    // Should only see team2's page
     $pages = SearchPage::all();
 
     expect($pages)->toHaveCount(1)
@@ -60,17 +52,18 @@ it('scopes search pages to current tenant', function (): void {
 });
 
 it('scopes analytics pageviews to current tenant', function (): void {
-    // Create analytics for both teams
-    $analytics1 = AnalyticsPageview::factory()->create(['team_id' => $this->team1->id, 'page_path' => '/team1']);
-    $analytics2 = AnalyticsPageview::factory()->create(['team_id' => $this->team2->id, 'page_path' => '/team2']);
+    $team1 = Team::factory()->create(['name' => 'Team 1']);
+    $team2 = Team::factory()->create(['name' => 'Team 2']);
+    $user = User::factory()->create();
+    $user->teams()->attach([$team1->id, $team2->id]);
+    actingAs($user);
 
-    // Set tenant to team1
-    Filament::setTenant($this->team1);
+    $analytics1 = AnalyticsPageview::factory()->create(['team_id' => $team1->id, 'page_path' => '/team1']);
+    AnalyticsPageview::factory()->create(['team_id' => $team2->id, 'page_path' => '/team2']);
 
-    // Manually apply the scope
-    AnalyticsPageview::addGlobalScope('team', fn ($query) => $query->where('team_id', $this->team1->id));
+    Filament::setTenant($team1);
+    AnalyticsPageview::addGlobalScope('team', fn ($query) => $query->where('team_id', $team1->id));
 
-    // Should only see team1's analytics
     $pageviews = AnalyticsPageview::all();
 
     expect($pageviews)->toHaveCount(1)
@@ -79,22 +72,30 @@ it('scopes analytics pageviews to current tenant', function (): void {
 });
 
 it('creates records with team_id', function (): void {
-    // Create KPI with team_id
+    $team = Team::factory()->create(['name' => 'Team 1']);
+    $user = User::factory()->create();
+    $user->teams()->attach($team);
+    actingAs($user);
+
     $kpi = Kpi::factory()->create([
-        'team_id' => $this->team1->id,
+        'team_id' => $team->id,
         'name' => 'Team 1 KPI',
     ]);
 
-    expect($kpi->team_id)->toBe($this->team1->id)
+    expect($kpi->team_id)->toBe($team->id)
         ->and($kpi->team)->toBeInstanceOf(Team::class)
-        ->and($kpi->team->id)->toBe($this->team1->id);
+        ->and($kpi->team->id)->toBe($team->id);
 });
 
 it('automatically assigns team_id when creating records with tenant set', function (): void {
-    // Set tenant to team1
-    Filament::setTenant($this->team1);
+    $team1 = Team::factory()->create(['name' => 'Team 1']);
+    $team2 = Team::factory()->create(['name' => 'Team 2']);
+    $user = User::factory()->create();
+    $user->teams()->attach([$team1->id, $team2->id]);
+    actingAs($user);
 
-    // Create KPI without explicitly setting team_id
+    Filament::setTenant($team1);
+
     $kpi = Kpi::query()->create([
         'code' => 'TEST_KPI',
         'name' => 'Test KPI',
@@ -103,12 +104,10 @@ it('automatically assigns team_id when creating records with tenant set', functi
         'is_active' => true,
     ]);
 
-    // The observer should automatically assign team_id
-    expect($kpi->team_id)->toBe($this->team1->id)
+    expect($kpi->team_id)->toBe($team1->id)
         ->and($kpi->team)->toBeInstanceOf(Team::class);
 
-    // Change tenant to team2 and create another KPI
-    Filament::setTenant($this->team2);
+    Filament::setTenant($team2);
 
     $kpi2 = Kpi::query()->create([
         'code' => 'TEST_KPI_2',
@@ -118,16 +117,18 @@ it('automatically assigns team_id when creating records with tenant set', functi
         'is_active' => true,
     ]);
 
-    // Should automatically assign team2's id
-    expect($kpi2->team_id)->toBe($this->team2->id)
-        ->and($kpi2->team->id)->toBe($this->team2->id);
+    expect($kpi2->team_id)->toBe($team2->id)
+        ->and($kpi2->team->id)->toBe($team2->id);
 });
 
 it('automatically assigns team_id to all tenant-scoped models', function (): void {
-    // Set tenant to team1
-    Filament::setTenant($this->team1);
+    $team = Team::factory()->create(['name' => 'Team 1']);
+    $user = User::factory()->create();
+    $user->teams()->attach($team);
+    actingAs($user);
 
-    // Create a SearchPage without team_id
+    Filament::setTenant($team);
+
     $searchPage = SearchPage::query()->create([
         'date' => now(),
         'page_url' => 'example.com/test',
@@ -139,9 +140,8 @@ it('automatically assigns team_id to all tenant-scoped models', function (): voi
         'position' => 5.5,
     ]);
 
-    expect($searchPage->team_id)->toBe($this->team1->id);
+    expect($searchPage->team_id)->toBe($team->id);
 
-    // Create an AnalyticsPageview without team_id
     $pageview = AnalyticsPageview::query()->create([
         'date' => now(),
         'page_path' => '/test',
@@ -154,5 +154,5 @@ it('automatically assigns team_id to all tenant-scoped models', function (): voi
         'exit_rate' => 20.0,
     ]);
 
-    expect($pageview->team_id)->toBe($this->team1->id);
+    expect($pageview->team_id)->toBe($team->id);
 });

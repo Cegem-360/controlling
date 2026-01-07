@@ -10,10 +10,11 @@ use Database\Seeders\RoleSeeder;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
+use function Pest\Laravel\seed;
 
 beforeEach(function (): void {
-    $this->seed(RoleSeeder::class);
-    $this->seed(PermissionSeeder::class);
+    seed([RoleSeeder::class, PermissionSeeder::class]);
 });
 
 it('subscriber without team cannot create new team', function (): void {
@@ -69,13 +70,8 @@ it('subscriber without team cannot access filament admin panel', function (): vo
     actingAs($user);
 
     // User has no teams, should not be able to access admin panel
-    $response = $this->get('/admin');
+    $response = get('/admin');
 
-    // Should redirect, show error, or fail (500) when no tenant is available
-    // 302: redirect to login/team selection
-    // 403: forbidden
-    // 404: not found
-    // 500: server error (no tenant available)
     expect($response->getStatusCode())->toBeIn([302, 404, 403, 500]);
 });
 
@@ -95,7 +91,7 @@ it('admin user without team can access team registration', function (): void {
 
 it('seeded admin user has a default team', function (): void {
     // Run the seeder
-    $this->seed();
+    seed();
 
     $admin = User::query()->where('email', 'admin@admin.com')->first();
 

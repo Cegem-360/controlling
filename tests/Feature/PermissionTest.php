@@ -7,14 +7,13 @@ use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\seed;
 
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function (): void {
-    // Create roles and permissions for testing
-    $this->seed(RoleSeeder::class);
-    $this->seed(PermissionSeeder::class);
+    seed([RoleSeeder::class, PermissionSeeder::class]);
 });
 
 it('creates all required permissions', function (): void {

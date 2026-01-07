@@ -19,6 +19,17 @@ final class GlobalSetting extends Model
      */
     protected $fillable = [
         'google_service_account',
+        'google_ads_client_id',
+        'google_ads_client_secret',
+        'google_ads_developer_token',
+    ];
+
+    /**
+     * @var list<string>
+     */
+    protected $hidden = [
+        'google_ads_client_secret',
+        'google_ads_developer_token',
     ];
 
     /**
@@ -27,6 +38,16 @@ final class GlobalSetting extends Model
     public static function instance(): self
     {
         return self::query()->firstOrCreate([]);
+    }
+
+    /**
+     * Check if Google Ads OAuth is configured.
+     */
+    public function hasGoogleAdsCredentials(): bool
+    {
+        return $this->google_ads_client_id !== null
+            && $this->google_ads_client_secret !== null
+            && $this->google_ads_developer_token !== null;
     }
 
     /**
@@ -42,5 +63,16 @@ final class GlobalSetting extends Model
 
         /** @var array<string, mixed>|null */
         return Storage::json($this->google_service_account);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'google_ads_client_secret' => 'encrypted',
+            'google_ads_developer_token' => 'encrypted',
+        ];
     }
 }

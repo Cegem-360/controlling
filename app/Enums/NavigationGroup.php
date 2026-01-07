@@ -12,6 +12,7 @@ enum NavigationGroup implements HasIcon, HasLabel
 {
     case Analytics;
     case SearchConsole;
+    case GoogleAds;
     case Kpis;
     case Reports;
     case Configuration;
@@ -22,6 +23,7 @@ enum NavigationGroup implements HasIcon, HasLabel
         return match ($this) {
             self::Analytics => __('Analytics'),
             self::SearchConsole => __('Search Console'),
+            self::GoogleAds => __('Google Ads'),
             self::Kpis => __('KPIs'),
             self::Reports => __('Reports'),
             self::Configuration => __('Configuration'),
@@ -34,6 +36,7 @@ enum NavigationGroup implements HasIcon, HasLabel
         return match ($this) {
             self::Analytics => Heroicon::OutlinedChartBar,
             self::SearchConsole => Heroicon::OutlinedMagnifyingGlass,
+            self::GoogleAds => Heroicon::OutlinedCurrencyDollar,
             self::Kpis => Heroicon::OutlinedChartPie,
             self::Reports => Heroicon::OutlinedDocumentChartBar,
             self::Configuration => Heroicon::OutlinedCog6Tooth,

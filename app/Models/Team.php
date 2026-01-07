@@ -71,4 +71,60 @@ final class Team extends Model
     {
         return $this->hasOne(Settings::class);
     }
+
+    /**
+     * @return HasOne<GoogleAdsSettings, $this>
+     */
+    public function googleAdsSettings(): HasOne
+    {
+        return $this->hasOne(GoogleAdsSettings::class);
+    }
+
+    /**
+     * @return HasMany<GoogleAdsCampaign, $this>
+     */
+    public function googleAdsCampaigns(): HasMany
+    {
+        return $this->hasMany(GoogleAdsCampaign::class);
+    }
+
+    /**
+     * @return HasMany<GoogleAdsAdGroup, $this>
+     */
+    public function googleAdsAdGroups(): HasMany
+    {
+        return $this->hasMany(GoogleAdsAdGroup::class);
+    }
+
+    /**
+     * @return HasMany<GoogleAdsHourlyStat, $this>
+     */
+    public function googleAdsHourlyStats(): HasMany
+    {
+        return $this->hasMany(GoogleAdsHourlyStat::class);
+    }
+
+    /**
+     * @return HasMany<GoogleAdsDeviceStat, $this>
+     */
+    public function googleAdsDeviceStats(): HasMany
+    {
+        return $this->hasMany(GoogleAdsDeviceStat::class);
+    }
+
+    /**
+     * @return HasMany<GoogleAdsDemographic, $this>
+     */
+    public function googleAdsDemographics(): HasMany
+    {
+        return $this->hasMany(GoogleAdsDemographic::class);
+    }
+
+    /**
+     * @return HasMany<GoogleAdsGeographicStat, $this>
+     */
+    public function googleAdsGeographicStats(): HasMany
+    {
+        return $this->hasMany(GoogleAdsGeographicStat::class);
+    }
 }

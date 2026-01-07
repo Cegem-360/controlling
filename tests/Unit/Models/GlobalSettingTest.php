@@ -16,6 +16,9 @@ it('has correct fillable attributes', function (): void {
 
     expect($globalSetting->getFillable())->toBe([
         'google_service_account',
+        'google_ads_client_id',
+        'google_ads_client_secret',
+        'google_ads_developer_token',
     ]);
 });
 

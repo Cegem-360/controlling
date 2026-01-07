@@ -10,15 +10,16 @@ enum KpiDataSource: string
 {
     case Analytics = 'analytics';
     case SearchConsole = 'search_console';
+    case GoogleAds = 'google_ads';
     case Manual = 'manual';
     case Calculated = 'calculated';
 
     public static function isIntegrationSource(string|self|null $value): bool
     {
         if ($value instanceof self) {
-            return in_array($value, [self::Analytics, self::SearchConsole], true);
+            return in_array($value, [self::Analytics, self::SearchConsole, self::GoogleAds], true);
         }
 
-        return in_array($value, [self::Analytics->value, self::SearchConsole->value], true);
+        return in_array($value, [self::Analytics->value, self::SearchConsole->value, self::GoogleAds->value], true);
     }
 }

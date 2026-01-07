@@ -8,16 +8,6 @@ use Filament\Facades\Filament;
 
 use function Pest\Laravel\actingAs;
 
-/**
- * @property Team $team
- * @property User $user
- */
-beforeEach(function (): void {
-    $this->team = Team::factory()->create();
-    $this->user = User::factory()->create();
-    $this->user->teams()->attach($this->team);
-});
-
 it('can create a team', function (): void {
     $team = Team::factory()->create([
         'name' => 'Test Team',
@@ -30,56 +20,80 @@ it('can create a team', function (): void {
 });
 
 it('can associate users with teams', function (): void {
-    expect($this->user->teams)->toHaveCount(1)
-        ->and($this->user->teams->first()->id)->toBe($this->team->id);
+    $team = Team::factory()->create();
+    $user = User::factory()->create();
+    $user->teams()->attach($team);
+
+    expect($user->teams)->toHaveCount(1)
+        ->and($user->teams->first()->id)->toBe($team->id);
 });
 
 it('user can access tenant they belong to', function (): void {
-    actingAs($this->user);
+    $team = Team::factory()->create();
+    $user = User::factory()->create();
+    $user->teams()->attach($team);
 
-    expect($this->user->canAccessTenant($this->team))->toBeTrue();
+    actingAs($user);
+
+    expect($user->canAccessTenant($team))->toBeTrue();
 });
 
 it('user cannot access tenant they do not belong to', function (): void {
-    actingAs($this->user);
+    $team = Team::factory()->create();
+    $user = User::factory()->create();
+    $user->teams()->attach($team);
+
+    actingAs($user);
 
     $otherTeam = Team::factory()->create();
 
-    expect($this->user->canAccessTenant($otherTeam))->toBeFalse();
+    expect($user->canAccessTenant($otherTeam))->toBeFalse();
 });
 
 it('user can get their tenants', function (): void {
-    actingAs($this->user);
+    $team = Team::factory()->create();
+    $user = User::factory()->create();
+    $user->teams()->attach($team);
 
-    $tenants = $this->user->getTenants(Filament::getPanel('admin'));
+    actingAs($user);
+
+    $tenants = $user->getTenants(Filament::getPanel('admin'));
 
     expect($tenants)->toHaveCount(1)
-        ->and($tenants->first()->id)->toBe($this->team->id);
+        ->and($tenants->first()->id)->toBe($team->id);
 });
 
 it('user can belong to multiple teams', function (): void {
+    $team1 = Team::factory()->create();
     $team2 = Team::factory()->create();
     $team3 = Team::factory()->create();
+    $user = User::factory()->create();
 
-    $this->user->teams()->attach([$team2->id, $team3->id]);
+    $user->teams()->attach([$team1->id, $team2->id, $team3->id]);
 
-    expect($this->user->teams)->toHaveCount(3);
+    expect($user->teams)->toHaveCount(3);
 });
 
 it('team can have multiple users', function (): void {
+    $team = Team::factory()->create();
+    $user1 = User::factory()->create();
     $user2 = User::factory()->create();
     $user3 = User::factory()->create();
 
-    $this->team->users()->attach([$user2->id, $user3->id]);
+    $team->users()->attach([$user1->id, $user2->id, $user3->id]);
 
-    expect($this->team->users)->toHaveCount(3);
+    expect($team->users)->toHaveCount(3);
 });
 
 it('deleting team deletes pivot records', function (): void {
-    $teamId = $this->team->id;
+    $team = Team::factory()->create();
+    $user = User::factory()->create();
+    $user->teams()->attach($team);
 
-    $this->team->delete();
+    $teamId = $team->id;
+
+    $team->delete();
 
     expect(Team::query()->find($teamId))->toBeNull()
-        ->and($this->user->fresh()->teams)->toHaveCount(0);
+        ->and($user->fresh()->teams)->toHaveCount(0);
 });
