@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-DMujuc0I.css",
+    "file": "assets/app-Df44397G.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -16,13 +16,17 @@
     "file": "assets/logo-DanLznZQ.svg",
     "src": "resources/images/logo.svg"
   },
+  "resources/images/module-screenshot.webp": {
+    "file": "assets/module-screenshot-BAt8FUVB.webp",
+    "src": "resources/images/module-screenshot.webp"
+  },
   "resources/js/app.js": {
-    "file": "assets/app-B9Kw3JL9.js",
+    "file": "assets/app-BjITh1lm.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "css": [
-      "assets/app-DMujuc0I.css"
+      "assets/app-Df44397G.css"
     ]
   }
 }
