@@ -7,7 +7,7 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn (): View|Factory => view('welcome'))->name('welcome');
+Route::get('/', fn (): View|Factory => view('home'))->name('home');
 
 // Google Ads OAuth Routes
 Route::middleware(['auth', 'verified'])->group(function (): void {

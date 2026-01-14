@@ -8,40 +8,32 @@
         <meta name="csrf-token" content="{{ csrf_token() }}" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" sizes="any">
-        <title>{{ config('app.name') }} - {{ __('Business Intelligence & Decision Support') }}</title>
+
+        <title>{{ $title ?? config('app.name') . ' - ' . __('Marketing Dashboard') }}</title>
+        <meta name="description" content="{{ $description ?? __('Gyűjtse össze weboldalának marketing adatait egyetlen dashboardon. Google Analytics, Search Console és Google Ads integráció, automatikus KPI-követés és riportok.') }}">
+
+        {{-- Open Graph --}}
+        <meta property="og:title" content="{{ $ogTitle ?? config('app.name') . ' – Marketing dashboard' }}">
+        <meta property="og:description" content="{{ $ogDescription ?? __('GA4, Search Console, Google Ads – egy helyen. Automatikus KPI-ok és riportok.') }}">
+        <meta property="og:image" content="{{ $ogImage ?? asset('images/kontrolling-og-image.png') }}">
+
+        {{-- Monday.com / Vibe Design System Fonts --}}
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
         <style>
             [x-cloak] {
                 display: none !important;
             }
         </style>
-        <script>
-            // Apply theme before page renders to prevent flash
-            (function() {
-                const theme = localStorage.getItem('theme') || 'auto';
-                const root = document.documentElement;
 
-                if (theme === 'dark') {
-                    root.classList.add('dark');
-                } else if (theme === 'light') {
-                    root.classList.remove('dark');
-                } else { // auto
-                    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                        root.classList.add('dark');
-                    } else {
-                        root.classList.remove('dark');
-                    }
-                }
-            })();
-        </script>
         @filamentStyles
-
         @vite('resources/js/app.js')
 
     </head>
 
-    <body class="antialiased bg-white text-gray-900 scroll-smooth" x-data="{ mobileMenuOpen: false }">
-
+    <body class="antialiased">
         {{ $slot }}
 
         @livewire('notifications')
