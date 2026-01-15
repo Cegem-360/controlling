@@ -26,7 +26,7 @@ use Illuminate\Support\HtmlString;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('filament.layouts.app')]
+#[Layout('components.layouts.app')]
 final class Settings extends Component implements HasSchemas
 {
     use InteractsWithSchemas;
