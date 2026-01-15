@@ -9,6 +9,19 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn (): View|Factory => view('home'))->name('home');
 
+Route::get('/language/{locale}', function (string $locale) {
+    if (! in_array($locale, ['en', 'hu'], true)) {
+        abort(400);
+    }
+
+    $cookie = cookie('locale', $locale, 60 * 24 * 365);
+
+    $referer = request()->headers->get('referer');
+    $redirectUrl = $referer ?: url()->previous();
+
+    return redirect($redirectUrl)->withCookie($cookie);
+})->name('language.switch');
+
 // Google Ads OAuth Routes
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/google-ads/auth/redirect/{team}', [GoogleAdsOAuthController::class, 'redirect'])

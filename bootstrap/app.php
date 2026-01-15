@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\ValidateApiKey;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['api.key' => ValidateApiKey::class]);
+        $middleware->web(append: [SetLocale::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -8,6 +8,7 @@ use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\EditTeamProfile;
 use App\Filament\Pages\RegisterTeam;
 use App\Http\Middleware\ApplyTenantScopes;
+use App\Http\Middleware\SetLocale;
 use App\Models\Team;
 use BezhanSalleh\GoogleAnalytics\GoogleAnalyticsPlugin;
 use Filament\Actions\Action;
@@ -19,7 +20,9 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
+use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -45,6 +48,10 @@ final class AdminPanelServiceProvider extends PanelProvider
                     ->icon('heroicon-o-user-circle')
                     ->url('https://cegem360.eu/admin/profile'),
             ])
+            ->renderHook(
+                PanelsRenderHook::USER_MENU_BEFORE,
+                fn (): View => view('filament.components.language-switcher'),
+            )
             ->tenant(Team::class, slugAttribute: 'slug')
             ->tenantRegistration(RegisterTeam::class)
             ->tenantProfile(EditTeamProfile::class)
@@ -76,6 +83,7 @@ final class AdminPanelServiceProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                SetLocale::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

@@ -9,72 +9,72 @@
                     <span class="text-sm font-semibold text-emerald-600">Kontrolling</span>
                 </a>
                 <p class="text-sm text-gray-600 mb-4">
-                    Webes forgalomelemzés és marketing KPI-ok egy helyen.
+                    {{ __('Web traffic analysis and marketing KPIs in one place.') }}
                 </p>
                 <ul class="space-y-2.5 text-sm text-gray-700">
-                    <li><a href="#arak" class="text-inherit! hover:text-emerald-600! transition-colors">Árazás</a></li>
-                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">Kapcsolat</a></li>
-                    <li><a href="#gyik" class="text-inherit! hover:text-emerald-600! transition-colors">GYIK</a></li>
+                    <li><a href="#arak" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('Pricing') }}</a></li>
+                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('Contact') }}</a></li>
+                    <li><a href="#gyik" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('FAQ') }}</a></li>
                 </ul>
             </div>
 
-            <!-- Column 2: Funkciók -->
+            <!-- Column 2: Features -->
             <div class="col-span-1">
                 <button
                     class="lg:hidden w-full flex items-center justify-between text-[15px] font-semibold text-gray-900 mb-4"
                     @click="openSection = openSection === 'funkciok' ? null : 'funkciok'"
                 >
-                    Funkciók
+                    {{ __('Features') }}
                     <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openSection === 'funkciok' }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <h3 class="hidden lg:block text-[15px] font-semibold text-gray-900 mb-4">Funkciók</h3>
+                <h3 class="hidden lg:block text-[15px] font-semibold text-gray-900 mb-4">{{ __('Features') }}</h3>
                 <ul class="space-y-2.5 text-sm text-gray-700" x-show="openSection === 'funkciok' || window.innerWidth >= 1024" x-collapse.duration.300ms>
-                    <li><a href="#funkciok" class="text-inherit! hover:text-emerald-600! transition-colors">Dashboard</a></li>
-                    <li><a href="#funkciok" class="text-inherit! hover:text-emerald-600! transition-colors">KPI-ok</a></li>
-                    <li><a href="#funkciok" class="text-inherit! hover:text-emerald-600! transition-colors">Riportok</a></li>
-                    <li><a href="#funkciok" class="text-inherit! hover:text-emerald-600! transition-colors">Riasztások</a></li>
-                    <li><a href="#funkciok" class="text-inherit! hover:text-emerald-600! transition-colors">Historikus adatok</a></li>
+                    <li><a href="#funkciok" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('Dashboard') }}</a></li>
+                    <li><a href="#funkciok" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('KPIs') }}</a></li>
+                    <li><a href="#funkciok" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('Reports') }}</a></li>
+                    <li><a href="#funkciok" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('Alerts') }}</a></li>
+                    <li><a href="#funkciok" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('Historical data') }}</a></li>
                 </ul>
             </div>
 
-            <!-- Column 3: Integrációk -->
+            <!-- Column 3: Integrations -->
             <div class="col-span-1">
                 <button
                     class="lg:hidden w-full flex items-center justify-between text-[15px] font-semibold text-gray-900 mb-4"
                     @click="openSection = openSection === 'integraciok' ? null : 'integraciok'"
                 >
-                    Integrációk
+                    {{ __('Integrations') }}
                     <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openSection === 'integraciok' }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <h3 class="hidden lg:block text-[15px] font-semibold text-gray-900 mb-4">Integrációk</h3>
+                <h3 class="hidden lg:block text-[15px] font-semibold text-gray-900 mb-4">{{ __('Integrations') }}</h3>
                 <ul class="space-y-2.5 text-sm text-gray-700" x-show="openSection === 'integraciok' || window.innerWidth >= 1024" x-collapse.duration.300ms>
                     <li><a href="#integraciok" class="text-inherit! hover:text-emerald-600! transition-colors">Google Analytics</a></li>
                     <li><a href="#integraciok" class="text-inherit! hover:text-emerald-600! transition-colors">Search Console</a></li>
                     <li><a href="#integraciok" class="text-inherit! hover:text-emerald-600! transition-colors">Google Ads</a></li>
                 </ul>
 
-                <h4 class="text-[15px] font-semibold text-gray-900 mb-4 mt-6">Hamarosan</h4>
+                <h4 class="text-[15px] font-semibold text-gray-900 mb-4 mt-6">{{ __('Coming Soon') }}</h4>
                 <ul class="space-y-2.5 text-sm text-gray-500">
                     <li>Facebook Ads</li>
                     <li>LinkedIn Ads</li>
                 </ul>
             </div>
 
-            <!-- Column 4: Támogatás -->
+            <!-- Column 4: Support -->
             <div class="col-span-1">
                 <button
                     class="lg:hidden w-full flex items-center justify-between text-[15px] font-semibold text-gray-900 mb-4"
                     @click="openSection = openSection === 'tamogatas' ? null : 'tamogatas'"
                 >
-                    Támogatás
+                    {{ __('Support') }}
                     <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openSection === 'tamogatas' }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <h3 class="hidden lg:block text-[15px] font-semibold text-gray-900 mb-4">Támogatás</h3>
+                <h3 class="hidden lg:block text-[15px] font-semibold text-gray-900 mb-4">{{ __('Support') }}</h3>
                 <ul class="space-y-2.5 text-sm text-gray-700" x-show="openSection === 'tamogatas' || window.innerWidth >= 1024" x-collapse.duration.300ms>
-                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">Súgó</a></li>
-                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">Tudásbázis</a></li>
-                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">Kapcsolat</a></li>
-                    <li><a href="#gyik" class="text-inherit! hover:text-emerald-600! transition-colors">GYIK</a></li>
+                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('Help') }}</a></li>
+                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('Knowledge Base') }}</a></li>
+                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('Contact') }}</a></li>
+                    <li><a href="#gyik" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('FAQ') }}</a></li>
                 </ul>
             </div>
 
@@ -89,10 +89,10 @@
                 </button>
                 <h3 class="hidden lg:block text-[15px] font-semibold text-gray-900 mb-4">Cégem360</h3>
                 <ul class="space-y-2.5 text-sm text-gray-700" x-show="openSection === 'cegem360' || window.innerWidth >= 1024" x-collapse.duration.300ms>
-                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">Főoldal</a></li>
-                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">Modulok</a></li>
-                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">Rólunk</a></li>
-                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">Blog</a></li>
+                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('Home') }}</a></li>
+                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('Modules') }}</a></li>
+                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('About Us') }}</a></li>
+                    <li><a href="#" class="text-inherit! hover:text-emerald-600! transition-colors">{{ __('Blog') }}</a></li>
                 </ul>
             </div>
         </div>
@@ -112,7 +112,7 @@
                             class="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:text-gray-900 border border-gray-300 rounded-md transition-colors bg-white"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
-                            Magyar
+                            {{ app()->getLocale() === 'hu' ? 'Magyar' : 'English' }}
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div
@@ -120,8 +120,8 @@
                             x-transition
                             class="absolute bottom-full left-0 mb-2 w-36 bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden z-10"
                         >
-                            <a href="#" class="block px-3 py-2 text-sm text-gray-900 bg-gray-100">Magyar</a>
-                            <a href="#" class="block px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50">English</a>
+                            <a href="{{ route('language.switch', 'hu') }}" class="block px-3 py-2 text-sm {{ app()->getLocale() === 'hu' ? 'text-gray-900 bg-gray-100' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50' }}">Magyar</a>
+                            <a href="{{ route('language.switch', 'en') }}" class="block px-3 py-2 text-sm {{ app()->getLocale() === 'en' ? 'text-gray-900 bg-gray-100' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50' }}">English</a>
                         </div>
                     </div>
 
@@ -141,20 +141,20 @@
             <!-- Bottom row: Legal links -->
             <div class="mt-5 pt-5 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-gray-500">
-                    <span class="text-gray-700">A Cégem360 Kontrolling a Cégem360 Kft. terméke.</span>
+                    <span class="text-gray-700">{{ __('Cégem360 Kontrolling is a product of Cégem360 Kft.') }}</span>
                 </div>
                 <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-gray-500">
-                    <a href="#" class="hover:text-gray-700 transition-colors">ÁSZF</a>
+                    <a href="#" class="hover:text-gray-700 transition-colors">{{ __('Terms of Service') }}</a>
                     <span class="text-gray-300">|</span>
-                    <a href="#" class="hover:text-gray-700 transition-colors">Adatvédelem</a>
+                    <a href="#" class="hover:text-gray-700 transition-colors">{{ __('Privacy Policy') }}</a>
                     <span class="text-gray-300">|</span>
-                    <a href="#" class="hover:text-gray-700 transition-colors">Cookie</a>
+                    <a href="#" class="hover:text-gray-700 transition-colors">{{ __('Cookie Policy') }}</a>
                 </div>
             </div>
 
             <!-- Copyright -->
             <div class="mt-3 text-center sm:text-left text-sm text-gray-400">
-                Minden jog fenntartva &copy; {{ date('Y') }} Cégem360
+                {{ __('All rights reserved.') }} &copy; {{ date('Y') }} Cégem360
             </div>
         </div>
     </div>
