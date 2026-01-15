@@ -14,6 +14,7 @@ use Google\Service\AnalyticsData\Dimension;
 use Google\Service\AnalyticsData\Metric;
 use Google\Service\AnalyticsData\RunReportRequest;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Sushi\Sushi;
 
 /**
@@ -39,7 +40,12 @@ final class UserSourceModel extends Model
                 return [];
             }
 
+            // Try Filament tenant first, then fall back to authenticated user's team
             $settings = Filament::getTenant()?->settings;
+
+            if (! $settings) {
+                $settings = Auth::user()?->teams()?->first()?->settings;
+            }
 
             if (! $settings || ! $settings->property_id) {
                 return [];

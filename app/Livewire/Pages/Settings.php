@@ -9,9 +9,11 @@ use App\Jobs\GoogleAdsImport;
 use App\Jobs\SearchConsoleImport;
 use App\Models\GoogleAdsSettings;
 use App\Models\Settings as SettingsModel;
+use App\Models\Team;
 use App\Services\GoogleAdsOAuthService;
 use Filament\Actions\Action;
-use Filament\Facades\Filament;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
@@ -22,50 +24,65 @@ use Filament\Schemas\Components\View;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
+use Illuminate\Contracts\View\View as ViewContract;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
-use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('components.layouts.app')]
-final class Settings extends Component implements HasSchemas
+final class Settings extends Component implements HasActions, HasSchemas
 {
+    use InteractsWithActions;
     use InteractsWithSchemas;
+
+    public ?Team $team = null;
+
+    /** @var array<string, mixed>|null */
+    public ?array $data = [];
+
+    public function mount(): void
+    {
+        $this->team = Auth::user()->teams()->first();
+
+        if ($this->team) {
+            $this->form->fill($this->getRecord()?->attributesToArray() ?? []);
+        }
+    }
 
     public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
                 Form::make([
-                    Section::make('Google Analytics Configuration')
-                        ->description('Configure Google Analytics 4 property settings for this team')
+                    Section::make(__('Google Analytics Configuration'))
+                        ->description(__('Configure Google Analytics 4 property settings for this team'))
                         ->schema([
                             TextInput::make('property_id')
-                                ->label('GA4 Property ID')
+                                ->label(__('GA4 Property ID'))
                                 ->required()
                                 ->maxLength(100)
                                 ->placeholder('123456789'),
                             TextInput::make('google_tag_id')
-                                ->label('Google Tag ID')
+                                ->label(__('Google Tag ID'))
                                 ->required()
                                 ->maxLength(100)
                                 ->placeholder('G-XXXXXXXXXX'),
                         ])
                         ->columns(2),
 
-                    Section::make('Google Search Console Configuration')
-                        ->description('Configure Search Console property settings for this team')
+                    Section::make(__('Google Search Console Configuration'))
+                        ->description(__('Configure Search Console property settings for this team'))
                         ->schema([
                             TextInput::make('site_url')
-                                ->label('Site URL')
+                                ->label(__('Site URL'))
                                 ->required()
                                 ->url()
                                 ->maxLength(500)
                                 ->placeholder('https://example.com'),
                         ]),
 
-                    /*  Section::make('Google Ads Configuration')
-                        ->description('Configure Google Ads OAuth connection for this team')
-                        ->schema($this->getGoogleAdsSchema()), */
+                    Section::make(__('Google Ads Configuration'))
+                        ->description(__('Configure Google Ads OAuth connection for this team'))
+                        ->schema($this->getGoogleAdsSchema()),
                 ])
                     ->livewireSubmitHandler('save')
                     ->footer([
@@ -88,7 +105,7 @@ final class Settings extends Component implements HasSchemas
 
         if (! $record instanceof SettingsModel) {
             $record = new SettingsModel();
-            $record->team_id = Filament::getTenant()?->id;
+            $record->team_id = $this->team?->id;
         }
 
         $record->fill($data);
@@ -100,25 +117,23 @@ final class Settings extends Component implements HasSchemas
 
         Notification::make()
             ->success()
-            ->title('Settings saved')
+            ->title(__('Settings saved'))
             ->send();
     }
 
     public function getRecord(): ?SettingsModel
     {
-        return Filament::getTenant()?->settings;
+        return $this->team?->settings;
     }
 
     public function getGoogleAdsSettings(): ?GoogleAdsSettings
     {
-        return Filament::getTenant()?->googleAdsSettings;
+        return $this->team?->googleAdsSettings;
     }
 
     public function connectGoogleAds(): void
     {
-        $team = Filament::getTenant();
-
-        if (! $team) {
+        if (! $this->team) {
             Notification::make()
                 ->title(__('No team selected.'))
                 ->danger()
@@ -128,16 +143,14 @@ final class Settings extends Component implements HasSchemas
         }
 
         $oauthService = app(GoogleAdsOAuthService::class);
-        $authUrl = $oauthService->getAuthorizationUrl($team);
+        $authUrl = $oauthService->getAuthorizationUrl($this->team);
 
         $this->redirect($authUrl);
     }
 
     public function disconnectGoogleAds(): void
     {
-        $team = Filament::getTenant();
-
-        if (! $team) {
+        if (! $this->team) {
             Notification::make()
                 ->title(__('No team selected.'))
                 ->danger()
@@ -147,21 +160,19 @@ final class Settings extends Component implements HasSchemas
         }
 
         $oauthService = app(GoogleAdsOAuthService::class);
-        $oauthService->disconnect($team);
+        $oauthService->disconnect($this->team);
 
         Notification::make()
             ->title(__('Google Ads disconnected successfully.'))
             ->success()
             ->send();
 
-        $this->redirect(self::getUrl());
+        $this->redirect(route('settings'));
     }
 
     public function performGoogleAdsSync(): void
     {
-        $teamId = Filament::getTenant()?->id;
-
-        if (! $teamId) {
+        if (! $this->team) {
             Notification::make()
                 ->title(__('No team selected.'))
                 ->danger()
@@ -182,7 +193,7 @@ final class Settings extends Component implements HasSchemas
             return;
         }
 
-        dispatch(new GoogleAdsImport($teamId));
+        dispatch(new GoogleAdsImport($this->team->id));
 
         Notification::make()
             ->title(__('Google Ads sync started successfully.'))
@@ -193,44 +204,40 @@ final class Settings extends Component implements HasSchemas
 
     public function performAnalyticsSync(): void
     {
-        $teamId = Filament::getTenant()?->id;
-
-        if (! $teamId) {
+        if (! $this->team) {
             Notification::make()
-                ->title('No team selected.')
+                ->title(__('No team selected.'))
                 ->danger()
                 ->send();
 
             return;
         }
 
-        dispatch(new AnalyticsImport($teamId));
+        dispatch(new AnalyticsImport($this->team->id));
 
         Notification::make()
-            ->title('Analytics sync started successfully.')
-            ->body('The Analytics synchronization process has been initiated in the background.')
+            ->title(__('Analytics sync started successfully.'))
+            ->body(__('The Analytics synchronization process has been initiated in the background.'))
             ->success()
             ->send();
     }
 
     public function performSearchConsoleSync(): void
     {
-        $teamId = Filament::getTenant()?->id;
-
-        if (! $teamId) {
+        if (! $this->team) {
             Notification::make()
-                ->title('No team selected.')
+                ->title(__('No team selected.'))
                 ->danger()
                 ->send();
 
             return;
         }
 
-        dispatch(new SearchConsoleImport($teamId));
+        dispatch(new SearchConsoleImport($this->team->id));
 
         Notification::make()
-            ->title('Search Console sync started successfully.')
-            ->body('The Search Console synchronization process has been initiated in the background.')
+            ->title(__('Search Console sync started successfully.'))
+            ->body(__('The Search Console synchronization process has been initiated in the background.'))
             ->success()
             ->send();
     }
@@ -251,53 +258,58 @@ final class Settings extends Component implements HasSchemas
             ->send();
     }
 
-    public function render(): \Illuminate\Contracts\View\View
+    public function render(): ViewContract
     {
-        return view('livewire.pages.settings');
+        return view('livewire.pages.settings')
+            ->layout('components.layouts.dashboard');
     }
 
-    protected function getHeaderActions(): array
+    public function syncAnalyticsAction(): Action
     {
-        $googleAdsSettings = $this->getGoogleAdsSettings();
-        $isGoogleAdsConnected = $googleAdsSettings?->is_connected ?? false;
+        return Action::make('syncAnalytics')
+            ->label(__('Sync Analytics'))
+            ->icon('heroicon-o-chart-bar')
+            ->color('primary')
+            ->action('performAnalyticsSync');
+    }
 
-        $actions = [
-            Action::make('syncAnalytics')
-                ->label(__('Sync Analytics'))
-                ->icon('heroicon-o-chart-bar')
-                ->color('primary')
-                ->action('performAnalyticsSync'),
-            Action::make('syncSearchConsole')
-                ->label(__('Sync Search Console'))
-                ->icon('heroicon-o-magnifying-glass')
-                ->color('success')
-                ->action('performSearchConsoleSync'),
-        ];
+    public function syncSearchConsoleAction(): Action
+    {
+        return Action::make('syncSearchConsole')
+            ->label(__('Sync Search Console'))
+            ->icon('heroicon-o-magnifying-glass')
+            ->color('success')
+            ->action('performSearchConsoleSync');
+    }
 
-        if ($isGoogleAdsConnected) {
-            $actions[] = Action::make('syncGoogleAds')
-                ->label(__('Sync Google Ads'))
-                ->icon('heroicon-o-currency-dollar')
-                ->color('warning')
-                ->action('performGoogleAdsSync');
+    public function syncGoogleAdsAction(): Action
+    {
+        return Action::make('syncGoogleAds')
+            ->label(__('Sync Google Ads'))
+            ->icon('heroicon-o-currency-dollar')
+            ->color('warning')
+            ->action('performGoogleAdsSync');
+    }
 
-            $actions[] = Action::make('disconnectGoogleAds')
-                ->label(__('Disconnect Google Ads'))
-                ->icon('heroicon-o-x-circle')
-                ->color('danger')
-                ->requiresConfirmation()
-                ->modalHeading(__('Disconnect Google Ads'))
-                ->modalDescription(__('Are you sure you want to disconnect your Google Ads account? This will remove the OAuth connection but keep your synced data.'))
-                ->action('disconnectGoogleAds');
-        } else {
-            $actions[] = Action::make('connectGoogleAds')
-                ->label(__('Connect Google Ads'))
-                ->icon('heroicon-o-link')
-                ->color('warning')
-                ->action('connectGoogleAds');
-        }
+    public function connectGoogleAdsAction(): Action
+    {
+        return Action::make('connectGoogleAds')
+            ->label(__('Connect Google Ads'))
+            ->icon('heroicon-o-link')
+            ->color('warning')
+            ->action('connectGoogleAds');
+    }
 
-        return $actions;
+    public function disconnectGoogleAdsAction(): Action
+    {
+        return Action::make('disconnectGoogleAds')
+            ->label(__('Disconnect Google Ads'))
+            ->icon('heroicon-o-x-circle')
+            ->color('danger')
+            ->requiresConfirmation()
+            ->modalHeading(__('Disconnect Google Ads'))
+            ->modalDescription(__('Are you sure you want to disconnect your Google Ads account? This will remove the OAuth connection but keep your synced data.'))
+            ->action('disconnectGoogleAds');
     }
 
     /**
@@ -333,7 +345,7 @@ final class Settings extends Component implements HasSchemas
                 __('Not Connected') .
                 '</span></div>',
             )),
-            Text::make(__('Click "Connect Google Ads" in the header to authenticate with your Google Ads account.'))
+            Text::make(__('Click "Connect Google Ads" button to authenticate with your Google Ads account.'))
                 ->color('gray'),
         ];
     }

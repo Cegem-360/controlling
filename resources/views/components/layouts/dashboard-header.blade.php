@@ -30,7 +30,7 @@
                 </svg>
                 <input
                     type="text"
-                    placeholder="Keresés..."
+                    placeholder="{{ __('Search...') }}"
                     class="w-64 pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 border-0 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-gray-600 transition"
                 >
             </div>
@@ -39,6 +39,38 @@
 
     {{-- Right side - Actions --}}
     <div class="flex items-center gap-2">
+        {{-- Language Switcher --}}
+        <div x-data="{ langOpen: false }" class="relative">
+            <button @click="langOpen = !langOpen" type="button"
+                class="inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                aria-label="{{ __('Change language') }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+                <span class="hidden sm:inline">{{ app()->getLocale() === 'hu' ? 'HU' : 'EN' }}</span>
+            </button>
+
+            <div x-show="langOpen" x-cloak @click.outside="langOpen = false" x-transition:enter="transition ease-out duration-100"
+                x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100"
+                x-transition:leave-end="transform opacity-0 scale-95"
+                class="absolute right-0 mt-2 w-36 rounded-lg shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-50">
+                <div class="py-1" role="menu">
+                    <a href="{{ route('language.switch', 'en') }}"
+                        class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors {{ app()->getLocale() === 'en' ? 'bg-gray-100 dark:bg-gray-700 font-medium' : '' }}"
+                        role="menuitem">
+                        English
+                    </a>
+                    <a href="{{ route('language.switch', 'hu') }}"
+                        class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors {{ app()->getLocale() === 'hu' ? 'bg-gray-100 dark:bg-gray-700 font-medium' : '' }}"
+                        role="menuitem">
+                        Magyar
+                    </a>
+                </div>
+            </div>
+        </div>
+
         {{-- Quick add button - Go to Analytics --}}
         @if(auth()->user()->teams->first())
             <a href="{{ route('filament.admin.pages.dashboard', ['tenant' => auth()->user()->teams->first()->slug]) }}"
@@ -46,7 +78,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                 </svg>
-                <span class="hidden md:inline">Analitika</span>
+                <span class="hidden md:inline">{{ __('Analytics') }}</span>
             </a>
         @endif
 
@@ -107,7 +139,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
-                            Profilom
+                            {{ __('My Profile') }}
                         </a>
                         @if(auth()->user()->teams->first())
                             <a href="{{ route('filament.admin.pages.dashboard', ['tenant' => auth()->user()->teams->first()->slug]) }}"
@@ -115,7 +147,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                                 </svg>
-                                Analitika kezelés
+                                {{ __('Analytics Management') }}
                             </a>
                         @endif
                         <a href="https://cegem360.eu/modules" target="_blank"
@@ -136,7 +168,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                                 </svg>
-                                Kijelentkezés
+                                {{ __('Log out') }}
                             </button>
                         </form>
                     </div>
@@ -145,7 +177,7 @@
         @else
             <a href="/admin"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition">
-                Bejelentkezés
+                {{ __('Log in') }}
             </a>
         @endauth
     </div>

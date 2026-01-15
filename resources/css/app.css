@@ -535,3 +535,43 @@
         color: var(--color-kontrolling-700);
     }
 }
+
+/* ===================
+   FILAMENT WIDGET FIXES
+   Fix icon sizing for Filament widgets rendered outside admin panel
+   =================== */
+
+/* Ensure Filament icons have proper base sizing */
+.fi-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.fi-icon > svg {
+    width: inherit;
+    height: inherit;
+}
+
+/* Constrain SVG icons in Filament input wrapper prefix/suffix */
+.fi-input-wrp-prefix > svg,
+.fi-input-wrp-suffix > svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+}
+
+/* Fix empty state icon container and icon */
+.fi-ta-empty-state-icon-bg {
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fi-ta-empty-state-icon-bg > svg,
+.fi-ta-empty-state-icon-bg .fi-icon,
+.fi-ta-empty-state-icon-bg .fi-icon > svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
