@@ -14,19 +14,21 @@ use App\Services\GoogleAdsOAuthService;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Component;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Illuminate\Support\HtmlString;
 use UnitEnum;
 
 /**
  * @property-read Schema $form
+ * @property-read Schema $googleAdsForm
  */
 final class Settings extends Page
 {
@@ -34,6 +36,11 @@ final class Settings extends Page
      * @var array<string, mixed> | null
      */
     public ?array $data = [];
+
+    /**
+     * @var array<string, mixed> | null
+     */
+    public ?array $googleAdsData = [];
 
     protected string $view = 'filament.pages.settings';
 
@@ -44,6 +51,12 @@ final class Settings extends Page
     public function mount(): void
     {
         $this->form->fill($this->getRecord()?->attributesToArray() ?? []);
+
+        $googleAdsSettings = $this->getGoogleAdsSettings();
+        $this->googleAdsForm->fill([
+            'customer_id' => $googleAdsSettings?->customer_id,
+            'manager_customer_id' => $googleAdsSettings?->manager_customer_id,
+        ]);
     }
 
     public function form(Schema $schema): Schema
@@ -93,6 +106,30 @@ final class Settings extends Page
             ])
             ->record($this->getRecord())
             ->statePath('data');
+    }
+
+    public function googleAdsForm(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                TextInput::make('customer_id')
+                    ->label('Customer ID')
+                    ->placeholder('123-456-7890')
+                    ->helperText(__('Your Google Ads Customer ID (found in the top right corner of Google Ads)'))
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function (?string $state): void {
+                        $this->saveGoogleAdsField('customer_id', $state);
+                    }),
+                TextInput::make('manager_customer_id')
+                    ->label('Manager Customer ID (MCC)')
+                    ->placeholder('123-456-7890')
+                    ->helperText(__('Only required if accessing through an MCC (Manager) account. Leave empty for direct access.'))
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function (?string $state): void {
+                        $this->saveGoogleAdsField('manager_customer_id', $state);
+                    }),
+            ])
+            ->statePath('googleAdsData');
     }
 
     public function save(): void
@@ -250,6 +287,22 @@ final class Settings extends Page
             ->send();
     }
 
+    public function saveGoogleAdsField(string $field, ?string $value): void
+    {
+        $googleAdsSettings = $this->getGoogleAdsSettings();
+
+        if (! $googleAdsSettings) {
+            return;
+        }
+
+        $googleAdsSettings->update([$field => $value]);
+
+        Notification::make()
+            ->title(__('Settings saved'))
+            ->success()
+            ->send();
+    }
+
     protected function getHeaderActions(): array
     {
         $googleAdsSettings = $this->getGoogleAdsSettings();
@@ -304,37 +357,31 @@ final class Settings extends Page
 
         if ($isConnected) {
             return [
-                Placeholder::make('google_ads_status')
-                    ->label('Connection Status')
-                    ->content(new HtmlString(
-                        '<span class="inline-flex items-center gap-1.5 rounded-full bg-success-500/10 px-3 py-1 text-sm font-medium text-success-600 dark:text-success-400">' .
-                        '<span class="h-2 w-2 rounded-full bg-success-500"></span>' .
-                        __('Connected') .
-                        '</span>',
-                    )),
-                TextInput::make('google_ads_customer_id')
-                    ->label('Customer ID')
-                    ->default($googleAdsSettings?->customer_id)
-                    ->disabled()
-                    ->dehydrated(false),
-                Placeholder::make('google_ads_last_sync')
-                    ->label('Last Sync')
-                    ->content($googleAdsSettings?->last_sync_at?->diffForHumans() ?? __('Never')),
+                Text::make(new HtmlString(
+                    '<div class="flex items-center gap-2"><span class="text-sm font-medium text-gray-500 dark:text-gray-400">' . __('Connection Status') . ':</span>' .
+                    '<span class="inline-flex items-center gap-1.5 rounded-full bg-success-500/10 px-3 py-1 text-sm font-medium text-success-600 dark:text-success-400">' .
+                    '<span class="h-2 w-2 rounded-full bg-success-500"></span>' .
+                    __('Connected') .
+                    '</span></div>',
+                )),
+                View::make('filament.schemas.components.google-ads-form'),
+                Text::make(new HtmlString(
+                    '<div class="flex items-center gap-2"><span class="text-sm font-medium text-gray-500 dark:text-gray-400">' . __('Last Sync') . ':</span>' .
+                    '<span class="text-sm text-gray-900 dark:text-white">' . ($googleAdsSettings?->last_sync_at?->diffForHumans() ?? __('Never')) . '</span></div>',
+                )),
             ];
         }
 
         return [
-            Placeholder::make('google_ads_status')
-                ->label('Connection Status')
-                ->content(new HtmlString(
-                    '<span class="inline-flex items-center gap-1.5 rounded-full bg-danger-500/10 px-3 py-1 text-sm font-medium text-danger-600 dark:text-danger-400">' .
-                    '<span class="h-2 w-2 rounded-full bg-danger-500"></span>' .
-                    __('Not Connected') .
-                    '</span>',
-                )),
-            Placeholder::make('google_ads_connect_info')
-                ->label('')
-                ->content(__('Click "Connect Google Ads" in the header to authenticate with your Google Ads account.')),
+            Text::make(new HtmlString(
+                '<div class="flex items-center gap-2"><span class="text-sm font-medium text-gray-500 dark:text-gray-400">' . __('Connection Status') . ':</span>' .
+                '<span class="inline-flex items-center gap-1.5 rounded-full bg-danger-500/10 px-3 py-1 text-sm font-medium text-danger-600 dark:text-danger-400">' .
+                '<span class="h-2 w-2 rounded-full bg-danger-500"></span>' .
+                __('Not Connected') .
+                '</span></div>',
+            )),
+            Text::make(__('Click "Connect Google Ads" in the header to authenticate with your Google Ads account.'))
+                ->color('gray'),
         ];
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Models\GlobalSetting;
 use App\Models\GoogleAdsAdGroup;
 use App\Models\GoogleAdsCampaign;
 use App\Models\GoogleAdsDemographic;
@@ -14,10 +13,12 @@ use App\Models\GoogleAdsHourlyStat;
 use App\Models\GoogleAdsSettings;
 use App\Models\Team;
 use App\Services\GoogleAdsClientFactory;
+use App\Services\GoogleAdsOAuthService;
 use Exception;
 use Filament\Notifications\Notification;
-use Google\Ads\GoogleAds\Lib\V18\GoogleAdsClient;
-use Google\Ads\GoogleAds\V18\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\Lib\V22\GoogleAdsClient;
+use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V22\Services\SearchGoogleAdsRequest;
 use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -27,7 +28,7 @@ final class GoogleAdsImport implements ShouldQueue
     use Batchable;
     use Queueable;
 
-    private const DATE_RANGE = 'LAST_90_DAYS';
+    private const DAYS_TO_IMPORT = 90;
 
     public function __construct(
         public readonly int $teamId,
@@ -43,10 +44,10 @@ final class GoogleAdsImport implements ShouldQueue
             return;
         }
 
-        $globalSettings = GlobalSetting::instance();
+        $oauthService = new GoogleAdsOAuthService();
 
-        if (! $globalSettings->hasGoogleAdsCredentials()) {
-            $this->failWithNotification('Google Ads credentials not configured.', 'Please configure Google Ads OAuth credentials in Global Settings.');
+        if (! $oauthService->hasCredentials()) {
+            $this->failWithNotification('Google Ads credentials not configured.', 'Please set GOOGLE_ADS_CLIENT_ID, GOOGLE_ADS_CLIENT_SECRET, and GOOGLE_ADS_DEVELOPER_TOKEN in your .env file.');
 
             return;
         }
@@ -84,6 +85,17 @@ final class GoogleAdsImport implements ShouldQueue
         }
     }
 
+    /**
+     * Get the date range for GAQL queries in 'YYYY-MM-DD' AND 'YYYY-MM-DD' format.
+     */
+    private function getDateRange(): string
+    {
+        $endDate = now()->format('Y-m-d');
+        $startDate = now()->subDays(self::DAYS_TO_IMPORT)->format('Y-m-d');
+
+        return "'{$startDate}' AND '{$endDate}'";
+    }
+
     private function importCampaigns(GoogleAdsClient $client, string $customerId): void
     {
         $query = '
@@ -101,7 +113,7 @@ final class GoogleAdsImport implements ShouldQueue
                 metrics.conversions_value,
                 metrics.cost_per_conversion
             FROM campaign
-            WHERE segments.date DURING ' . self::DATE_RANGE . '
+            WHERE segments.date BETWEEN ' . $this->getDateRange() . '
             ORDER BY segments.date DESC
         ';
 
@@ -157,7 +169,7 @@ final class GoogleAdsImport implements ShouldQueue
                 metrics.conversions_value,
                 metrics.cost_per_conversion
             FROM ad_group
-            WHERE segments.date DURING ' . self::DATE_RANGE . '
+            WHERE segments.date BETWEEN ' . $this->getDateRange() . '
             ORDER BY segments.date DESC
         ';
 
@@ -210,7 +222,7 @@ final class GoogleAdsImport implements ShouldQueue
                 metrics.ctr,
                 metrics.average_cpc
             FROM campaign
-            WHERE segments.date DURING ' . self::DATE_RANGE . '
+            WHERE segments.date BETWEEN ' . $this->getDateRange() . '
         ';
 
         $aggregated = [];
@@ -275,7 +287,7 @@ final class GoogleAdsImport implements ShouldQueue
                 metrics.ctr,
                 metrics.average_cpc
             FROM campaign
-            WHERE segments.date DURING ' . self::DATE_RANGE . '
+            WHERE segments.date BETWEEN ' . $this->getDateRange() . '
         ';
 
         $aggregated = [];
@@ -339,7 +351,7 @@ final class GoogleAdsImport implements ShouldQueue
                 metrics.cost_micros,
                 metrics.conversions
             FROM gender_view
-            WHERE segments.date DURING ' . self::DATE_RANGE . '
+            WHERE segments.date BETWEEN ' . $this->getDateRange() . '
         ';
 
         $this->executeQuery($client, $customerId, $genderQuery, function (GoogleAdsRow $row): void {
@@ -381,7 +393,7 @@ final class GoogleAdsImport implements ShouldQueue
                 metrics.cost_micros,
                 metrics.conversions
             FROM age_range_view
-            WHERE segments.date DURING ' . self::DATE_RANGE . '
+            WHERE segments.date BETWEEN ' . $this->getDateRange() . '
         ';
 
         $this->executeQuery($client, $customerId, $ageQuery, function (GoogleAdsRow $row): void {
@@ -426,7 +438,7 @@ final class GoogleAdsImport implements ShouldQueue
                 metrics.cost_micros,
                 metrics.conversions
             FROM geographic_view
-            WHERE segments.date DURING ' . self::DATE_RANGE . '
+            WHERE segments.date BETWEEN ' . $this->getDateRange() . '
         ';
 
         $this->executeQuery($client, $customerId, $query, function (GoogleAdsRow $row): void {
@@ -466,7 +478,12 @@ final class GoogleAdsImport implements ShouldQueue
     private function executeQuery(GoogleAdsClient $client, string $customerId, string $query, callable $callback): void
     {
         $googleAdsService = $client->getGoogleAdsServiceClient();
-        $response = $googleAdsService->search($customerId, $query);
+
+        $request = new SearchGoogleAdsRequest();
+        $request->setCustomerId($customerId);
+        $request->setQuery($query);
+
+        $response = $googleAdsService->search($request);
 
         foreach ($response->iterateAllElements() as $row) {
             $callback($row);

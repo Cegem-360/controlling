@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\GlobalSetting;
 use App\Models\GoogleAdsSettings;
 use App\Models\Team;
 use Exception;
@@ -112,24 +111,46 @@ final class GoogleAdsOAuthService
     }
 
     /**
+     * Check if Google Ads credentials are configured.
+     */
+    public function hasCredentials(): bool
+    {
+        return filled(config('services.google_ads.client_id'))
+            && filled(config('services.google_ads.client_secret'))
+            && filled(config('services.google_ads.developer_token'));
+    }
+
+    /**
      * Create a configured OAuth client.
      */
     private function createOAuthClient(): Client
     {
-        $globalSettings = GlobalSetting::instance();
-
-        if (! $globalSettings->hasGoogleAdsCredentials()) {
-            throw new RuntimeException('Google Ads OAuth credentials are not configured. Please configure them in Global Settings.');
+        if (! $this->hasCredentials()) {
+            throw new RuntimeException('Google Ads OAuth credentials are not configured. Please set GOOGLE_ADS_CLIENT_ID, GOOGLE_ADS_CLIENT_SECRET, and GOOGLE_ADS_DEVELOPER_TOKEN in your .env file.');
         }
 
         $client = new Client();
-        $client->setClientId($globalSettings->google_ads_client_id);
-        $client->setClientSecret($globalSettings->google_ads_client_secret);
-        $client->setRedirectUri(route('google-ads.oauth.callback'));
+        $client->setClientId(config('services.google_ads.client_id'));
+        $client->setClientSecret(config('services.google_ads.client_secret'));
+        $client->setRedirectUri($this->getRedirectUri());
         $client->setScopes(self::SCOPES);
         $client->setAccessType('offline');
         $client->setPrompt('consent');
 
         return $client;
+    }
+
+    /**
+     * Get the OAuth redirect URI.
+     */
+    private function getRedirectUri(): string
+    {
+        $configuredUri = config('services.google_ads.redirect_uri');
+
+        if ($configuredUri) {
+            return $configuredUri;
+        }
+
+        return route('google-ads.oauth.callback');
     }
 }

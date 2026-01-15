@@ -42,4 +42,11 @@ return [
     ],
 
     'subscriber_api_key' => env('SUBSCRIBER_API_KEY'),
+
+    'google_ads' => [
+        'client_id' => env('GOOGLE_ADS_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_ADS_CLIENT_SECRET'),
+        'developer_token' => env('GOOGLE_ADS_DEVELOPER_TOKEN'),
+        'redirect_uri' => env('GOOGLE_ADS_REDIRECT_URI'),
+    ],
 ];

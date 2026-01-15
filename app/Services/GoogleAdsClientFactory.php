@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\GlobalSetting;
 use App\Models\GoogleAdsSettings;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V18\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V18\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V22\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V22\GoogleAdsClientBuilder;
 use RuntimeException;
 
 final class GoogleAdsClientFactory
@@ -18,10 +17,10 @@ final class GoogleAdsClientFactory
      */
     public static function make(GoogleAdsSettings $settings): GoogleAdsClient
     {
-        $globalSettings = GlobalSetting::instance();
+        $oauthService = new GoogleAdsOAuthService();
 
-        if (! $globalSettings->hasGoogleAdsCredentials()) {
-            throw new RuntimeException('Google Ads credentials not configured in global settings.');
+        if (! $oauthService->hasCredentials()) {
+            throw new RuntimeException('Google Ads credentials not configured. Please set GOOGLE_ADS_CLIENT_ID, GOOGLE_ADS_CLIENT_SECRET, and GOOGLE_ADS_DEVELOPER_TOKEN in your .env file.');
         }
 
         if (! $settings->hasValidCredentials()) {
@@ -29,20 +28,24 @@ final class GoogleAdsClientFactory
         }
 
         // Refresh token if needed
-        $oauthService = new GoogleAdsOAuthService();
         $settings = $oauthService->refreshTokenIfNeeded($settings);
 
         $oAuth2Credential = (new OAuth2TokenBuilder())
-            ->withClientId($globalSettings->google_ads_client_id)
-            ->withClientSecret($globalSettings->google_ads_client_secret)
+            ->withClientId(config('services.google_ads.client_id'))
+            ->withClientSecret(config('services.google_ads.client_secret'))
             ->withRefreshToken($settings->refresh_token)
             ->build();
 
-        return (new GoogleAdsClientBuilder())
-            ->withDeveloperToken($globalSettings->google_ads_developer_token)
-            ->withOAuth2Credential($oAuth2Credential)
-            ->withLoginCustomerId(self::normalizeCustomerId($settings->customer_id))
-            ->build();
+        $builder = (new GoogleAdsClientBuilder())
+            ->withDeveloperToken(config('services.google_ads.developer_token'))
+            ->withOAuth2Credential($oAuth2Credential);
+
+        // Use manager_customer_id as login-customer-id for MCC accounts
+        if ($settings->manager_customer_id !== null) {
+            $builder->withLoginCustomerId((int) self::normalizeCustomerId($settings->manager_customer_id));
+        }
+
+        return $builder->build();
     }
 
     /**

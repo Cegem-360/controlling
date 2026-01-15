@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Ads API Usage Documentation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            color: #333;
+        }
+        h1 {
+            color: #1a73e8;
+            border-bottom: 3px solid #1a73e8;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #1a73e8;
+            margin-top: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #555;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        .highlight {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid #1a73e8;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #fff3e0;
+            padding: 15px;
+            border-left: 4px solid #ff9800;
+            margin: 15px 0;
+        }
+        ul, ol {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        li {
+            margin: 5px 0;
+        }
+        @media print {
+            body {
+                padding: 20px;
+            }
+            h2 {
+                page-break-before: auto;
+            }
+            pre {
+                white-space: pre-wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Google Ads API Usage Documentation</h1>
+
+<h2>1. Application Overview</h2>
+<table>
+    <tr><th>Application Name</th><td>Controling - Business Analytics Platform</td></tr>
+    <tr><th>Developer</th><td>Cégem 360 Kft.</td></tr>
+    <tr><th>Application Type</th><td>Internal Business Tool</td></tr>
+    <tr><th>API Access Level Requested</th><td>Basic Access</td></tr>
+</table>
+
+<h2>2. Company Description</h2>
+<p>Our company provides a business analytics and controlling platform that helps businesses monitor and analyze their digital marketing performance. The platform aggregates data from multiple sources including Google Ads, Google Analytics, and Google Search Console to provide comprehensive performance insights.</p>
+
+<h2>3. How We Use Google Ads API</h2>
+
+<h3>3.1 Purpose</h3>
+<p>We use the Google Ads API exclusively for <strong>read-only</strong> data retrieval purposes. Our application imports advertising campaign performance data to create unified dashboards and reports for our clients.</p>
+
+<div class="warning">
+    <strong>We do NOT:</strong>
+    <ul>
+        <li>Create, modify, or delete campaigns</li>
+        <li>Manage bids or budgets</li>
+        <li>Create or modify ads</li>
+        <li>Make any changes to Google Ads accounts</li>
+    </ul>
+</div>
+
+<h3>3.2 Data We Access</h3>
+<table>
+    <tr>
+        <th>Resource</th>
+        <th>Fields Retrieved</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td>Campaigns</td>
+        <td>id, name, status</td>
+        <td>Campaign identification</td>
+    </tr>
+    <tr>
+        <td>Ad Groups</td>
+        <td>id, name, status</td>
+        <td>Ad group level reporting</td>
+    </tr>
+    <tr>
+        <td>Metrics</td>
+        <td>impressions, clicks, cost_micros, conversions, ctr, average_cpc, conversions_value, cost_per_conversion</td>
+        <td>Performance analysis</td>
+    </tr>
+    <tr>
+        <td>Segments</td>
+        <td>date, hour, device</td>
+        <td>Time-based and device reporting</td>
+    </tr>
+    <tr>
+        <td>Demographics</td>
+        <td>gender, age_range</td>
+        <td>Audience insights</td>
+    </tr>
+    <tr>
+        <td>Geographic View</td>
+        <td>country_criterion_id, location_type</td>
+        <td>Regional performance</td>
+    </tr>
+</table>
+
+<h3>3.3 API Methods Used</h3>
+<p>We only use the following read-only method:</p>
+<pre>GoogleAdsService.Search</pre>
+<p>This method is used to execute GAQL (Google Ads Query Language) queries to retrieve performance data.</p>
+
+<h2>4. Sample GAQL Queries</h2>
+
+<h3>4.1 Campaign Performance Query</h3>
+<pre>SELECT
+    segments.date,
+    campaign.id,
+    campaign.name,
+    campaign.status,
+    metrics.impressions,
+    metrics.clicks,
+    metrics.cost_micros,
+    metrics.average_cpc,
+    metrics.ctr,
+    metrics.conversions,
+    metrics.conversions_value,
+    metrics.cost_per_conversion
+FROM campaign
+WHERE segments.date BETWEEN '2024-01-01' AND '2024-03-31'
+ORDER BY segments.date DESC</pre>
+
+<h3>4.2 Ad Group Performance Query</h3>
+<pre>SELECT
+    segments.date,
+    campaign.id,
+    campaign.name,
+    ad_group.id,
+    ad_group.name,
+    ad_group.status,
+    metrics.impressions,
+    metrics.clicks,
+    metrics.cost_micros,
+    metrics.conversions
+FROM ad_group
+WHERE segments.date BETWEEN '2024-01-01' AND '2024-03-31'
+ORDER BY segments.date DESC</pre>
+
+<h3>4.3 Device Performance Query</h3>
+<pre>SELECT
+    segments.date,
+    segments.device,
+    metrics.impressions,
+    metrics.clicks,
+    metrics.cost_micros,
+    metrics.conversions
+FROM campaign
+WHERE segments.date BETWEEN '2024-01-01' AND '2024-03-31'</pre>
+
+<h3>4.4 Demographics Query</h3>
+<pre>SELECT
+    segments.date,
+    ad_group_criterion.gender.type,
+    metrics.impressions,
+    metrics.clicks,
+    metrics.cost_micros,
+    metrics.conversions
+FROM gender_view
+WHERE segments.date BETWEEN '2024-01-01' AND '2024-03-31'</pre>
+
+<h3>4.5 Geographic Performance Query</h3>
+<pre>SELECT
+    segments.date,
+    geographic_view.country_criterion_id,
+    geographic_view.location_type,
+    metrics.impressions,
+    metrics.clicks,
+    metrics.cost_micros,
+    metrics.conversions
+FROM geographic_view
+WHERE segments.date BETWEEN '2024-01-01' AND '2024-03-31'</pre>
+
+<h2>5. OAuth 2.0 Implementation</h2>
+
+<h3>5.1 Authentication Flow</h3>
+<ol>
+    <li>User initiates connection from our Settings page</li>
+    <li>User is redirected to Google's OAuth consent screen</li>
+    <li>User grants permission to access Google Ads data</li>
+    <li>Application receives authorization code</li>
+    <li>Application exchanges code for access and refresh tokens</li>
+    <li>Tokens are securely stored (encrypted) in our database</li>
+</ol>
+
+<h3>5.2 Scopes Used</h3>
+<pre>https://www.googleapis.com/auth/adwords</pre>
+
+<h3>5.3 Token Management</h3>
+<ul>
+    <li><strong>Access Token Storage:</strong> Encrypted in database using AES-256 encryption</li>
+    <li><strong>Refresh Token Storage:</strong> Encrypted in database</li>
+    <li><strong>Token Refresh:</strong> Automatic refresh before expiration (5-minute buffer)</li>
+    <li><strong>Token Revocation:</strong> Users can disconnect at any time</li>
+</ul>
+
+<h3>5.4 Disconnect Feature</h3>
+<p>Users can disconnect their Google Ads account at any time through our Settings page. When disconnecting:</p>
+<ol>
+    <li>The access token is revoked via Google's API</li>
+    <li>All stored tokens are cleared from our database</li>
+    <li>The connection status is updated to "disconnected"</li>
+</ol>
+
+<h2>6. Data Handling & Security</h2>
+
+<h3>6.1 Data Storage</h3>
+<ul>
+    <li>All OAuth tokens are encrypted at rest using AES-256 encryption</li>
+    <li>Campaign data is stored in our secure database</li>
+    <li>Data is associated with specific team/tenant for multi-tenancy support</li>
+</ul>
+
+<h3>6.2 Data Retention</h3>
+<ul>
+    <li>Performance data is retained for reporting purposes</li>
+    <li>Users can request data deletion at any time</li>
+    <li>Disconnecting removes OAuth credentials immediately</li>
+</ul>
+
+<h3>6.3 Security Measures</h3>
+<ul>
+    <li>HTTPS-only communication</li>
+    <li>Encrypted credential storage</li>
+    <li>Secure session management</li>
+    <li>Regular security audits</li>
+    <li>No credentials exposed in logs or error messages</li>
+</ul>
+
+<h2>7. API Usage Patterns</h2>
+
+<h3>7.1 Request Frequency</h3>
+<ul>
+    <li><strong>Sync Frequency:</strong> Manual trigger by user (typically 1-4 times per day)</li>
+    <li><strong>Data Range:</strong> Last 90 days of performance data</li>
+    <li><strong>Batch Processing:</strong> Data is retrieved in single queries per resource type</li>
+</ul>
+
+<h3>7.2 Rate Limiting Compliance</h3>
+<ul>
+    <li>We implement exponential backoff for retry logic</li>
+    <li>We respect Google's rate limits</li>
+    <li>We cache retrieved data to minimize API calls</li>
+</ul>
+
+<h3>7.3 Error Handling</h3>
+<ul>
+    <li>All API errors are logged for debugging</li>
+    <li>Users receive friendly error notifications</li>
+    <li>Failed syncs do not affect previously stored data</li>
+</ul>
+
+<h2>8. User Interface</h2>
+
+<h3>8.1 Settings Page</h3>
+<p>Users can:</p>
+<ul>
+    <li>Connect/disconnect their Google Ads account</li>
+    <li>Enter their Customer ID</li>
+    <li>Enter their Manager Customer ID (for MCC accounts)</li>
+    <li>Trigger manual data synchronization</li>
+    <li>View connection status and last sync time</li>
+</ul>
+
+<h3>8.2 Dashboards</h3>
+<p>Retrieved data is displayed in:</p>
+<ul>
+    <li>Campaign performance tables</li>
+    <li>Time-series charts</li>
+    <li>Device breakdown reports</li>
+    <li>Geographic performance maps</li>
+    <li>Demographic insights</li>
+</ul>
+
+<h2>9. Technical Implementation</h2>
+
+<h3>9.1 Technology Stack</h3>
+<table>
+    <tr><th>Backend</th><td>PHP 8.4, Laravel 12</td></tr>
+    <tr><th>Google Ads Library</th><td>google/ads-google-ads-php v31.x</td></tr>
+    <tr><th>API Version</th><td>Google Ads API v22</td></tr>
+    <tr><th>Database</th><td>SQLite/MySQL with encrypted columns</td></tr>
+</table>
+
+<h3>9.2 Code Architecture</h3>
+<pre>app/
+├── Jobs/
+│   └── GoogleAdsImport.php          # Background job for data import
+├── Services/
+│   ├── GoogleAdsClientFactory.php   # Creates authenticated API client
+│   └── GoogleAdsOAuthService.php    # Handles OAuth flow
+├── Models/
+│   └── GoogleAdsSettings.php        # Stores connection settings
+└── Http/Controllers/
+    └── GoogleAdsOAuthController.php # Handles OAuth callbacks</pre>
+
+<h2>10. Contact Information</h2>
+
+<table>
+    <tr><th>Developer Name</th><td>Zoltán Tamás Szabó</td></tr>
+    <tr><th>Email</th><td>zoltan@cegem360.hu</td></tr>
+    <tr><th>Company</th><td>Cégem 360 Kft.</td></tr>
+    <tr><th>Website</th><td>https://cegem360.hu</td></tr>
+</table>
+
+<hr>
+<p style="text-align: center; color: #666; font-size: 12px;">
+    Document Version: 1.0 | Last Updated: January 2026
+</p>
+
+</body>
+</html>

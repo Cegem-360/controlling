@@ -15,7 +15,7 @@
         "filament/filament": "^4.0",
         "google/analytics-data": "*",
         "google/apiclient": "^2.18",
-        "googleads/google-ads-php": "^29.0",
+        "googleads/google-ads-php": "^31",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "nunomaduro/essentials": "^1.0",

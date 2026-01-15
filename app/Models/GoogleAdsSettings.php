@@ -20,6 +20,7 @@ final class GoogleAdsSettings extends Model
     protected $fillable = [
         'team_id',
         'customer_id',
+        'manager_customer_id',
         'access_token',
         'refresh_token',
         'token_expires_at',
