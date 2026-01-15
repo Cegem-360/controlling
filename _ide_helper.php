@@ -5,7 +5,7 @@
 
 /**
  * A helper file for Laravel, to provide autocomplete information to your IDE
- * Generated for Laravel 12.45.1.
+ * Generated for Laravel 12.47.0.
  *
  * This file should not be included in your code, only analyzed by your IDE!
  *
@@ -4862,6 +4862,25 @@ namespace Illuminate\Support\Facades {
         }
 
         /**
+         * Execute a callback while holding an atomic lock on a cache mutex to prevent overlapping calls.
+         *
+         * @template TReturn
+         * @param string $key
+         * @param callable():  TReturn  $callback
+         * @param int $lockFor
+         * @param int $waitFor
+         * @param string|null $owner
+         * @return TReturn
+         * @throws \Illuminate\Contracts\Cache\LockTimeoutException
+         * @static
+         */
+        public static function withoutOverlapping($key, $callback, $lockFor = 0, $waitFor = 10, $owner = null)
+        {
+            /** @var \Illuminate\Cache\Repository $instance */
+            return $instance->withoutOverlapping($key, $callback, $lockFor, $waitFor, $owner);
+        }
+
+        /**
          * Remove an item from the cache.
          *
          * @param \BackedEnum|\UnitEnum|array|string $key
@@ -7835,6 +7854,20 @@ namespace Illuminate\Support\Facades {
         }
 
         /**
+         * Set the read PDO connection configuration.
+         *
+         * @param array $config
+         * @return \Illuminate\Database\SQLiteConnection
+         * @static
+         */
+        public static function setReadPdoConfig($config)
+        {
+            //Method inherited from \Illuminate\Database\Connection 
+            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            return $instance->setReadPdoConfig($config);
+        }
+
+        /**
          * Get the database connection name.
          *
          * @return string|null
@@ -9522,7 +9555,7 @@ namespace Illuminate\Support\Facades {
         /**
          * Determine if a given ability has been defined.
          *
-         * @param string|array $ability
+         * @param \UnitEnum|array|string $ability
          * @return bool
          * @static
          */
@@ -11974,6 +12007,57 @@ namespace Illuminate\Support\Facades {
         }
 
         /**
+         * Register a custom macro.
+         *
+         * @param string $name
+         * @param object|callable $macro
+         * @param-closure-this static  $macro
+         * @return void
+         * @static
+         */
+        public static function macro($name, $macro)
+        {
+            \Illuminate\Notifications\ChannelManager::macro($name, $macro);
+        }
+
+        /**
+         * Mix another object into the class.
+         *
+         * @param object $mixin
+         * @param bool $replace
+         * @return void
+         * @throws \ReflectionException
+         * @static
+         */
+        public static function mixin($mixin, $replace = true)
+        {
+            \Illuminate\Notifications\ChannelManager::mixin($mixin, $replace);
+        }
+
+        /**
+         * Checks if macro is registered.
+         *
+         * @param string $name
+         * @return bool
+         * @static
+         */
+        public static function hasMacro($name)
+        {
+            return \Illuminate\Notifications\ChannelManager::hasMacro($name);
+        }
+
+        /**
+         * Flush the existing macros.
+         *
+         * @return void
+         * @static
+         */
+        public static function flushMacros()
+        {
+            \Illuminate\Notifications\ChannelManager::flushMacros();
+        }
+
+        /**
          * Assert if a notification was sent on-demand based on a truth-test callback.
          *
          * @param string|\Closure $notification
@@ -12154,57 +12238,6 @@ namespace Illuminate\Support\Facades {
         {
             /** @var \Illuminate\Support\Testing\Fakes\NotificationFake $instance */
             return $instance->sentNotifications();
-        }
-
-        /**
-         * Register a custom macro.
-         *
-         * @param string $name
-         * @param object|callable $macro
-         * @param-closure-this static  $macro
-         * @return void
-         * @static
-         */
-        public static function macro($name, $macro)
-        {
-            \Illuminate\Support\Testing\Fakes\NotificationFake::macro($name, $macro);
-        }
-
-        /**
-         * Mix another object into the class.
-         *
-         * @param object $mixin
-         * @param bool $replace
-         * @return void
-         * @throws \ReflectionException
-         * @static
-         */
-        public static function mixin($mixin, $replace = true)
-        {
-            \Illuminate\Support\Testing\Fakes\NotificationFake::mixin($mixin, $replace);
-        }
-
-        /**
-         * Checks if macro is registered.
-         *
-         * @param string $name
-         * @return bool
-         * @static
-         */
-        public static function hasMacro($name)
-        {
-            return \Illuminate\Support\Testing\Fakes\NotificationFake::hasMacro($name);
-        }
-
-        /**
-         * Flush the existing macros.
-         *
-         * @return void
-         * @static
-         */
-        public static function flushMacros()
-        {
-            \Illuminate\Support\Testing\Fakes\NotificationFake::flushMacros();
         }
 
             }
@@ -18757,6 +18790,35 @@ namespace Illuminate\Support\Facades {
         }
 
         /**
+         * Create the vector extension on the schema if it does not exist.
+         *
+         * @param string|null $schema
+         * @return void
+         * @static
+         */
+        public static function ensureVectorExtensionExists($schema = null)
+        {
+            //Method inherited from \Illuminate\Database\Schema\Builder 
+            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            $instance->ensureVectorExtensionExists($schema);
+        }
+
+        /**
+         * Create a new extension on the schema if it does not exist.
+         *
+         * @param string $name
+         * @param string|null $schema
+         * @return void
+         * @static
+         */
+        public static function ensureExtensionExists($name, $schema = null)
+        {
+            //Method inherited from \Illuminate\Database\Schema\Builder 
+            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            $instance->ensureExtensionExists($name, $schema);
+        }
+
+        /**
          * Get the default schema name for the connection.
          *
          * @return string|null
@@ -19116,7 +19178,7 @@ namespace Illuminate\Support\Facades {
         /**
          * Checks if a key exists.
          *
-         * @param string|array $key
+         * @param \BackedEnum|\UnitEnum|string|array $key
          * @return bool
          * @static
          */
@@ -19129,7 +19191,7 @@ namespace Illuminate\Support\Facades {
         /**
          * Determine if the given key is missing from the session data.
          *
-         * @param string|array $key
+         * @param \BackedEnum|\UnitEnum|string|array $key
          * @return bool
          * @static
          */
@@ -19142,7 +19204,7 @@ namespace Illuminate\Support\Facades {
         /**
          * Determine if a key is present and not null.
          *
-         * @param string|array $key
+         * @param \BackedEnum|\UnitEnum|string|array $key
          * @return bool
          * @static
          */
@@ -19155,7 +19217,7 @@ namespace Illuminate\Support\Facades {
         /**
          * Determine if any of the given keys are present and not null.
          *
-         * @param string|array $key
+         * @param \BackedEnum|\UnitEnum|string|array $key
          * @return bool
          * @static
          */
@@ -23108,6 +23170,598 @@ namespace AnourValar\EloquentSerialize\Facades {
             }
     }
 
+namespace Barryvdh\Debugbar\Facades {
+    /**
+     * @method static void alert(mixed $message)
+     * @method static void critical(mixed $message)
+     * @method static void debug(mixed $message)
+     * @method static void emergency(mixed $message)
+     * @method static void error(mixed $message)
+     * @method static void info(mixed $message)
+     * @method static void log(mixed $message)
+     * @method static void notice(mixed $message)
+     * @method static void warning(mixed $message)
+     * @see \Barryvdh\Debugbar\LaravelDebugbar
+     */
+    class Debugbar extends \DebugBar\DebugBar {
+        /**
+         * Returns the HTTP driver
+         * 
+         * If no http driver where defined, a PhpHttpDriver is automatically created
+         *
+         * @return \DebugBar\HttpDriverInterface
+         * @static
+         */
+        public static function getHttpDriver()
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->getHttpDriver();
+        }
+
+        /**
+         * Enable the Debugbar and boot, if not already booted.
+         *
+         * @static
+         */
+        public static function enable()
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->enable();
+        }
+
+        /**
+         * Boot the debugbar (add collectors, renderer and listener)
+         *
+         * @static
+         */
+        public static function boot()
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->boot();
+        }
+
+        /**
+         * @static
+         */
+        public static function shouldCollect($name, $default = false)
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->shouldCollect($name, $default);
+        }
+
+        /**
+         * Adds a data collector
+         *
+         * @param \DebugBar\DataCollector\DataCollectorInterface $collector
+         * @throws DebugBarException
+         * @return \Barryvdh\Debugbar\LaravelDebugbar
+         * @static
+         */
+        public static function addCollector($collector)
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->addCollector($collector);
+        }
+
+        /**
+         * Handle silenced errors
+         *
+         * @param $level
+         * @param $message
+         * @param string $file
+         * @param int $line
+         * @param array $context
+         * @throws \ErrorException
+         * @static
+         */
+        public static function handleError($level, $message, $file = '', $line = 0, $context = [])
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->handleError($level, $message, $file, $line, $context);
+        }
+
+        /**
+         * Starts a measure
+         *
+         * @param string $name Internal name, used to stop the measure
+         * @param string $label Public name
+         * @param string|null $collector
+         * @param string|null $group
+         * @static
+         */
+        public static function startMeasure($name, $label = null, $collector = null, $group = null)
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->startMeasure($name, $label, $collector, $group);
+        }
+
+        /**
+         * Stops a measure
+         *
+         * @param string $name
+         * @static
+         */
+        public static function stopMeasure($name)
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->stopMeasure($name);
+        }
+
+        /**
+         * Adds an exception to be profiled in the debug bar
+         *
+         * @param \Exception $e
+         * @deprecated in favor of addThrowable
+         * @static
+         */
+        public static function addException($e)
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->addException($e);
+        }
+
+        /**
+         * Adds an exception to be profiled in the debug bar
+         *
+         * @param \Throwable $e
+         * @static
+         */
+        public static function addThrowable($e)
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->addThrowable($e);
+        }
+
+        /**
+         * Returns a JavascriptRenderer for this instance
+         *
+         * @param string $baseUrl
+         * @param string $basePath
+         * @return \Barryvdh\Debugbar\JavascriptRenderer
+         * @static
+         */
+        public static function getJavascriptRenderer($baseUrl = null, $basePath = null)
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->getJavascriptRenderer($baseUrl, $basePath);
+        }
+
+        /**
+         * Modify the response and inject the debugbar (or data in headers)
+         *
+         * @param \Symfony\Component\HttpFoundation\Request $request
+         * @param \Symfony\Component\HttpFoundation\Response $response
+         * @return \Symfony\Component\HttpFoundation\Response
+         * @static
+         */
+        public static function modifyResponse($request, $response)
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->modifyResponse($request, $response);
+        }
+
+        /**
+         * Check if the Debugbar is enabled
+         *
+         * @return boolean
+         * @static
+         */
+        public static function isEnabled()
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->isEnabled();
+        }
+
+        /**
+         * Collects the data from the collectors
+         *
+         * @return array
+         * @static
+         */
+        public static function collect()
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->collect();
+        }
+
+        /**
+         * Injects the web debug toolbar into the given Response.
+         *
+         * @param \Symfony\Component\HttpFoundation\Response $response A Response instance
+         * Based on https://github.com/symfony/WebProfilerBundle/blob/master/EventListener/WebDebugToolbarListener.php
+         * @static
+         */
+        public static function injectDebugbar($response)
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->injectDebugbar($response);
+        }
+
+        /**
+         * Checks if there is stacked data in the session
+         *
+         * @return boolean
+         * @static
+         */
+        public static function hasStackedData()
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->hasStackedData();
+        }
+
+        /**
+         * Returns the data stacked in the session
+         *
+         * @param boolean $delete Whether to delete the data in the session
+         * @return array
+         * @static
+         */
+        public static function getStackedData($delete = true)
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->getStackedData($delete);
+        }
+
+        /**
+         * Disable the Debugbar
+         *
+         * @static
+         */
+        public static function disable()
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->disable();
+        }
+
+        /**
+         * Adds a measure
+         *
+         * @param string $label
+         * @param float $start
+         * @param float $end
+         * @param array|null $params
+         * @param string|null $collector
+         * @param string|null $group
+         * @static
+         */
+        public static function addMeasure($label, $start, $end, $params = [], $collector = null, $group = null)
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->addMeasure($label, $start, $end, $params, $collector, $group);
+        }
+
+        /**
+         * Utility function to measure the execution of a Closure
+         *
+         * @param string $label
+         * @param \Closure $closure
+         * @param string|null $collector
+         * @param string|null $group
+         * @return mixed
+         * @static
+         */
+        public static function measure($label, $closure, $collector = null, $group = null)
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->measure($label, $closure, $collector, $group);
+        }
+
+        /**
+         * Collect data in a CLI request
+         *
+         * @return array
+         * @static
+         */
+        public static function collectConsole()
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->collectConsole();
+        }
+
+        /**
+         * Adds a message to the MessagesCollector
+         * 
+         * A message can be anything from an object to a string
+         *
+         * @param mixed $message
+         * @param string $label
+         * @static
+         */
+        public static function addMessage($message, $label = 'info')
+        {
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->addMessage($message, $label);
+        }
+
+        /**
+         * Checks if a data collector has been added
+         *
+         * @param string $name
+         * @return boolean
+         * @static
+         */
+        public static function hasCollector($name)
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->hasCollector($name);
+        }
+
+        /**
+         * Returns a data collector
+         *
+         * @param string $name
+         * @return \DebugBar\DataCollector\DataCollectorInterface
+         * @throws DebugBarException
+         * @static
+         */
+        public static function getCollector($name)
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->getCollector($name);
+        }
+
+        /**
+         * Returns an array of all data collectors
+         *
+         * @return array[DataCollectorInterface]
+         * @static
+         */
+        public static function getCollectors()
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->getCollectors();
+        }
+
+        /**
+         * Sets the request id generator
+         *
+         * @param \DebugBar\RequestIdGeneratorInterface $generator
+         * @return \Barryvdh\Debugbar\LaravelDebugbar
+         * @static
+         */
+        public static function setRequestIdGenerator($generator)
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->setRequestIdGenerator($generator);
+        }
+
+        /**
+         * @return \DebugBar\RequestIdGeneratorInterface
+         * @static
+         */
+        public static function getRequestIdGenerator()
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->getRequestIdGenerator();
+        }
+
+        /**
+         * Returns the id of the current request
+         *
+         * @return string
+         * @static
+         */
+        public static function getCurrentRequestId()
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->getCurrentRequestId();
+        }
+
+        /**
+         * Sets the storage backend to use to store the collected data
+         *
+         * @param \DebugBar\StorageInterface $storage
+         * @return \Barryvdh\Debugbar\LaravelDebugbar
+         * @static
+         */
+        public static function setStorage($storage = null)
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->setStorage($storage);
+        }
+
+        /**
+         * @return \DebugBar\StorageInterface
+         * @static
+         */
+        public static function getStorage()
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->getStorage();
+        }
+
+        /**
+         * Checks if the data will be persisted
+         *
+         * @return boolean
+         * @static
+         */
+        public static function isDataPersisted()
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->isDataPersisted();
+        }
+
+        /**
+         * Sets the HTTP driver
+         *
+         * @param \DebugBar\HttpDriverInterface $driver
+         * @return \Barryvdh\Debugbar\LaravelDebugbar
+         * @static
+         */
+        public static function setHttpDriver($driver)
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->setHttpDriver($driver);
+        }
+
+        /**
+         * Returns collected data
+         * 
+         * Will collect the data if none have been collected yet
+         *
+         * @return array
+         * @static
+         */
+        public static function getData()
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->getData();
+        }
+
+        /**
+         * Returns an array of HTTP headers containing the data
+         *
+         * @param string $headerName
+         * @param integer $maxHeaderLength
+         * @return array
+         * @static
+         */
+        public static function getDataAsHeaders($headerName = 'phpdebugbar', $maxHeaderLength = 4096, $maxTotalHeaderLength = 250000)
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->getDataAsHeaders($headerName, $maxHeaderLength, $maxTotalHeaderLength);
+        }
+
+        /**
+         * Sends the data through the HTTP headers
+         *
+         * @param bool $useOpenHandler
+         * @param string $headerName
+         * @param integer $maxHeaderLength
+         * @return \Barryvdh\Debugbar\LaravelDebugbar
+         * @static
+         */
+        public static function sendDataInHeaders($useOpenHandler = null, $headerName = 'phpdebugbar', $maxHeaderLength = 4096)
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->sendDataInHeaders($useOpenHandler, $headerName, $maxHeaderLength);
+        }
+
+        /**
+         * Stacks the data in the session for later rendering
+         *
+         * @static
+         */
+        public static function stackData()
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->stackData();
+        }
+
+        /**
+         * Sets the key to use in the $_SESSION array
+         *
+         * @param string $ns
+         * @return \Barryvdh\Debugbar\LaravelDebugbar
+         * @static
+         */
+        public static function setStackDataSessionNamespace($ns)
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->setStackDataSessionNamespace($ns);
+        }
+
+        /**
+         * Returns the key used in the $_SESSION array
+         *
+         * @return string
+         * @static
+         */
+        public static function getStackDataSessionNamespace()
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->getStackDataSessionNamespace();
+        }
+
+        /**
+         * Sets whether to only use the session to store stacked data even
+         * if a storage is enabled
+         *
+         * @param boolean $enabled
+         * @return \Barryvdh\Debugbar\LaravelDebugbar
+         * @static
+         */
+        public static function setStackAlwaysUseSessionStorage($enabled = true)
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->setStackAlwaysUseSessionStorage($enabled);
+        }
+
+        /**
+         * Checks if the session is always used to store stacked data
+         * even if a storage is enabled
+         *
+         * @return boolean
+         * @static
+         */
+        public static function isStackAlwaysUseSessionStorage()
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->isStackAlwaysUseSessionStorage();
+        }
+
+        /**
+         * @static
+         */
+        public static function offsetSet($key, $value)
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->offsetSet($key, $value);
+        }
+
+        /**
+         * @static
+         */
+        public static function offsetGet($key)
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->offsetGet($key);
+        }
+
+        /**
+         * @static
+         */
+        public static function offsetExists($key)
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->offsetExists($key);
+        }
+
+        /**
+         * @static
+         */
+        public static function offsetUnset($key)
+        {
+            //Method inherited from \DebugBar\DebugBar 
+            /** @var \Barryvdh\Debugbar\LaravelDebugbar $instance */
+            return $instance->offsetUnset($key);
+        }
+
+            }
+    }
+
 namespace Livewire {
     /**
      * @see \Livewire\LivewireManager
@@ -23703,6 +24357,23 @@ namespace Spatie\Analytics\Facades {
     }
 
 namespace Illuminate\Support {
+    /**
+     * @template TKey of array-key
+     * @template-covariant TValue
+     * @implements \ArrayAccess<TKey, TValue>
+     * @implements \Illuminate\Support\Enumerable<TKey, TValue>
+     */
+    class Collection {
+        /**
+         * @see \Barryvdh\Debugbar\ServiceProvider::register()
+         * @static
+         */
+        public static function debug()
+        {
+            return \Illuminate\Support\Collection::debug();
+        }
+
+            }
     /**
      */
     class Str {
@@ -29395,6 +30066,21 @@ namespace  {
         }
 
         /**
+         * Add a vector-similarity selection to the query.
+         *
+         * @param \Illuminate\Contracts\Database\Query\Expression|string $column
+         * @param \Illuminate\Support\Collection<int, float>|\Illuminate\Contracts\Support\Arrayable|array<int, float>|string $vector
+         * @param string|null $as
+         * @return \Illuminate\Database\Eloquent\Builder<static>
+         * @static
+         */
+        public static function selectVectorDistance($column, $vector, $as = null)
+        {
+            /** @var \Illuminate\Database\Query\Builder $instance */
+            return $instance->selectVectorDistance($column, $vector, $as);
+        }
+
+        /**
          * Force the query to only return distinct results.
          *
          * @return \Illuminate\Database\Eloquent\Builder<static>
@@ -29727,6 +30413,53 @@ namespace  {
         {
             /** @var \Illuminate\Database\Query\Builder $instance */
             return $instance->orWhereColumn($first, $operator, $second);
+        }
+
+        /**
+         * Add a vector similarity clause to the query, filtering by minimum similarity and ordering by similarity.
+         *
+         * @param \Illuminate\Contracts\Database\Query\Expression|string $column
+         * @param \Illuminate\Support\Collection<int, float>|\Illuminate\Contracts\Support\Arrayable|array<int, float>|string $vector
+         * @param float $minSimilarity A value between 0.0 and 1.0, where 1.0 is identical.
+         * @param bool $order
+         * @return \Illuminate\Database\Eloquent\Builder<static>
+         * @static
+         */
+        public static function whereVectorSimilarTo($column, $vector, $minSimilarity = 0.6, $order = true)
+        {
+            /** @var \Illuminate\Database\Query\Builder $instance */
+            return $instance->whereVectorSimilarTo($column, $vector, $minSimilarity, $order);
+        }
+
+        /**
+         * Add a vector distance "where" clause to the query.
+         *
+         * @param \Illuminate\Contracts\Database\Query\Expression|string $column
+         * @param \Illuminate\Support\Collection<int, float>|\Illuminate\Contracts\Support\Arrayable|array<int, float>|string $vector
+         * @param float $maxDistance
+         * @param string $boolean
+         * @return \Illuminate\Database\Eloquent\Builder<static>
+         * @static
+         */
+        public static function whereVectorDistanceLessThan($column, $vector, $maxDistance, $boolean = 'and')
+        {
+            /** @var \Illuminate\Database\Query\Builder $instance */
+            return $instance->whereVectorDistanceLessThan($column, $vector, $maxDistance, $boolean);
+        }
+
+        /**
+         * Add a vector distance "or where" clause to the query.
+         *
+         * @param \Illuminate\Contracts\Database\Query\Expression|string $column
+         * @param \Illuminate\Support\Collection<int, float>|\Illuminate\Contracts\Support\Arrayable|array<int, float>|string $vector
+         * @param float $maxDistance
+         * @return \Illuminate\Database\Eloquent\Builder<static>
+         * @static
+         */
+        public static function orWhereVectorDistanceLessThan($column, $vector, $maxDistance)
+        {
+            /** @var \Illuminate\Database\Query\Builder $instance */
+            return $instance->orWhereVectorDistanceLessThan($column, $vector, $maxDistance);
         }
 
         /**
@@ -31052,6 +31785,20 @@ namespace  {
         }
 
         /**
+         * Add a vector-distance "order by" clause to the query.
+         *
+         * @param \Illuminate\Contracts\Database\Query\Expression|string $column
+         * @param \Illuminate\Support\Collection<int, float>|\Illuminate\Contracts\Support\Arrayable|array<int, float> $vector
+         * @return \Illuminate\Database\Eloquent\Builder<static>
+         * @static
+         */
+        public static function orderByVectorDistance($column, $vector)
+        {
+            /** @var \Illuminate\Database\Query\Builder $instance */
+            return $instance->orderByVectorDistance($column, $vector);
+        }
+
+        /**
          * Put the query's results in random order.
          *
          * @param string|int $seed
@@ -32217,6 +32964,7 @@ namespace  {
     class View extends \Illuminate\Support\Facades\View {}
     class Vite extends \Illuminate\Support\Facades\Vite {}
     class EloquentSerialize extends \AnourValar\EloquentSerialize\Facades\EloquentSerializeFacade {}
+    class Debugbar extends \Barryvdh\Debugbar\Facades\Debugbar {}
     class Livewire extends \Livewire\Livewire {}
     class Analytics extends \Spatie\Analytics\Facades\Analytics {}
 }

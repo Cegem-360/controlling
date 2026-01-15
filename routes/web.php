@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\GoogleAdsOAuthController;
+use App\Livewire\Pages\Settings;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
@@ -21,7 +22,9 @@ Route::get('/language/{locale}', function (string $locale) {
 
     return redirect($redirectUrl)->withCookie($cookie);
 })->name('language.switch');
-
+Route::get('/settings', Settings::class)
+    ->middleware(['auth', 'verified'])
+    ->name('settings');
 // Google Ads OAuth Routes
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/google-ads/auth/redirect/{team}', [GoogleAdsOAuthController::class, 'redirect'])
