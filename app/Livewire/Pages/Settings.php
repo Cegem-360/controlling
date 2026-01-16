@@ -27,8 +27,10 @@ use Filament\Schemas\Schema;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('components.layouts.dashboard')]
 final class Settings extends Component implements HasActions, HasSchemas
 {
     use InteractsWithActions;
@@ -260,8 +262,7 @@ final class Settings extends Component implements HasActions, HasSchemas
 
     public function render(): ViewContract
     {
-        return view('livewire.pages.settings')
-            ->layout('components.layouts.dashboard');
+        return view('livewire.pages.settings');
     }
 
     public function syncAnalyticsAction(): Action

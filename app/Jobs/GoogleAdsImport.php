@@ -17,6 +17,11 @@ use App\Services\GoogleAdsOAuthService;
 use Exception;
 use Filament\Notifications\Notification;
 use Google\Ads\GoogleAds\Lib\V22\GoogleAdsClient;
+use Google\Ads\GoogleAds\V22\Enums\AdGroupStatusEnum\AdGroupStatus;
+use Google\Ads\GoogleAds\V22\Enums\AgeRangeTypeEnum\AgeRangeType;
+use Google\Ads\GoogleAds\V22\Enums\CampaignStatusEnum\CampaignStatus;
+use Google\Ads\GoogleAds\V22\Enums\DeviceEnum\Device;
+use Google\Ads\GoogleAds\V22\Enums\GenderTypeEnum\GenderType;
 use Google\Ads\GoogleAds\V22\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V22\Services\SearchGoogleAdsRequest;
 use Illuminate\Bus\Batchable;
@@ -135,7 +140,7 @@ final class GoogleAdsImport implements ShouldQueue
                     ],
                     [
                         'campaign_name' => $campaign->getName(),
-                        'campaign_status' => $campaign->getStatus()->name,
+                        'campaign_status' => CampaignStatus::name($campaign->getStatus()),
                         'impressions' => $metrics->getImpressions(),
                         'clicks' => $clicks,
                         'cost' => $metrics->getCostMicros() / 1_000_000,
@@ -194,7 +199,7 @@ final class GoogleAdsImport implements ShouldQueue
                         'campaign_id' => (string) $campaign->getId(),
                         'campaign_name' => $campaign->getName(),
                         'ad_group_name' => $adGroup->getName(),
-                        'ad_group_status' => $adGroup->getStatus()->name,
+                        'ad_group_status' => AdGroupStatus::name($adGroup->getStatus()),
                         'impressions' => $metrics->getImpressions(),
                         'clicks' => $clicks,
                         'cost' => $metrics->getCostMicros() / 1_000_000,
@@ -296,12 +301,12 @@ final class GoogleAdsImport implements ShouldQueue
             $segments = $row->getSegments();
             $metrics = $row->getMetrics();
 
-            $key = $segments->getDate() . '|' . $segments->getDevice()->name;
+            $key = $segments->getDate() . '|' . Device::name($segments->getDevice());
 
             if (! isset($aggregated[$key])) {
                 $aggregated[$key] = [
                     'date' => $segments->getDate(),
-                    'device' => $segments->getDevice()->name,
+                    'device' => Device::name($segments->getDevice()),
                     'impressions' => 0,
                     'clicks' => 0,
                     'cost' => 0,
@@ -368,7 +373,7 @@ final class GoogleAdsImport implements ShouldQueue
                     [
                         'team_id' => $this->teamId,
                         'date' => $segments->getDate(),
-                        'gender' => $criterion->getGender()->getType()->name,
+                        'gender' => GenderType::name($criterion->getGender()->getType()),
                         'age_range' => null,
                     ],
                     [
@@ -411,7 +416,7 @@ final class GoogleAdsImport implements ShouldQueue
                         'team_id' => $this->teamId,
                         'date' => $segments->getDate(),
                         'gender' => null,
-                        'age_range' => $criterion->getAgeRange()->getType()->name,
+                        'age_range' => AgeRangeType::name($criterion->getAgeRange()->getType()),
                     ],
                     [
                         'impressions' => $metrics->getImpressions(),

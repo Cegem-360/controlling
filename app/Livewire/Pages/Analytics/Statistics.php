@@ -20,9 +20,11 @@ use Google\Service\AnalyticsData\RunReportRequest;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
+#[Layout('components.layouts.dashboard')]
 final class Statistics extends Component
 {
     public ?Team $team = null;
@@ -134,7 +136,7 @@ final class Statistics extends Component
         return view('livewire.pages.analytics.statistics', [
             'paginatedTopPages' => $this->getPaginatedTopPages(),
             'paginatedUserSources' => $this->getPaginatedUserSources(),
-        ])->layout('components.layouts.dashboard');
+        ]);
     }
 
     /**

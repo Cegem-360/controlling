@@ -8,9 +8,11 @@ use App\Models\Kpi;
 use App\Models\Team;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
+#[Layout('components.layouts.dashboard')]
 final class Index extends Component
 {
     public ?Team $team = null;
@@ -63,7 +65,7 @@ final class Index extends Component
     {
         return view('livewire.pages.kpis.index', [
             'paginatedKpis' => $this->getPaginatedKpis(),
-        ])->layout('components.layouts.dashboard');
+        ]);
     }
 
     /**

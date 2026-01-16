@@ -12,9 +12,11 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
+#[Layout('components.layouts.dashboard')]
 final class GeneralStats extends Component
 {
     public ?Team $team = null;
@@ -130,7 +132,7 @@ final class GeneralStats extends Component
         return view('livewire.pages.search-console.general-stats', [
             'paginatedQueries' => $this->getPaginatedQueries(),
             'paginatedPages' => $this->getPaginatedPages(),
-        ])->layout('components.layouts.dashboard');
+        ]);
     }
 
     /**

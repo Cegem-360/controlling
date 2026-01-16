@@ -16,8 +16,10 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('components.layouts.dashboard')]
 final class Dashboard extends Component
 {
     public ?Team $team = null;
@@ -74,8 +76,7 @@ final class Dashboard extends Component
 
     public function render(): View
     {
-        return view('livewire.pages.google-ads.dashboard')
-            ->layout('components.layouts.dashboard');
+        return view('livewire.pages.google-ads.dashboard');
     }
 
     private function loadGoogleAdsData(): void

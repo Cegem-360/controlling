@@ -16,10 +16,12 @@ use Google\Service\AnalyticsData\Row;
 use Google\Service\AnalyticsData\RunReportRequest;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout('components.layouts.dashboard')]
 final class GeneralStats extends Component
 {
     use WithPagination;
@@ -86,7 +88,7 @@ final class GeneralStats extends Component
             'paginatedTopPages' => $this->getPaginatedTopPages(),
             'paginatedUserSources' => $this->getPaginatedUserSources(),
             'paginatedSessionSources' => $this->getPaginatedSessionSources(),
-        ])->layout('components.layouts.dashboard');
+        ]);
     }
 
     public function sortTopPages(string $column): void

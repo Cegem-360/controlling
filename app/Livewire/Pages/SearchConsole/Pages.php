@@ -10,9 +10,11 @@ use Carbon\CarbonInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
+#[Layout('components.layouts.dashboard')]
 final class Pages extends Component
 {
     public ?Team $team = null;
@@ -86,7 +88,7 @@ final class Pages extends Component
     {
         return view('livewire.pages.search-console.pages', [
             'paginatedPages' => $this->getPaginatedPages(),
-        ])->layout('components.layouts.dashboard');
+        ]);
     }
 
     /**

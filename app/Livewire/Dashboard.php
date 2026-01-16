@@ -8,8 +8,10 @@ use App\Models\Team;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('components.layouts.dashboard')]
 final class Dashboard extends Component
 {
     /** @var Collection<int, Team> */
@@ -22,7 +24,6 @@ final class Dashboard extends Component
 
     public function render(): View
     {
-        return view('livewire.dashboard')
-            ->layout('components.layouts.dashboard');
+        return view('livewire.dashboard');
     }
 }
