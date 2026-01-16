@@ -11,6 +11,7 @@ use App\Models\Team;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -100,7 +101,7 @@ final class Pages extends Component
             ->map(fn ($item): array => [
                 'date' => $item->date->format('Y-m-d'),
                 'page_url' => $item->page_url,
-                'device' => ucfirst(mb_strtolower($item->device ?? __('Unknown'))),
+                'device' => Str::ucfirst(Str::lower($item->device ?? __('Unknown'))),
                 'impressions' => (int) $item->impressions,
                 'clicks' => (int) $item->clicks,
                 'ctr' => round((float) $item->ctr, 2),
