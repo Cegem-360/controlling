@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Pages\Analytics;
 
 use App\Filament\Pages\Actions\SetAnalyticsKpiGoalAction;
+use App\Livewire\Concerns\WithDataTable;
 use App\Models\AnalyticsPageview;
 use App\Models\AnalyticsSession;
 use App\Models\GlobalSetting;
@@ -35,6 +36,7 @@ final class Statistics extends Component implements HasActions, HasSchemas
 {
     use InteractsWithActions;
     use InteractsWithSchemas;
+    use WithDataTable;
 
     public ?Team $team = null;
 
@@ -100,23 +102,17 @@ final class Statistics extends Component implements HasActions, HasSchemas
 
     public function sortTopPages(string $column): void
     {
-        if ($this->topPagesSortBy === $column) {
-            $this->topPagesSortDir = $this->topPagesSortDir === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->topPagesSortBy = $column;
-            $this->topPagesSortDir = 'desc';
-        }
+        $result = $this->toggleSort($column, $this->topPagesSortBy, $this->topPagesSortDir);
+        $this->topPagesSortBy = $result['sortBy'];
+        $this->topPagesSortDir = $result['sortDir'];
         $this->topPagesPage = 1;
     }
 
     public function sortUserSources(string $column): void
     {
-        if ($this->userSourcesSortBy === $column) {
-            $this->userSourcesSortDir = $this->userSourcesSortDir === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->userSourcesSortBy = $column;
-            $this->userSourcesSortDir = 'desc';
-        }
+        $result = $this->toggleSort($column, $this->userSourcesSortBy, $this->userSourcesSortDir);
+        $this->userSourcesSortBy = $result['sortBy'];
+        $this->userSourcesSortDir = $result['sortDir'];
         $this->userSourcesPage = 1;
     }
 
@@ -174,68 +170,6 @@ final class Statistics extends Component implements HasActions, HasSchemas
         $sorted = $this->sortData($filtered, $this->userSourcesSortBy, $this->userSourcesSortDir);
 
         return $this->paginateData($sorted, $this->userSourcesPerPage, $this->userSourcesPage);
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $data
-     * @param  array<string>  $searchFields
-     * @return array<int, array<string, mixed>>
-     */
-    private function filterData(array $data, string $search, array $searchFields): array
-    {
-        if ($search === '') {
-            return $data;
-        }
-
-        $search = mb_strtolower($search);
-
-        return array_values(array_filter($data, function (array $row) use ($search, $searchFields): bool {
-            foreach ($searchFields as $field) {
-                if (isset($row[$field]) && str_contains(mb_strtolower((string) $row[$field]), $search)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }));
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $data
-     * @return array<int, array<string, mixed>>
-     */
-    private function sortData(array $data, string $sortBy, string $sortDir): array
-    {
-        usort($data, function (array $a, array $b) use ($sortBy, $sortDir): int {
-            $aVal = $a[$sortBy] ?? 0;
-            $bVal = $b[$sortBy] ?? 0;
-
-            $result = is_string($aVal) ? strcmp((string) $aVal, (string) $bVal) : $aVal <=> $bVal;
-
-            return $sortDir === 'asc' ? $result : -$result;
-        });
-
-        return $data;
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $data
-     * @return array{data: array<int, array<string, mixed>>, total: int, perPage: int, currentPage: int, lastPage: int}
-     */
-    private function paginateData(array $data, int $perPage, int $currentPage): array
-    {
-        $total = count($data);
-        $lastPage = max(1, (int) ceil($total / $perPage));
-        $currentPage = min($currentPage, $lastPage);
-        $offset = ($currentPage - 1) * $perPage;
-
-        return [
-            'data' => array_slice($data, $offset, $perPage),
-            'total' => $total,
-            'perPage' => $perPage,
-            'currentPage' => $currentPage,
-            'lastPage' => $lastPage,
-        ];
     }
 
     private function loadAnalyticsData(): void
