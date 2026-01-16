@@ -24,16 +24,22 @@ final class Dashboard extends Component
 {
     public ?Team $team = null;
 
-    public string $dateRangeType = '28_days';
+    public string $dateRangeType = 'last_month';
 
     /** @var array<string, mixed> */
     public array $stats = [];
+
+    /** @var array<string, mixed> */
+    public array $previousStats = [];
 
     /** @var array<int, array<string, mixed>> */
     public array $campaigns = [];
 
     /** @var array<int, array<string, mixed>> */
     public array $adGroups = [];
+
+    /** @var array<int, array<string, mixed>> */
+    public array $dailyStats = [];
 
     /** @var array<int, array<string, mixed>> */
     public array $hourlyStats = [];
@@ -50,10 +56,16 @@ final class Dashboard extends Component
     /** @var array<int, array<string, mixed>> */
     public array $geographicStats = [];
 
+    /** @var array<int, array<string, mixed>> */
+    public array $monthlyStats = [];
+
+    /** @var array<int, array<string, mixed>> */
+    public array $previousYearMonthlyStats = [];
+
     public function mount(): void
     {
         $this->team = Auth::user()->teams()->first();
-        $this->dateRangeType = Session::get('google_ads_date_range', '28_days');
+        $this->dateRangeType = Session::get('google_ads_date_range', 'last_month');
         $this->loadGoogleAdsData();
     }
 
@@ -64,14 +76,58 @@ final class Dashboard extends Component
         $this->loadGoogleAdsData();
     }
 
-    public function getStartDate(): CarbonInterface
+    /**
+     * @return array{start: CarbonInterface, end: CarbonInterface}
+     */
+    public function getDateRange(): array
     {
         return match ($this->dateRangeType) {
-            '7_days' => now()->subDays(7),
-            '28_days' => now()->subDays(28),
-            '3_months' => now()->subMonths(3),
-            default => now()->subDays(28),
+            '7_days' => [
+                'start' => now()->subDays(7)->startOfDay(),
+                'end' => now()->endOfDay(),
+            ],
+            '28_days' => [
+                'start' => now()->subDays(28)->startOfDay(),
+                'end' => now()->endOfDay(),
+            ],
+            'last_month' => [
+                'start' => now()->subMonth()->startOfMonth(),
+                'end' => now()->subMonth()->endOfMonth(),
+            ],
+            'this_month' => [
+                'start' => now()->startOfMonth(),
+                'end' => now()->endOfDay(),
+            ],
+            '3_months' => [
+                'start' => now()->subMonths(3)->startOfDay(),
+                'end' => now()->endOfDay(),
+            ],
+            default => [
+                'start' => now()->subMonth()->startOfMonth(),
+                'end' => now()->subMonth()->endOfMonth(),
+            ],
         };
+    }
+
+    /**
+     * @return array{start: CarbonInterface, end: CarbonInterface}
+     */
+    public function getPreviousDateRange(): array
+    {
+        $current = $this->getDateRange();
+        $daysDiff = $current['start']->diffInDays($current['end']);
+
+        return [
+            'start' => $current['start']->copy()->subDays($daysDiff + 1),
+            'end' => $current['start']->copy()->subDay(),
+        ];
+    }
+
+    public function getDateRangeLabel(): string
+    {
+        $range = $this->getDateRange();
+
+        return $range['start']->format('Y. M j.') . ' - ' . $range['end']->format('Y. M j.');
     }
 
     public function render(): View
@@ -79,27 +135,85 @@ final class Dashboard extends Component
         return view('livewire.pages.google-ads.dashboard');
     }
 
+    /**
+     * Calculate percentage change between current and previous values.
+     */
+    public function getPercentageChange(string $key): float
+    {
+        $current = (float) ($this->stats[$key] ?? 0);
+        $previous = (float) ($this->previousStats[$key] ?? 0);
+
+        if ($previous === 0.0) {
+            return $current > 0 ? 100.0 : 0.0;
+        }
+
+        return (($current - $previous) / $previous) * 100;
+    }
+
     private function loadGoogleAdsData(): void
     {
-        $startDate = $this->getStartDate();
+        $dateRange = $this->getDateRange();
+        $previousRange = $this->getPreviousDateRange();
 
-        // Load general stats
-        $this->stats = [
-            'total_impressions' => GoogleAdsCampaign::query()->where('date', '>=', $startDate)->sum('impressions'),
-            'total_clicks' => GoogleAdsCampaign::query()->where('date', '>=', $startDate)->sum('clicks'),
-            'total_cost' => GoogleAdsCampaign::query()->where('date', '>=', $startDate)->sum('cost'),
-            'total_conversions' => GoogleAdsCampaign::query()->where('date', '>=', $startDate)->sum('conversions'),
-            'avg_ctr' => GoogleAdsCampaign::query()->where('date', '>=', $startDate)->avg('ctr') ?? 0,
-            'avg_cpc' => GoogleAdsCampaign::query()->where('date', '>=', $startDate)->avg('avg_cpc') ?? 0,
-            'avg_conversion_rate' => GoogleAdsCampaign::query()->where('date', '>=', $startDate)->avg('conversion_rate') ?? 0,
+        $this->loadStats($dateRange, $previousRange);
+        $this->loadCampaigns($dateRange);
+        $this->loadAdGroups($dateRange);
+        $this->loadDailyStats($dateRange);
+        $this->loadHourlyStats($dateRange);
+        $this->loadDeviceStats($dateRange);
+        $this->loadDemographicStats($dateRange);
+        $this->loadGeographicStats($dateRange);
+        $this->loadMonthlyStats();
+    }
+
+    /**
+     * @param  array{start: CarbonInterface, end: CarbonInterface}  $dateRange
+     * @param  array{start: CarbonInterface, end: CarbonInterface}  $previousRange
+     */
+    private function loadStats(array $dateRange, array $previousRange): void
+    {
+        $this->stats = $this->calculateStats($dateRange);
+        $this->previousStats = $this->calculateStats($previousRange);
+    }
+
+    /**
+     * @param  array{start: CarbonInterface, end: CarbonInterface}  $dateRange
+     * @return array<string, mixed>
+     */
+    private function calculateStats(array $dateRange): array
+    {
+        $data = GoogleAdsCampaign::query()
+            ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
+            ->selectRaw('
+                SUM(impressions) as total_impressions,
+                SUM(clicks) as total_clicks,
+                SUM(cost) as total_cost,
+                SUM(conversions) as total_conversions
+            ')
+            ->first();
+
+        $totalImpressions = (int) ($data->total_impressions ?? 0);
+        $totalClicks = (int) ($data->total_clicks ?? 0);
+        $totalCost = (float) ($data->total_cost ?? 0);
+        $totalConversions = (float) ($data->total_conversions ?? 0);
+
+        return [
+            'total_impressions' => $totalImpressions,
+            'total_clicks' => $totalClicks,
+            'total_cost' => $totalCost,
+            'total_conversions' => $totalConversions,
+            'avg_ctr' => $totalImpressions > 0 ? ($totalClicks / $totalImpressions) * 100 : 0,
+            'avg_cpc' => $totalClicks > 0 ? $totalCost / $totalClicks : 0,
+            'cost_per_conversion' => $totalConversions > 0 ? $totalCost / $totalConversions : 0,
+            'conversion_rate' => $totalClicks > 0 ? ($totalConversions / $totalClicks) * 100 : 0,
         ];
+    }
 
-        // Calculate cost per conversion
-        $this->stats['cost_per_conversion'] = $this->stats['total_conversions'] > 0
-            ? $this->stats['total_cost'] / $this->stats['total_conversions']
-            : 0;
-
-        // Load campaigns
+    /**
+     * @param  array{start: CarbonInterface, end: CarbonInterface}  $dateRange
+     */
+    private function loadCampaigns(array $dateRange): void
+    {
         $this->campaigns = GoogleAdsCampaign::query()
             ->select(
                 'campaign_id',
@@ -108,32 +222,39 @@ final class Dashboard extends Component
                 DB::raw('SUM(clicks) as total_clicks'),
                 DB::raw('SUM(cost) as total_cost'),
                 DB::raw('SUM(conversions) as total_conversions'),
-                DB::raw('AVG(ctr) as avg_ctr'),
-                DB::raw('AVG(avg_cpc) as avg_cpc'),
-                DB::raw('AVG(conversion_rate) as avg_conversion_rate'),
             )
-            ->where('date', '>=', $startDate)
+            ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
             ->groupBy('campaign_id', 'campaign_name')
-            ->orderByDesc('total_clicks')
+            ->orderByDesc('total_impressions')
             ->limit(20)
             ->get()
-            ->map(fn ($item): array => [
-                'campaign_id' => $item->campaign_id,
-                'campaign_name' => $item->campaign_name,
-                'impressions' => (int) $item->total_impressions,
-                'clicks' => (int) $item->total_clicks,
-                'cost' => round((float) $item->total_cost, 2),
-                'conversions' => round((float) $item->total_conversions, 2),
-                'ctr' => round((float) $item->avg_ctr, 2),
-                'avg_cpc' => round((float) $item->avg_cpc, 2),
-                'conversion_rate' => round((float) $item->avg_conversion_rate, 2),
-                'cost_per_conversion' => $item->total_conversions > 0
-                    ? round($item->total_cost / $item->total_conversions, 2)
-                    : 0,
-            ])
-            ->toArray();
+            ->map(function ($item): array {
+                $impressions = (int) $item->total_impressions;
+                $clicks = (int) $item->total_clicks;
+                $cost = (float) $item->total_cost;
+                $conversions = (float) $item->total_conversions;
 
-        // Load ad groups
+                return [
+                    'campaign_id' => $item->campaign_id,
+                    'campaign_name' => $item->campaign_name,
+                    'impressions' => $impressions,
+                    'clicks' => $clicks,
+                    'cost' => round($cost, 2),
+                    'conversions' => round($conversions, 2),
+                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
+                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
+                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
+                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
+                ];
+            })
+            ->toArray();
+    }
+
+    /**
+     * @param  array{start: CarbonInterface, end: CarbonInterface}  $dateRange
+     */
+    private function loadAdGroups(array $dateRange): void
+    {
         $this->adGroups = GoogleAdsAdGroup::query()
             ->select(
                 'campaign_name',
@@ -143,30 +264,79 @@ final class Dashboard extends Component
                 DB::raw('SUM(clicks) as total_clicks'),
                 DB::raw('SUM(cost) as total_cost'),
                 DB::raw('SUM(conversions) as total_conversions'),
-                DB::raw('AVG(ctr) as avg_ctr'),
-                DB::raw('AVG(conversion_rate) as avg_conversion_rate'),
             )
-            ->where('date', '>=', $startDate)
+            ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
             ->groupBy('campaign_name', 'ad_group_id', 'ad_group_name')
-            ->orderByDesc('total_clicks')
-            ->limit(20)
+            ->orderByDesc('total_impressions')
+            ->limit(30)
             ->get()
-            ->map(fn ($item): array => [
-                'campaign_name' => $item->campaign_name,
-                'ad_group_name' => $item->ad_group_name,
-                'impressions' => (int) $item->total_impressions,
-                'clicks' => (int) $item->total_clicks,
-                'cost' => round((float) $item->total_cost, 2),
-                'conversions' => round((float) $item->total_conversions, 2),
-                'ctr' => round((float) $item->avg_ctr, 2),
-                'conversion_rate' => round((float) $item->avg_conversion_rate, 2),
-                'cost_per_conversion' => $item->total_conversions > 0
-                    ? round($item->total_cost / $item->total_conversions, 2)
-                    : 0,
-            ])
-            ->toArray();
+            ->map(function ($item): array {
+                $impressions = (int) $item->total_impressions;
+                $clicks = (int) $item->total_clicks;
+                $cost = (float) $item->total_cost;
+                $conversions = (float) $item->total_conversions;
 
-        // Load hourly stats (aggregated)
+                return [
+                    'campaign_name' => $item->campaign_name,
+                    'ad_group_name' => $item->ad_group_name,
+                    'impressions' => $impressions,
+                    'clicks' => $clicks,
+                    'cost' => round($cost, 2),
+                    'conversions' => round($conversions, 2),
+                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
+                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
+                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
+                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
+                ];
+            })
+            ->toArray();
+    }
+
+    /**
+     * @param  array{start: CarbonInterface, end: CarbonInterface}  $dateRange
+     */
+    private function loadDailyStats(array $dateRange): void
+    {
+        $this->dailyStats = GoogleAdsCampaign::query()
+            ->select(
+                'date',
+                DB::raw('SUM(impressions) as total_impressions'),
+                DB::raw('SUM(clicks) as total_clicks'),
+                DB::raw('SUM(cost) as total_cost'),
+                DB::raw('SUM(conversions) as total_conversions'),
+            )
+            ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
+            ->groupBy('date')
+            ->orderBy('date', 'desc')
+            ->get()
+            ->map(function ($item): array {
+                $impressions = (int) $item->total_impressions;
+                $clicks = (int) $item->total_clicks;
+                $cost = (float) $item->total_cost;
+                $conversions = (float) $item->total_conversions;
+
+                return [
+                    'date' => $item->date->format('Y-m-d'),
+                    'date_formatted' => $item->date->translatedFormat('Y. M j.'),
+                    'day_name' => $item->date->translatedFormat('l'),
+                    'impressions' => $impressions,
+                    'clicks' => $clicks,
+                    'cost' => round($cost, 2),
+                    'conversions' => round($conversions, 2),
+                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
+                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
+                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
+                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
+                ];
+            })
+            ->toArray();
+    }
+
+    /**
+     * @param  array{start: CarbonInterface, end: CarbonInterface}  $dateRange
+     */
+    private function loadHourlyStats(array $dateRange): void
+    {
         $this->hourlyStats = GoogleAdsHourlyStat::query()
             ->select(
                 'hour',
@@ -175,20 +345,36 @@ final class Dashboard extends Component
                 DB::raw('SUM(cost) as total_cost'),
                 DB::raw('SUM(conversions) as total_conversions'),
             )
-            ->where('date', '>=', $startDate)
+            ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
             ->groupBy('hour')
             ->orderBy('hour')
             ->get()
-            ->map(fn ($item): array => [
-                'hour' => $item->hour,
-                'impressions' => (int) $item->total_impressions,
-                'clicks' => (int) $item->total_clicks,
-                'cost' => round((float) $item->total_cost, 2),
-                'conversions' => round((float) $item->total_conversions, 2),
-            ])
-            ->toArray();
+            ->map(function ($item): array {
+                $impressions = (int) $item->total_impressions;
+                $clicks = (int) $item->total_clicks;
+                $cost = (float) $item->total_cost;
+                $conversions = (float) $item->total_conversions;
 
-        // Load device stats
+                return [
+                    'hour' => $item->hour,
+                    'impressions' => $impressions,
+                    'clicks' => $clicks,
+                    'cost' => round($cost, 2),
+                    'conversions' => round($conversions, 2),
+                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
+                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
+                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
+                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
+                ];
+            })
+            ->toArray();
+    }
+
+    /**
+     * @param  array{start: CarbonInterface, end: CarbonInterface}  $dateRange
+     */
+    private function loadDeviceStats(array $dateRange): void
+    {
         $this->deviceStats = GoogleAdsDeviceStat::query()
             ->select(
                 'device',
@@ -196,24 +382,37 @@ final class Dashboard extends Component
                 DB::raw('SUM(clicks) as total_clicks'),
                 DB::raw('SUM(cost) as total_cost'),
                 DB::raw('SUM(conversions) as total_conversions'),
-                DB::raw('AVG(ctr) as avg_ctr'),
-                DB::raw('AVG(conversion_rate) as avg_conversion_rate'),
             )
-            ->where('date', '>=', $startDate)
+            ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
             ->groupBy('device')
-            ->orderByDesc('total_clicks')
+            ->orderByDesc('total_impressions')
             ->get()
-            ->map(fn ($item): array => [
-                'device' => $this->getDeviceName($item->device),
-                'impressions' => (int) $item->total_impressions,
-                'clicks' => (int) $item->total_clicks,
-                'cost' => round((float) $item->total_cost, 2),
-                'conversions' => round((float) $item->total_conversions, 2),
-                'ctr' => round((float) $item->avg_ctr, 2),
-                'conversion_rate' => round((float) $item->avg_conversion_rate, 2),
-            ])
-            ->toArray();
+            ->map(function ($item): array {
+                $impressions = (int) $item->total_impressions;
+                $clicks = (int) $item->total_clicks;
+                $cost = (float) $item->total_cost;
+                $conversions = (float) $item->total_conversions;
 
+                return [
+                    'device' => $this->getDeviceName($item->device),
+                    'impressions' => $impressions,
+                    'clicks' => $clicks,
+                    'cost' => round($cost, 2),
+                    'conversions' => round($conversions, 2),
+                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
+                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
+                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
+                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
+                ];
+            })
+            ->toArray();
+    }
+
+    /**
+     * @param  array{start: CarbonInterface, end: CarbonInterface}  $dateRange
+     */
+    private function loadDemographicStats(array $dateRange): void
+    {
         // Load gender stats
         $this->genderStats = GoogleAdsDemographic::query()
             ->select(
@@ -222,21 +421,30 @@ final class Dashboard extends Component
                 DB::raw('SUM(clicks) as total_clicks'),
                 DB::raw('SUM(cost) as total_cost'),
                 DB::raw('SUM(conversions) as total_conversions'),
-                DB::raw('AVG(conversion_rate) as avg_conversion_rate'),
             )
-            ->where('date', '>=', $startDate)
+            ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
             ->whereNotNull('gender')
             ->groupBy('gender')
-            ->orderByDesc('total_clicks')
+            ->orderByDesc('total_impressions')
             ->get()
-            ->map(fn ($item): array => [
-                'gender' => $this->getGenderName($item->gender),
-                'impressions' => (int) $item->total_impressions,
-                'clicks' => (int) $item->total_clicks,
-                'cost' => round((float) $item->total_cost, 2),
-                'conversions' => round((float) $item->total_conversions, 2),
-                'conversion_rate' => round((float) $item->avg_conversion_rate, 2),
-            ])
+            ->map(function ($item): array {
+                $impressions = (int) $item->total_impressions;
+                $clicks = (int) $item->total_clicks;
+                $cost = (float) $item->total_cost;
+                $conversions = (float) $item->total_conversions;
+
+                return [
+                    'gender' => $this->getGenderName($item->gender),
+                    'impressions' => $impressions,
+                    'clicks' => $clicks,
+                    'cost' => round($cost, 2),
+                    'conversions' => round($conversions, 2),
+                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
+                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
+                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
+                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
+                ];
+            })
             ->toArray();
 
         // Load age stats
@@ -247,24 +455,38 @@ final class Dashboard extends Component
                 DB::raw('SUM(clicks) as total_clicks'),
                 DB::raw('SUM(cost) as total_cost'),
                 DB::raw('SUM(conversions) as total_conversions'),
-                DB::raw('AVG(conversion_rate) as avg_conversion_rate'),
             )
-            ->where('date', '>=', $startDate)
+            ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
             ->whereNotNull('age_range')
             ->groupBy('age_range')
-            ->orderByDesc('total_clicks')
+            ->orderByDesc('total_impressions')
             ->get()
-            ->map(fn ($item): array => [
-                'age_range' => $this->getAgeRangeName($item->age_range),
-                'impressions' => (int) $item->total_impressions,
-                'clicks' => (int) $item->total_clicks,
-                'cost' => round((float) $item->total_cost, 2),
-                'conversions' => round((float) $item->total_conversions, 2),
-                'conversion_rate' => round((float) $item->avg_conversion_rate, 2),
-            ])
-            ->toArray();
+            ->map(function ($item): array {
+                $impressions = (int) $item->total_impressions;
+                $clicks = (int) $item->total_clicks;
+                $cost = (float) $item->total_cost;
+                $conversions = (float) $item->total_conversions;
 
-        // Load geographic stats
+                return [
+                    'age_range' => $this->getAgeRangeName($item->age_range),
+                    'impressions' => $impressions,
+                    'clicks' => $clicks,
+                    'cost' => round($cost, 2),
+                    'conversions' => round($conversions, 2),
+                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
+                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
+                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
+                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
+                ];
+            })
+            ->toArray();
+    }
+
+    /**
+     * @param  array{start: CarbonInterface, end: CarbonInterface}  $dateRange
+     */
+    private function loadGeographicStats(array $dateRange): void
+    {
         $this->geographicStats = GoogleAdsGeographicStat::query()
             ->select(
                 'location_name',
@@ -272,23 +494,109 @@ final class Dashboard extends Component
                 DB::raw('SUM(clicks) as total_clicks'),
                 DB::raw('SUM(cost) as total_cost'),
                 DB::raw('SUM(conversions) as total_conversions'),
-                DB::raw('AVG(ctr) as avg_ctr'),
-                DB::raw('AVG(conversion_rate) as avg_conversion_rate'),
             )
-            ->where('date', '>=', $startDate)
+            ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
             ->groupBy('location_name')
             ->orderByDesc('total_impressions')
             ->limit(20)
             ->get()
-            ->map(fn ($item): array => [
-                'location_name' => $item->location_name,
-                'impressions' => (int) $item->total_impressions,
-                'clicks' => (int) $item->total_clicks,
-                'cost' => round((float) $item->total_cost, 2),
-                'conversions' => round((float) $item->total_conversions, 2),
-                'ctr' => round((float) $item->avg_ctr, 2),
-                'conversion_rate' => round((float) $item->avg_conversion_rate, 2),
-            ])
+            ->map(function ($item): array {
+                $impressions = (int) $item->total_impressions;
+                $clicks = (int) $item->total_clicks;
+                $cost = (float) $item->total_cost;
+                $conversions = (float) $item->total_conversions;
+
+                return [
+                    'location_name' => $item->location_name,
+                    'impressions' => $impressions,
+                    'clicks' => $clicks,
+                    'cost' => round($cost, 2),
+                    'conversions' => round($conversions, 2),
+                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
+                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
+                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
+                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
+                ];
+            })
+            ->toArray();
+    }
+
+    private function loadMonthlyStats(): void
+    {
+        $driver = DB::getDriverName();
+        $yearExpr = $driver === 'sqlite' ? 'strftime(\'%Y\', date)' : 'YEAR(date)';
+        $monthExpr = $driver === 'sqlite' ? 'strftime(\'%m\', date)' : 'MONTH(date)';
+
+        // Cast years to string for SQLite compatibility (strftime returns string)
+        $currentYear = (string) now()->year;
+        $previousYear = (string) now()->subYear()->year;
+
+        // Current year monthly stats
+        $this->monthlyStats = GoogleAdsCampaign::query()
+            ->select(
+                DB::raw("{$yearExpr} as year"),
+                DB::raw("{$monthExpr} as month"),
+                DB::raw('SUM(impressions) as total_impressions'),
+                DB::raw('SUM(clicks) as total_clicks'),
+                DB::raw('SUM(cost) as total_cost'),
+                DB::raw('SUM(conversions) as total_conversions'),
+            )
+            ->whereRaw("{$yearExpr} = ?", [$currentYear])
+            ->groupBy(DB::raw($yearExpr), DB::raw($monthExpr))
+            ->orderByRaw("{$yearExpr} desc, {$monthExpr} desc")
+            ->get()
+            ->map(function ($item): array {
+                $impressions = (int) $item->total_impressions;
+                $clicks = (int) $item->total_clicks;
+                $cost = (float) $item->total_cost;
+                $conversions = (float) $item->total_conversions;
+
+                return [
+                    'month' => now()->setMonth((int) $item->month)->translatedFormat('Y. F'),
+                    'impressions' => $impressions,
+                    'clicks' => $clicks,
+                    'cost' => round($cost, 2),
+                    'conversions' => round($conversions, 2),
+                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
+                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
+                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
+                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
+                ];
+            })
+            ->toArray();
+
+        // Previous year monthly stats
+        $this->previousYearMonthlyStats = GoogleAdsCampaign::query()
+            ->select(
+                DB::raw("{$yearExpr} as year"),
+                DB::raw("{$monthExpr} as month"),
+                DB::raw('SUM(impressions) as total_impressions'),
+                DB::raw('SUM(clicks) as total_clicks'),
+                DB::raw('SUM(cost) as total_cost'),
+                DB::raw('SUM(conversions) as total_conversions'),
+            )
+            ->whereRaw("{$yearExpr} = ?", [$previousYear])
+            ->groupBy(DB::raw($yearExpr), DB::raw($monthExpr))
+            ->orderByRaw("{$yearExpr} desc, {$monthExpr} desc")
+            ->get()
+            ->map(function ($item): array {
+                $impressions = (int) $item->total_impressions;
+                $clicks = (int) $item->total_clicks;
+                $cost = (float) $item->total_cost;
+                $conversions = (float) $item->total_conversions;
+
+                return [
+                    'month' => now()->subYear()->setMonth((int) $item->month)->translatedFormat('Y. F'),
+                    'impressions' => $impressions,
+                    'clicks' => $clicks,
+                    'cost' => round($cost, 2),
+                    'conversions' => round($conversions, 2),
+                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
+                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
+                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
+                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
+                ];
+            })
             ->toArray();
     }
 
