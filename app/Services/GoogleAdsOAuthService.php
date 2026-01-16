@@ -140,17 +140,8 @@ final class GoogleAdsOAuthService
         return $client;
     }
 
-    /**
-     * Get the OAuth redirect URI.
-     */
     private function getRedirectUri(): string
     {
-        $configuredUri = config('services.google_ads.redirect_uri');
-
-        if ($configuredUri) {
-            return $configuredUri;
-        }
-
-        return route('google-ads.oauth.callback');
+        return config('services.google_ads.redirect_uri') ?? route('google-ads.oauth.callback');
     }
 }

@@ -17,6 +17,7 @@ use App\Services\GoogleAdsOAuthService;
 use Exception;
 use Filament\Notifications\Notification;
 use Google\Ads\GoogleAds\Lib\V22\GoogleAdsClient;
+use Google\Ads\GoogleAds\V22\Common\Metrics;
 use Google\Ads\GoogleAds\V22\Enums\AdGroupStatusEnum\AdGroupStatus;
 use Google\Ads\GoogleAds\V22\Enums\AgeRangeTypeEnum\AgeRangeType;
 use Google\Ads\GoogleAds\V22\Enums\CampaignStatusEnum\CampaignStatus;
@@ -346,8 +347,13 @@ final class GoogleAdsImport implements ShouldQueue
 
     private function importDemographics(GoogleAdsClient $client, string $customerId): void
     {
-        // Gender stats
-        $genderQuery = '
+        $this->importGenderStats($client, $customerId);
+        $this->importAgeStats($client, $customerId);
+    }
+
+    private function importGenderStats(GoogleAdsClient $client, string $customerId): void
+    {
+        $query = '
             SELECT
                 segments.date,
                 ad_group_criterion.gender.type,
@@ -359,13 +365,9 @@ final class GoogleAdsImport implements ShouldQueue
             WHERE segments.date BETWEEN ' . $this->getDateRange() . '
         ';
 
-        $this->executeQuery($client, $customerId, $genderQuery, function (GoogleAdsRow $row): void {
+        $this->executeQuery($client, $customerId, $query, function (GoogleAdsRow $row): void {
             $segments = $row->getSegments();
-            $metrics = $row->getMetrics();
             $criterion = $row->getAdGroupCriterion();
-
-            $clicks = $metrics->getClicks();
-            $conversions = $metrics->getConversions();
 
             GoogleAdsDemographic::query()
                 ->withoutGlobalScope('team')
@@ -376,20 +378,14 @@ final class GoogleAdsImport implements ShouldQueue
                         'gender' => GenderType::name($criterion->getGender()->getType()),
                         'age_range' => null,
                     ],
-                    [
-                        'impressions' => $metrics->getImpressions(),
-                        'clicks' => $clicks,
-                        'cost' => $metrics->getCostMicros() / 1_000_000,
-                        'conversions' => $conversions,
-                        'ctr' => $metrics->getImpressions() > 0 ? ($clicks / $metrics->getImpressions()) * 100 : 0,
-                        'avg_cpc' => $clicks > 0 ? ($metrics->getCostMicros() / 1_000_000) / $clicks : 0,
-                        'conversion_rate' => $clicks > 0 ? ($conversions / $clicks) * 100 : 0,
-                    ],
+                    $this->buildDemographicMetrics($row->getMetrics()),
                 );
         });
+    }
 
-        // Age stats
-        $ageQuery = '
+    private function importAgeStats(GoogleAdsClient $client, string $customerId): void
+    {
+        $query = '
             SELECT
                 segments.date,
                 ad_group_criterion.age_range.type,
@@ -401,13 +397,9 @@ final class GoogleAdsImport implements ShouldQueue
             WHERE segments.date BETWEEN ' . $this->getDateRange() . '
         ';
 
-        $this->executeQuery($client, $customerId, $ageQuery, function (GoogleAdsRow $row): void {
+        $this->executeQuery($client, $customerId, $query, function (GoogleAdsRow $row): void {
             $segments = $row->getSegments();
-            $metrics = $row->getMetrics();
             $criterion = $row->getAdGroupCriterion();
-
-            $clicks = $metrics->getClicks();
-            $conversions = $metrics->getConversions();
 
             GoogleAdsDemographic::query()
                 ->withoutGlobalScope('team')
@@ -418,17 +410,30 @@ final class GoogleAdsImport implements ShouldQueue
                         'gender' => null,
                         'age_range' => AgeRangeType::name($criterion->getAgeRange()->getType()),
                     ],
-                    [
-                        'impressions' => $metrics->getImpressions(),
-                        'clicks' => $clicks,
-                        'cost' => $metrics->getCostMicros() / 1_000_000,
-                        'conversions' => $conversions,
-                        'ctr' => $metrics->getImpressions() > 0 ? ($clicks / $metrics->getImpressions()) * 100 : 0,
-                        'avg_cpc' => $clicks > 0 ? ($metrics->getCostMicros() / 1_000_000) / $clicks : 0,
-                        'conversion_rate' => $clicks > 0 ? ($conversions / $clicks) * 100 : 0,
-                    ],
+                    $this->buildDemographicMetrics($row->getMetrics()),
                 );
         });
+    }
+
+    /**
+     * @return array<string, float|int>
+     */
+    private function buildDemographicMetrics(Metrics $metrics): array
+    {
+        $impressions = $metrics->getImpressions();
+        $clicks = $metrics->getClicks();
+        $cost = $metrics->getCostMicros() / 1_000_000;
+        $conversions = $metrics->getConversions();
+
+        return [
+            'impressions' => $impressions,
+            'clicks' => $clicks,
+            'cost' => $cost,
+            'conversions' => $conversions,
+            'ctr' => $impressions > 0 ? ($clicks / $impressions) * 100 : 0,
+            'avg_cpc' => $clicks > 0 ? $cost / $clicks : 0,
+            'conversion_rate' => $clicks > 0 ? ($conversions / $clicks) * 100 : 0,
+        ];
     }
 
     private function importGeographicStats(GoogleAdsClient $client, string $customerId): void
@@ -448,11 +453,7 @@ final class GoogleAdsImport implements ShouldQueue
 
         $this->executeQuery($client, $customerId, $query, function (GoogleAdsRow $row): void {
             $segments = $row->getSegments();
-            $metrics = $row->getMetrics();
             $geoView = $row->getGeographicView();
-
-            $clicks = $metrics->getClicks();
-            $conversions = $metrics->getConversions();
 
             GoogleAdsGeographicStat::query()
                 ->withoutGlobalScope('team')
@@ -465,13 +466,7 @@ final class GoogleAdsImport implements ShouldQueue
                     [
                         'location_name' => $geoView->getLocationType(),
                         'country_code' => 'HU',
-                        'impressions' => $metrics->getImpressions(),
-                        'clicks' => $clicks,
-                        'cost' => $metrics->getCostMicros() / 1_000_000,
-                        'conversions' => $conversions,
-                        'ctr' => $metrics->getImpressions() > 0 ? ($clicks / $metrics->getImpressions()) * 100 : 0,
-                        'avg_cpc' => $clicks > 0 ? ($metrics->getCostMicros() / 1_000_000) / $clicks : 0,
-                        'conversion_rate' => $clicks > 0 ? ($conversions / $clicks) * 100 : 0,
+                        ...$this->buildDemographicMetrics($row->getMetrics()),
                     ],
                 );
         });

@@ -135,12 +135,7 @@ final class Settings extends Component implements HasActions, HasSchemas
 
     public function connectGoogleAds(): void
     {
-        if (! $this->team) {
-            Notification::make()
-                ->title(__('No team selected.'))
-                ->danger()
-                ->send();
-
+        if (! $this->ensureTeamSelected()) {
             return;
         }
 
@@ -152,12 +147,7 @@ final class Settings extends Component implements HasActions, HasSchemas
 
     public function disconnectGoogleAds(): void
     {
-        if (! $this->team) {
-            Notification::make()
-                ->title(__('No team selected.'))
-                ->danger()
-                ->send();
-
+        if (! $this->ensureTeamSelected()) {
             return;
         }
 
@@ -174,12 +164,7 @@ final class Settings extends Component implements HasActions, HasSchemas
 
     public function performGoogleAdsSync(): void
     {
-        if (! $this->team) {
-            Notification::make()
-                ->title(__('No team selected.'))
-                ->danger()
-                ->send();
-
+        if (! $this->ensureTeamSelected()) {
             return;
         }
 
@@ -197,51 +182,29 @@ final class Settings extends Component implements HasActions, HasSchemas
 
         dispatch(new GoogleAdsImport($this->team->id));
 
-        Notification::make()
-            ->title(__('Google Ads sync started successfully.'))
-            ->body(__('The Google Ads synchronization process has been initiated in the background.'))
-            ->success()
-            ->send();
+        $this->notifySyncStarted(__('Google Ads'));
     }
 
     public function performAnalyticsSync(): void
     {
-        if (! $this->team) {
-            Notification::make()
-                ->title(__('No team selected.'))
-                ->danger()
-                ->send();
-
+        if (! $this->ensureTeamSelected()) {
             return;
         }
 
         dispatch(new AnalyticsImport($this->team->id));
 
-        Notification::make()
-            ->title(__('Analytics sync started successfully.'))
-            ->body(__('The Analytics synchronization process has been initiated in the background.'))
-            ->success()
-            ->send();
+        $this->notifySyncStarted(__('Analytics'));
     }
 
     public function performSearchConsoleSync(): void
     {
-        if (! $this->team) {
-            Notification::make()
-                ->title(__('No team selected.'))
-                ->danger()
-                ->send();
-
+        if (! $this->ensureTeamSelected()) {
             return;
         }
 
         dispatch(new SearchConsoleImport($this->team->id));
 
-        Notification::make()
-            ->title(__('Search Console sync started successfully.'))
-            ->body(__('The Search Console synchronization process has been initiated in the background.'))
-            ->success()
-            ->send();
+        $this->notifySyncStarted(__('Search Console'));
     }
 
     public function saveGoogleAdsField(string $field, ?string $value): void
@@ -311,6 +274,29 @@ final class Settings extends Component implements HasActions, HasSchemas
             ->modalHeading(__('Disconnect Google Ads'))
             ->modalDescription(__('Are you sure you want to disconnect your Google Ads account? This will remove the OAuth connection but keep your synced data.'))
             ->action('disconnectGoogleAds');
+    }
+
+    private function ensureTeamSelected(): bool
+    {
+        if ($this->team) {
+            return true;
+        }
+
+        Notification::make()
+            ->title(__('No team selected.'))
+            ->danger()
+            ->send();
+
+        return false;
+    }
+
+    private function notifySyncStarted(string $service): void
+    {
+        Notification::make()
+            ->title(__(':service sync started successfully.', ['service' => $service]))
+            ->body(__('The :service synchronization process has been initiated in the background.', ['service' => $service]))
+            ->success()
+            ->send();
     }
 
     /**

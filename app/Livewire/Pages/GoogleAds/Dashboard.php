@@ -228,25 +228,10 @@ final class Dashboard extends Component
             ->orderByDesc('total_impressions')
             ->limit(20)
             ->get()
-            ->map(function ($item): array {
-                $impressions = (int) $item->total_impressions;
-                $clicks = (int) $item->total_clicks;
-                $cost = (float) $item->total_cost;
-                $conversions = (float) $item->total_conversions;
-
-                return [
-                    'campaign_id' => $item->campaign_id,
-                    'campaign_name' => $item->campaign_name,
-                    'impressions' => $impressions,
-                    'clicks' => $clicks,
-                    'cost' => round($cost, 2),
-                    'conversions' => round($conversions, 2),
-                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
-                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
-                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
-                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
-                ];
-            })
+            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+                'campaign_id' => $item->campaign_id,
+                'campaign_name' => $item->campaign_name,
+            ]))
             ->toArray();
     }
 
@@ -270,25 +255,10 @@ final class Dashboard extends Component
             ->orderByDesc('total_impressions')
             ->limit(30)
             ->get()
-            ->map(function ($item): array {
-                $impressions = (int) $item->total_impressions;
-                $clicks = (int) $item->total_clicks;
-                $cost = (float) $item->total_cost;
-                $conversions = (float) $item->total_conversions;
-
-                return [
-                    'campaign_name' => $item->campaign_name,
-                    'ad_group_name' => $item->ad_group_name,
-                    'impressions' => $impressions,
-                    'clicks' => $clicks,
-                    'cost' => round($cost, 2),
-                    'conversions' => round($conversions, 2),
-                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
-                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
-                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
-                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
-                ];
-            })
+            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+                'campaign_name' => $item->campaign_name,
+                'ad_group_name' => $item->ad_group_name,
+            ]))
             ->toArray();
     }
 
@@ -309,26 +279,11 @@ final class Dashboard extends Component
             ->groupBy('date')
             ->orderBy('date', 'desc')
             ->get()
-            ->map(function ($item): array {
-                $impressions = (int) $item->total_impressions;
-                $clicks = (int) $item->total_clicks;
-                $cost = (float) $item->total_cost;
-                $conversions = (float) $item->total_conversions;
-
-                return [
-                    'date' => $item->date->format('Y-m-d'),
-                    'date_formatted' => $item->date->translatedFormat('Y. M j.'),
-                    'day_name' => $item->date->translatedFormat('l'),
-                    'impressions' => $impressions,
-                    'clicks' => $clicks,
-                    'cost' => round($cost, 2),
-                    'conversions' => round($conversions, 2),
-                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
-                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
-                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
-                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
-                ];
-            })
+            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+                'date' => $item->date->format('Y-m-d'),
+                'date_formatted' => $item->date->translatedFormat('Y. M j.'),
+                'day_name' => $item->date->translatedFormat('l'),
+            ]))
             ->toArray();
     }
 
@@ -349,24 +304,7 @@ final class Dashboard extends Component
             ->groupBy('hour')
             ->orderBy('hour')
             ->get()
-            ->map(function ($item): array {
-                $impressions = (int) $item->total_impressions;
-                $clicks = (int) $item->total_clicks;
-                $cost = (float) $item->total_cost;
-                $conversions = (float) $item->total_conversions;
-
-                return [
-                    'hour' => $item->hour,
-                    'impressions' => $impressions,
-                    'clicks' => $clicks,
-                    'cost' => round($cost, 2),
-                    'conversions' => round($conversions, 2),
-                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
-                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
-                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
-                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
-                ];
-            })
+            ->map(fn ($item): array => $this->mapAggregatedStats($item, ['hour' => $item->hour]))
             ->toArray();
     }
 
@@ -387,24 +325,9 @@ final class Dashboard extends Component
             ->groupBy('device')
             ->orderByDesc('total_impressions')
             ->get()
-            ->map(function ($item): array {
-                $impressions = (int) $item->total_impressions;
-                $clicks = (int) $item->total_clicks;
-                $cost = (float) $item->total_cost;
-                $conversions = (float) $item->total_conversions;
-
-                return [
-                    'device' => $this->getDeviceName($item->device),
-                    'impressions' => $impressions,
-                    'clicks' => $clicks,
-                    'cost' => round($cost, 2),
-                    'conversions' => round($conversions, 2),
-                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
-                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
-                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
-                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
-                ];
-            })
+            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+                'device' => $this->getDeviceName($item->device),
+            ]))
             ->toArray();
     }
 
@@ -413,7 +336,6 @@ final class Dashboard extends Component
      */
     private function loadDemographicStats(array $dateRange): void
     {
-        // Load gender stats
         $this->genderStats = GoogleAdsDemographic::query()
             ->select(
                 'gender',
@@ -427,27 +349,11 @@ final class Dashboard extends Component
             ->groupBy('gender')
             ->orderByDesc('total_impressions')
             ->get()
-            ->map(function ($item): array {
-                $impressions = (int) $item->total_impressions;
-                $clicks = (int) $item->total_clicks;
-                $cost = (float) $item->total_cost;
-                $conversions = (float) $item->total_conversions;
-
-                return [
-                    'gender' => $this->getGenderName($item->gender),
-                    'impressions' => $impressions,
-                    'clicks' => $clicks,
-                    'cost' => round($cost, 2),
-                    'conversions' => round($conversions, 2),
-                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
-                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
-                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
-                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
-                ];
-            })
+            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+                'gender' => $this->getGenderName($item->gender),
+            ]))
             ->toArray();
 
-        // Load age stats
         $this->ageStats = GoogleAdsDemographic::query()
             ->select(
                 'age_range',
@@ -461,24 +367,9 @@ final class Dashboard extends Component
             ->groupBy('age_range')
             ->orderByDesc('total_impressions')
             ->get()
-            ->map(function ($item): array {
-                $impressions = (int) $item->total_impressions;
-                $clicks = (int) $item->total_clicks;
-                $cost = (float) $item->total_cost;
-                $conversions = (float) $item->total_conversions;
-
-                return [
-                    'age_range' => $this->getAgeRangeName($item->age_range),
-                    'impressions' => $impressions,
-                    'clicks' => $clicks,
-                    'cost' => round($cost, 2),
-                    'conversions' => round($conversions, 2),
-                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
-                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
-                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
-                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
-                ];
-            })
+            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+                'age_range' => $this->getAgeRangeName($item->age_range),
+            ]))
             ->toArray();
     }
 
@@ -500,24 +391,9 @@ final class Dashboard extends Component
             ->orderByDesc('total_impressions')
             ->limit(20)
             ->get()
-            ->map(function ($item): array {
-                $impressions = (int) $item->total_impressions;
-                $clicks = (int) $item->total_clicks;
-                $cost = (float) $item->total_cost;
-                $conversions = (float) $item->total_conversions;
-
-                return [
-                    'location_name' => $item->location_name,
-                    'impressions' => $impressions,
-                    'clicks' => $clicks,
-                    'cost' => round($cost, 2),
-                    'conversions' => round($conversions, 2),
-                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
-                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
-                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
-                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
-                ];
-            })
+            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+                'location_name' => $item->location_name,
+            ]))
             ->toArray();
     }
 
@@ -531,7 +407,6 @@ final class Dashboard extends Component
         $currentYear = (string) now()->year;
         $previousYear = (string) now()->subYear()->year;
 
-        // Current year monthly stats
         $this->monthlyStats = GoogleAdsCampaign::query()
             ->select(
                 DB::raw("{$yearExpr} as year"),
@@ -545,27 +420,11 @@ final class Dashboard extends Component
             ->groupBy(DB::raw($yearExpr), DB::raw($monthExpr))
             ->orderByRaw("{$yearExpr} desc, {$monthExpr} desc")
             ->get()
-            ->map(function ($item): array {
-                $impressions = (int) $item->total_impressions;
-                $clicks = (int) $item->total_clicks;
-                $cost = (float) $item->total_cost;
-                $conversions = (float) $item->total_conversions;
-
-                return [
-                    'month' => now()->setMonth((int) $item->month)->translatedFormat('Y. F'),
-                    'impressions' => $impressions,
-                    'clicks' => $clicks,
-                    'cost' => round($cost, 2),
-                    'conversions' => round($conversions, 2),
-                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
-                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
-                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
-                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
-                ];
-            })
+            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+                'month' => now()->setMonth((int) $item->month)->translatedFormat('Y. F'),
+            ]))
             ->toArray();
 
-        // Previous year monthly stats
         $this->previousYearMonthlyStats = GoogleAdsCampaign::query()
             ->select(
                 DB::raw("{$yearExpr} as year"),
@@ -579,24 +438,9 @@ final class Dashboard extends Component
             ->groupBy(DB::raw($yearExpr), DB::raw($monthExpr))
             ->orderByRaw("{$yearExpr} desc, {$monthExpr} desc")
             ->get()
-            ->map(function ($item): array {
-                $impressions = (int) $item->total_impressions;
-                $clicks = (int) $item->total_clicks;
-                $cost = (float) $item->total_cost;
-                $conversions = (float) $item->total_conversions;
-
-                return [
-                    'month' => now()->subYear()->setMonth((int) $item->month)->translatedFormat('Y. F'),
-                    'impressions' => $impressions,
-                    'clicks' => $clicks,
-                    'cost' => round($cost, 2),
-                    'conversions' => round($conversions, 2),
-                    'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
-                    'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
-                    'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
-                    'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
-                ];
-            })
+            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+                'month' => now()->subYear()->setMonth((int) $item->month)->translatedFormat('Y. F'),
+            ]))
             ->toArray();
     }
 
@@ -633,5 +477,44 @@ final class Dashboard extends Component
             'AGE_RANGE_UNDETERMINED' => __('Undetermined'),
             default => $ageRange ?? __('Unknown'),
         };
+    }
+
+    /**
+     * Map aggregated query results to standardized stats array.
+     *
+     * @param  object  $item  Database query result with total_impressions, total_clicks, total_cost, total_conversions
+     * @param  array<string, mixed>  $extraFields  Additional fields to include in the result
+     * @return array<string, mixed>
+     */
+    private function mapAggregatedStats(object $item, array $extraFields = []): array
+    {
+        $impressions = (int) $item->total_impressions;
+        $clicks = (int) $item->total_clicks;
+        $cost = (float) $item->total_cost;
+        $conversions = (float) $item->total_conversions;
+
+        return [
+            ...$extraFields,
+            'impressions' => $impressions,
+            'clicks' => $clicks,
+            'cost' => round($cost, 2),
+            'conversions' => round($conversions, 2),
+            ...$this->calculateDerivedMetrics($impressions, $clicks, $cost, $conversions),
+        ];
+    }
+
+    /**
+     * Calculate derived metrics from impressions, clicks, cost, and conversions.
+     *
+     * @return array{ctr: float, avg_cpc: float, conversion_rate: float, cost_per_conversion: float}
+     */
+    private function calculateDerivedMetrics(int $impressions, int $clicks, float $cost, float $conversions): array
+    {
+        return [
+            'ctr' => $impressions > 0 ? round(($clicks / $impressions) * 100, 2) : 0,
+            'avg_cpc' => $clicks > 0 ? round($cost / $clicks, 2) : 0,
+            'conversion_rate' => $clicks > 0 ? round(($conversions / $clicks) * 100, 2) : 0,
+            'cost_per_conversion' => $conversions > 0 ? round($cost / $conversions, 2) : 0,
+        ];
     }
 }
