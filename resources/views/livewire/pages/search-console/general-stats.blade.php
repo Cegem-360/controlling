@@ -6,6 +6,11 @@
                 <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">{{ __('General Search Console Dashboard') }}</h1>
                 <p class="mt-1 text-gray-600 dark:text-gray-400">{{ __('Overview of your Google Search Console data.') }}</p>
             </div>
+            @if($team)
+                <div>
+                    {{ $this->setKpiGoalAction }}
+                </div>
+            @endif
         </div>
     </div>
 
@@ -472,4 +477,6 @@
             </a>
         </div>
     @endif
+
+    <x-filament-actions::modals />
 </div>

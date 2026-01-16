@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Pages\Analytics;
 
+use App\Filament\Pages\Actions\SetAnalyticsKpiGoalAction;
 use App\Models\AnalyticsPageview;
 use App\Models\AnalyticsSession;
 use App\Models\GlobalSetting;
@@ -11,6 +12,11 @@ use App\Models\Team;
 use App\Services\GoogleClientFactory;
 use Carbon\CarbonInterface;
 use Exception;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
 use Google\Service\AnalyticsData;
 use Google\Service\AnalyticsData\DateRange;
 use Google\Service\AnalyticsData\Dimension;
@@ -25,8 +31,11 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 
 #[Layout('components.layouts.dashboard')]
-final class Statistics extends Component
+final class Statistics extends Component implements HasActions, HasSchemas
 {
+    use InteractsWithActions;
+    use InteractsWithSchemas;
+
     public ?Team $team = null;
 
     public string $dateRangeType = '28_days';
@@ -137,6 +146,12 @@ final class Statistics extends Component
             'paginatedTopPages' => $this->getPaginatedTopPages(),
             'paginatedUserSources' => $this->getPaginatedUserSources(),
         ]);
+    }
+
+    public function setKpiGoalAction(): Action
+    {
+        return SetAnalyticsKpiGoalAction::make(fn (): array => $this->topPages)
+            ->icon('heroicon-o-chart-bar');
     }
 
     /**

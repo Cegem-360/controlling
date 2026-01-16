@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace App\Livewire\Pages\SearchConsole;
 
+use App\Filament\Pages\Actions\SetSearchConsoleKpiGoalAction;
 use App\Livewire\Concerns\WithDataTable;
 use App\Livewire\Concerns\WithSearchConsoleDateRange;
 use App\Models\SearchPage;
 use App\Models\SearchQuery;
 use App\Models\Team;
 use Carbon\CarbonInterface;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,8 +25,10 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 
 #[Layout('components.layouts.dashboard')]
-final class GeneralStats extends Component
+final class GeneralStats extends Component implements HasActions, HasSchemas
 {
+    use InteractsWithActions;
+    use InteractsWithSchemas;
     use WithDataTable;
     use WithSearchConsoleDateRange;
 
@@ -117,6 +125,14 @@ final class GeneralStats extends Component
             'paginatedQueries' => $this->getPaginatedQueries(),
             'paginatedPages' => $this->getPaginatedPages(),
         ]);
+    }
+
+    public function setKpiGoalAction(): Action
+    {
+        return SetSearchConsoleKpiGoalAction::make(
+            fn (): array => $this->topPages,
+            fn (): array => $this->topQueries,
+        )->icon('heroicon-o-chart-bar');
     }
 
     /**

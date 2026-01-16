@@ -6,6 +6,11 @@
                 <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">{{ __('Search Queries') }}</h1>
                 <p class="mt-1 text-gray-600 dark:text-gray-400">{{ __('View all search queries tracked in Google Search Console.') }}</p>
             </div>
+            @if($team)
+                <div>
+                    {{ $this->setKpiGoalAction }}
+                </div>
+            @endif
         </div>
     </div>
 
@@ -263,4 +268,6 @@
             </a>
         </div>
     @endif
+
+    <x-filament-actions::modals />
 </div>

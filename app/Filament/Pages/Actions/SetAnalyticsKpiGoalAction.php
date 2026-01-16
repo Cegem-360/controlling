@@ -30,68 +30,68 @@ final class SetAnalyticsKpiGoalAction
 
                 return [
                     Select::make('page_path')
-                        ->label('Select Analytics Page')
+                        ->label(__('Select Analytics Page'))
                         ->options($pageOptions)
                         ->required()
                         ->searchable()
                         ->preload()
-                        ->helperText('Choose a page from your Google Analytics data'),
+                        ->helperText(__('Choose a page from your Google Analytics data')),
                     Select::make('metric_type')
-                        ->label('Select Metric')
+                        ->label(__('Select Metric'))
                         ->options([
-                            'pageviews' => 'Pageviews',
-                            'unique_pageviews' => 'Unique Pageviews',
-                            'bounce_rate' => 'Bounce Rate',
+                            'pageviews' => __('Pageviews'),
+                            'unique_pageviews' => __('Unique Pageviews'),
+                            'bounce_rate' => __('Bounce Rate'),
                         ])
                         ->required()
                         ->native(false)
-                        ->helperText('Choose which metric to track'),
+                        ->helperText(__('Choose which metric to track')),
                     DatePicker::make('from_date')
-                        ->label('Start Date')
+                        ->label(__('Start Date'))
                         ->required()
                         ->native(false)
                         ->displayFormat('Y-m-d')
                         ->default(now())
                         ->maxDate(fn ($get) => $get('target_date'))
-                        ->helperText('When to start tracking this KPI'),
+                        ->helperText(__('When to start tracking this KPI')),
                     DatePicker::make('target_date')
-                        ->label('Target Date')
+                        ->label(__('Target Date'))
                         ->required()
                         ->native(false)
                         ->displayFormat('Y-m-d')
                         ->minDate(fn ($get) => $get('from_date') ?? now())
-                        ->helperText('When you want to achieve the target'),
+                        ->helperText(__('When you want to achieve the target')),
                     DatePicker::make('comparison_start_date')
-                        ->label('Comparison Start Date')
+                        ->label(__('Comparison Start Date'))
                         ->native(false)
                         ->displayFormat('Y-m-d')
                         ->maxDate(fn ($get) => $get('comparison_end_date'))
-                        ->helperText('Start date for comparison period'),
+                        ->helperText(__('Start date for comparison period')),
                     DatePicker::make('comparison_end_date')
-                        ->label('Comparison End Date')
+                        ->label(__('Comparison End Date'))
                         ->native(false)
                         ->displayFormat('Y-m-d')
                         ->minDate(fn ($get) => $get('comparison_start_date'))
-                        ->helperText('End date for comparison period'),
+                        ->helperText(__('End date for comparison period')),
                     Select::make('goal_type')
-                        ->label('Goal Type')
+                        ->label(__('Goal Type'))
                         ->options([
-                            KpiGoalType::Increase->value => 'Increase',
-                            KpiGoalType::Decrease->value => 'Decrease',
+                            KpiGoalType::Increase->value => __('Increase'),
+                            KpiGoalType::Decrease->value => __('Decrease'),
                         ])
                         ->required()
                         ->native(false),
                     Select::make('value_type')
-                        ->label('Value Type')
+                        ->label(__('Value Type'))
                         ->options([
-                            KpiValueType::Percentage->value => 'Percentage (%)',
-                            KpiValueType::Fixed->value => 'Fixed Number',
+                            KpiValueType::Percentage->value => __('Percentage (%)'),
+                            KpiValueType::Fixed->value => __('Fixed Number'),
                         ])
                         ->required()
                         ->native(false)
                         ->live(),
                     TextInput::make('target_value')
-                        ->label(fn ($get): string => $get('value_type') === KpiValueType::Percentage->value ? 'Target Percentage (%)' : 'Target Value')
+                        ->label(fn ($get): string => $get('value_type') === KpiValueType::Percentage->value ? __('Target Percentage (%)') : __('Target Value'))
                         ->required()
                         ->numeric()
                         ->minValue(0)
@@ -139,12 +139,12 @@ final class SetAnalyticsKpiGoalAction
                 );
 
                 Notification::make()
-                    ->title('KPI Goal Set Successfully')
+                    ->title(__('KPI Goal Set Successfully'))
                     ->success()
-                    ->body("Your goal for **{$kpi->name}** has been saved.")
+                    ->body(__('Your goal for **:name** has been saved.', ['name' => $kpi->name]))
                     ->actions([
                         Action::make('view')
-                            ->label('View KPI')
+                            ->label(__('View KPI'))
                             ->url(KpiResource::getUrl('view', ['record' => $kpi->getRouteKey(), 'tenant' => Filament::getTenant()])),
                     ])
                     ->send();
