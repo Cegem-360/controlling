@@ -10,21 +10,24 @@ use App\Models\SearchQuery;
 use App\Models\Settings;
 use App\Models\Team;
 use App\Services\GoogleClientFactory;
-
-use function array_slice;
-
 use Filament\Notifications\Notification;
 use Google\Service\SearchConsole;
 use Google\Service\SearchConsole\SearchAnalyticsQueryRequest;
 use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 
 final class SearchConsoleImport implements ShouldQueue
 {
     use Batchable;
     use Queueable;
+
+    private const ROW_LIMIT = 25000;
+
+    private const DATE_RANGE_DAYS = 90;
 
     public function __construct(
         public readonly int $teamId,
@@ -44,7 +47,10 @@ final class SearchConsoleImport implements ShouldQueue
         $serviceAccount = $globalSettings->getServiceAccount();
 
         if (! $serviceAccount) {
-            $this->failWithNotification('Google Service Account credentials not configured.', 'Please configure the credentials in Settings first.');
+            $this->failWithNotification(
+                'Google Service Account credentials not configured.',
+                'Please configure the credentials in Settings first.',
+            );
 
             return;
         }
@@ -54,7 +60,10 @@ final class SearchConsoleImport implements ShouldQueue
             ->first();
 
         if (! $settings || ! $settings->site_url) {
-            $this->failWithNotification('Site URL not configured.', 'Please configure the Site URL in Settings first.');
+            $this->failWithNotification(
+                'Site URL not configured.',
+                'Please configure the Site URL in Settings first.',
+            );
 
             return;
         }
@@ -65,7 +74,6 @@ final class SearchConsoleImport implements ShouldQueue
         );
         $service = new SearchConsole($client);
 
-        // Import Search Console data
         $this->importSearchQueries($service, $settings->site_url);
         $this->importSearchPages($service, $settings->site_url);
 
@@ -78,92 +86,125 @@ final class SearchConsoleImport implements ShouldQueue
 
     private function importSearchQueries(SearchConsole $service, string $siteUrl): void
     {
-        $request = $this->createSearchRequest(['date', 'query', 'country', 'device']);
-        $response = $service->searchanalytics->query($siteUrl, $request);
-
-        if (! $response->getRows()) {
-            return;
-        }
-
-        collect($response->getRows())
-            ->groupBy(fn ($row): string => implode('|', array_slice($row->getKeys(), 0, 4)))
-            ->each(function ($rows): void {
-                $first = $rows->first();
-
-                $values = [
-                    'team_id' => $this->teamId,
-                    'impressions' => $rows->sum(fn ($r): int => (int) $r->getImpressions()),
-                    'clicks' => $rows->sum(fn ($r): int => (int) $r->getClicks()),
-                    'ctr' => $rows->avg(fn ($r): int|float => $r->getCtr() * 100),
-                    'position' => $rows->avg(fn ($r) => $r->getPosition()),
-                ];
-
-                $record = SearchQuery::query()
-                    ->withoutGlobalScope('team')
-                    ->where('team_id', $this->teamId)
-                    ->whereDate('date', $first->getKeys()[0])
-                    ->where('query', $first->getKeys()[1])
-                    ->where('country', $first->getKeys()[2])
-                    ->where('device', $first->getKeys()[3])
-                    ->first();
-
-                if ($record) {
-                    $record->update($values);
-                } else {
-                    SearchQuery::query()->create([
-                        'date' => $first->getKeys()[0],
-                        'query' => $first->getKeys()[1],
-                        'country' => $first->getKeys()[2],
-                        'device' => $first->getKeys()[3],
-                        ...$values,
-                    ]);
-                }
-            });
+        $this->importSearchData(
+            $service,
+            $siteUrl,
+            dimensions: ['date', 'query', 'country', 'device'],
+            modelClass: SearchQuery::class,
+            keyFieldName: 'query',
+        );
     }
 
     private function importSearchPages(SearchConsole $service, string $siteUrl): void
     {
-        $request = $this->createSearchRequest(['date', 'page', 'country', 'device']);
+        $this->importSearchData(
+            $service,
+            $siteUrl,
+            dimensions: ['date', 'page', 'country', 'device'],
+            modelClass: SearchPage::class,
+            keyFieldName: 'page_url',
+        );
+    }
+
+    /**
+     * Import search data from Google Search Console API.
+     *
+     * @param  array<string>  $dimensions
+     * @param  class-string<Model>  $modelClass
+     */
+    private function importSearchData(
+        SearchConsole $service,
+        string $siteUrl,
+        array $dimensions,
+        string $modelClass,
+        string $keyFieldName,
+    ): void {
+        $request = $this->createSearchRequest($dimensions);
         $response = $service->searchanalytics->query($siteUrl, $request);
 
         if (! $response->getRows()) {
             return;
         }
 
-        collect($response->getRows())
-            ->groupBy(fn ($row): string => implode('|', array_slice($row->getKeys(), 0, 4)))
-            ->each(function ($rows): void {
-                $first = $rows->first();
+        $this->processRows(
+            collect($response->getRows()),
+            $modelClass,
+            $keyFieldName,
+        );
+    }
 
-                $values = [
-                    'team_id' => $this->teamId,
-                    'impressions' => $rows->sum(fn ($r): int => (int) $r->getImpressions()),
-                    'clicks' => $rows->sum(fn ($r): int => (int) $r->getClicks()),
-                    'ctr' => $rows->avg(fn ($r): int|float => $r->getCtr() * 100),
-                    'position' => $rows->avg(fn ($r) => $r->getPosition()),
-                ];
+    /**
+     * Process and upsert rows from the API response.
+     *
+     * @param  Collection<int, object>  $rows
+     * @param  class-string<Model>  $modelClass
+     */
+    private function processRows(Collection $rows, string $modelClass, string $keyFieldName): void
+    {
+        $rows->groupBy(fn ($row): string => implode('|', array_slice($row->getKeys(), 0, 4)))
+            ->each(function ($groupedRows) use ($modelClass, $keyFieldName): void {
+                $first = $groupedRows->first();
+                $keys = $first->getKeys();
 
-                $record = SearchPage::query()
-                    ->withoutGlobalScope('team')
-                    ->where('team_id', $this->teamId)
-                    ->whereDate('date', $first->getKeys()[0])
-                    ->where('page_url', $first->getKeys()[1])
-                    ->where('country', $first->getKeys()[2])
-                    ->where('device', $first->getKeys()[3])
-                    ->first();
+                $values = $this->calculateAggregatedValues($groupedRows);
 
-                if ($record) {
-                    $record->update($values);
-                } else {
-                    SearchPage::query()->create([
-                        'date' => $first->getKeys()[0],
-                        'page_url' => $first->getKeys()[1],
-                        'country' => $first->getKeys()[2],
-                        'device' => $first->getKeys()[3],
-                        ...$values,
-                    ]);
-                }
+                $this->upsertRecord(
+                    $modelClass,
+                    $keyFieldName,
+                    $keys,
+                    $values,
+                );
             });
+    }
+
+    /**
+     * Calculate aggregated values from grouped rows.
+     *
+     * @param  Collection<int, object>  $rows
+     * @return array{team_id: int, impressions: int, clicks: int, ctr: float, position: float}
+     */
+    private function calculateAggregatedValues(Collection $rows): array
+    {
+        return [
+            'team_id' => $this->teamId,
+            'impressions' => $rows->sum(fn ($r): int => (int) $r->getImpressions()),
+            'clicks' => $rows->sum(fn ($r): int => (int) $r->getClicks()),
+            'ctr' => $rows->avg(fn ($r): float => $r->getCtr() * 100),
+            'position' => $rows->avg(fn ($r): float => $r->getPosition()),
+        ];
+    }
+
+    /**
+     * Upsert a record in the database.
+     *
+     * @param  class-string<Model>  $modelClass
+     * @param  array<string>  $keys
+     * @param  array<string, mixed>  $values
+     */
+    private function upsertRecord(string $modelClass, string $keyFieldName, array $keys, array $values): void
+    {
+        $record = $modelClass::query()
+            ->withoutGlobalScope('team')
+            ->where('team_id', $this->teamId)
+            ->whereDate('date', $keys[0])
+            ->where($keyFieldName, $keys[1])
+            ->where('country', $keys[2])
+            ->where('device', $keys[3])
+            ->first();
+
+        if ($record) {
+            $record->update($values);
+
+            return;
+        }
+
+        $modelClass::query()->create([
+            'date' => $keys[0],
+            $keyFieldName => $keys[1],
+            'country' => $keys[2],
+            'device' => $keys[3],
+            ...$values,
+        ]);
     }
 
     /**
@@ -172,10 +213,10 @@ final class SearchConsoleImport implements ShouldQueue
     private function createSearchRequest(array $dimensions): SearchAnalyticsQueryRequest
     {
         $request = new SearchAnalyticsQueryRequest();
-        $request->setStartDate(Date::now()->subDays(90)->format('Y-m-d'));
+        $request->setStartDate(Date::now()->subDays(self::DATE_RANGE_DAYS)->format('Y-m-d'));
         $request->setEndDate(Date::now()->format('Y-m-d'));
         $request->setDimensions($dimensions);
-        $request->setRowLimit(25000);
+        $request->setRowLimit(self::ROW_LIMIT);
 
         return $request;
     }
