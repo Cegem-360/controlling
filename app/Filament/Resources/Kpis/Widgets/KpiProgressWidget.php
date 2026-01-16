@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Kpis\Widgets;
 
 use App\Models\AnalyticsPageview;
+use App\Models\GoogleAdsAdGroup;
+use App\Models\GoogleAdsCampaign;
 use App\Models\Kpi;
 use App\Models\SearchPage;
 use App\Models\SearchQuery;
@@ -138,6 +140,30 @@ final class KpiProgressWidget extends BaseWidget
             }
 
             // For metrics that should be summed (like pageviews, unique_pageviews)
+            return (float) $query->sum($kpi->metric_type) ?? 0;
+        }
+
+        // Google Ads data
+        if ($kpi->data_source->value === 'google_ads') {
+            // Determine if tracking campaign or ad group
+            if ($kpi->source_type === 'campaign') {
+                $query = GoogleAdsCampaign::query()
+                    ->where('team_id', $kpi->team_id)
+                    ->where('campaign_id', $kpi->page_path)
+                    ->whereBetween('date', [$startDate, $endDate]);
+            } else {
+                $query = GoogleAdsAdGroup::query()
+                    ->where('team_id', $kpi->team_id)
+                    ->where('ad_group_name', $kpi->page_path)
+                    ->whereBetween('date', [$startDate, $endDate]);
+            }
+
+            // For metrics that should be averaged (like CTR, conversion_rate, avg_cpc)
+            if (in_array($kpi->metric_type, ['ctr', 'conversion_rate', 'avg_cpc', 'cost_per_conversion'])) {
+                return (float) $query->avg($kpi->metric_type) ?? 0;
+            }
+
+            // For metrics that should be summed (like impressions, clicks, cost, conversions)
             return (float) $query->sum($kpi->metric_type) ?? 0;
         }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Enums\NavigationGroup;
+use App\Filament\Pages\Actions\SetGoogleAdsKpiGoalAction;
 use App\Models\GoogleAdsAdGroup;
 use App\Models\GoogleAdsCampaign;
 use App\Models\GoogleAdsDemographic;
@@ -12,6 +13,7 @@ use App\Models\GoogleAdsDeviceStat;
 use App\Models\GoogleAdsGeographicStat;
 use App\Models\GoogleAdsHourlyStat;
 use Carbon\CarbonInterface;
+use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -82,6 +84,19 @@ final class GoogleAdsGeneralStats extends Page
             '3_months' => now()->subMonths(3),
             default => now()->subDays(28),
         };
+    }
+
+    /**
+     * @return array<Action>
+     */
+    protected function getHeaderActions(): array
+    {
+        return [
+            SetGoogleAdsKpiGoalAction::make(
+                fn (): array => $this->campaigns,
+                fn (): array => $this->adGroups,
+            ),
+        ];
     }
 
     private function loadGoogleAdsData(): void

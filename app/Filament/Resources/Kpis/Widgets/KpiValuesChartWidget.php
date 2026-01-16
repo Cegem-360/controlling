@@ -6,6 +6,8 @@ namespace App\Filament\Resources\Kpis\Widgets;
 
 use App\Enums\KpiDataSource;
 use App\Models\AnalyticsPageview;
+use App\Models\GoogleAdsAdGroup;
+use App\Models\GoogleAdsCampaign;
 use App\Models\Kpi;
 use App\Models\SearchPage;
 use App\Models\SearchQuery;
@@ -13,6 +15,8 @@ use Carbon\CarbonInterface;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+
+use function in_array;
 
 final class KpiValuesChartWidget extends ChartWidget
 {
@@ -181,6 +185,9 @@ final class KpiValuesChartWidget extends ChartWidget
                 ? SearchQuery::query()->where('query', $kpi->page_path)
                 : SearchPage::query()->where('page_url', $kpi->page_path),
             KpiDataSource::Analytics => AnalyticsPageview::query()->where('page_path', $kpi->page_path),
+            KpiDataSource::GoogleAds => $kpi->source_type === 'campaign'
+                ? GoogleAdsCampaign::query()->where('campaign_id', $kpi->page_path)
+                : GoogleAdsAdGroup::query()->where('ad_group_name', $kpi->page_path),
             default => null,
         };
 
@@ -203,6 +210,9 @@ final class KpiValuesChartWidget extends ChartWidget
                 ? SearchQuery::query()->where('query', $kpi->page_path)
                 : SearchPage::query()->where('page_url', $kpi->page_path),
             KpiDataSource::Analytics => AnalyticsPageview::query()->where('page_path', $kpi->page_path),
+            KpiDataSource::GoogleAds => $kpi->source_type === 'campaign'
+                ? GoogleAdsCampaign::query()->where('campaign_id', $kpi->page_path)
+                : GoogleAdsAdGroup::query()->where('ad_group_name', $kpi->page_path),
             default => null,
         };
 
@@ -271,6 +281,11 @@ final class KpiValuesChartWidget extends ChartWidget
             'pageviews' => $record->pageviews,
             'unique_pageviews' => $record->unique_pageviews,
             'bounce_rate' => $record->bounce_rate,
+            'cost' => $record->cost,
+            'conversions' => $record->conversions,
+            'avg_cpc' => $record->avg_cpc,
+            'conversion_rate' => $record->conversion_rate,
+            'cost_per_conversion' => $record->conversions > 0 ? $record->cost / $record->conversions : 0,
             default => 0,
         };
     }
@@ -285,6 +300,11 @@ final class KpiValuesChartWidget extends ChartWidget
             'pageviews' => __('Pageviews'),
             'unique_pageviews' => __('Unique Pageviews'),
             'bounce_rate' => __('Bounce Rate'),
+            'cost' => __('Cost'),
+            'conversions' => __('Conversions'),
+            'avg_cpc' => __('Avg. CPC'),
+            'conversion_rate' => __('Conversion Rate (%)'),
+            'cost_per_conversion' => __('Cost per Conversion'),
             default => __('Value'),
         };
     }
@@ -295,9 +315,11 @@ final class KpiValuesChartWidget extends ChartWidget
      */
     private function buildCurrentDataset(string $label, array $data, KpiDataSource $dataSource): array
     {
-        $color = $dataSource === KpiDataSource::SearchConsole
-            ? 'rgb(59, 130, 246)'
-            : 'rgb(34, 197, 94)';
+        $color = match ($dataSource) {
+            KpiDataSource::SearchConsole => 'rgb(59, 130, 246)',
+            KpiDataSource::GoogleAds => 'rgb(249, 115, 22)',
+            default => 'rgb(34, 197, 94)',
+        };
 
         return [
             'label' => $label . ' (Current)',
@@ -312,8 +334,8 @@ final class KpiValuesChartWidget extends ChartWidget
     {
         $metricType = $kpi->metric_type;
 
-        // For metrics that should be averaged (like CTR, position, bounce_rate)
-        if (in_array($metricType, ['ctr', 'position', 'bounce_rate'])) {
+        // For metrics that should be averaged (like CTR, position, bounce_rate, conversion_rate, avg_cpc, cost_per_conversion)
+        if (in_array($metricType, ['ctr', 'position', 'bounce_rate', 'conversion_rate', 'avg_cpc', 'cost_per_conversion'], true)) {
             $values = $comparisonData->map(fn ($record): float => $this->extractMetricValue($record, $metricType));
 
             return $values->count() > 0 ? $values->avg() : 0;
@@ -338,9 +360,11 @@ final class KpiValuesChartWidget extends ChartWidget
             return $targetValue;
         }, $actualData);
 
-        $color = $kpi->data_source === KpiDataSource::SearchConsole
-            ? 'rgb(34, 197, 94)'
-            : 'rgb(59, 130, 246)';
+        $color = match ($kpi->data_source) {
+            KpiDataSource::SearchConsole => 'rgb(34, 197, 94)',
+            KpiDataSource::GoogleAds => 'rgb(234, 88, 12)',
+            default => 'rgb(59, 130, 246)',
+        };
 
         return [
             'label' => 'Target',

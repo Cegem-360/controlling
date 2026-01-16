@@ -4,14 +4,27 @@ declare(strict_types=1);
 
 namespace App\Livewire\Pages\GoogleAds;
 
+use App\Enums\KpiGoalType;
+use App\Enums\KpiValueType;
+use App\Filament\Resources\Kpis\KpiResource;
 use App\Models\GoogleAdsAdGroup;
 use App\Models\GoogleAdsCampaign;
 use App\Models\GoogleAdsDemographic;
 use App\Models\GoogleAdsDeviceStat;
 use App\Models\GoogleAdsGeographicStat;
 use App\Models\GoogleAdsHourlyStat;
+use App\Models\Kpi;
 use App\Models\Team;
 use Carbon\CarbonInterface;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,8 +33,11 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 #[Layout('components.layouts.dashboard')]
-final class Dashboard extends Component
+final class Dashboard extends Component implements HasActions, HasSchemas
 {
+    use InteractsWithActions;
+    use InteractsWithSchemas;
+
     public ?Team $team = null;
 
     public string $dateRangeType = 'last_month';
@@ -135,6 +151,134 @@ final class Dashboard extends Component
         return view('livewire.pages.google-ads.dashboard');
     }
 
+    public function setKpiGoalAction(): Action
+    {
+        $campaignOptions = collect($this->campaigns)->mapWithKeys(fn (array $campaign): array => [
+            $campaign['campaign_id'] => "{$campaign['campaign_name']} (Clicks: {$campaign['clicks']})",
+        ])->toArray();
+
+        $adGroupOptions = collect($this->adGroups)->mapWithKeys(fn (array $adGroup): array => [
+            $adGroup['ad_group_name'] => "{$adGroup['campaign_name']} → {$adGroup['ad_group_name']} (Clicks: {$adGroup['clicks']})",
+        ])->toArray();
+
+        return Action::make('setKpiGoal')
+            ->label(__('Set KPI Goal'))
+            ->icon('heroicon-o-chart-bar')
+            ->slideOver()
+            ->stickyModalFooter()
+            ->schema([
+                Select::make('source_type')
+                    ->label(__('Source Type'))
+                    ->options([
+                        'campaign' => __('Campaign'),
+                        'ad_group' => __('Ad Group'),
+                    ])
+                    ->default('campaign')
+                    ->required()
+                    ->live()
+                    ->helperText(__('Choose whether to track a campaign or an ad group')),
+
+                Select::make('campaign_id')
+                    ->label(__('Select Campaign'))
+                    ->options($campaignOptions)
+                    ->required(fn ($get): bool => $get('source_type') === 'campaign')
+                    ->visible(fn ($get): bool => $get('source_type') === 'campaign')
+                    ->searchable()
+                    ->preload()
+                    ->helperText(__('Choose a campaign from your Google Ads data')),
+
+                Select::make('ad_group_name')
+                    ->label(__('Select Ad Group'))
+                    ->options($adGroupOptions)
+                    ->required(fn ($get): bool => $get('source_type') === 'ad_group')
+                    ->visible(fn ($get): bool => $get('source_type') === 'ad_group')
+                    ->searchable()
+                    ->preload()
+                    ->helperText(__('Choose an ad group from your Google Ads data')),
+
+                Select::make('metric_type')
+                    ->label(__('Select Metric'))
+                    ->options([
+                        'impressions' => __('Impressions'),
+                        'clicks' => __('Clicks'),
+                        'cost' => __('Cost'),
+                        'conversions' => __('Conversions'),
+                        'ctr' => __('CTR (%)'),
+                        'avg_cpc' => __('Avg. CPC'),
+                        'conversion_rate' => __('Conversion Rate (%)'),
+                        'cost_per_conversion' => __('Cost per Conversion'),
+                    ])
+                    ->required()
+                    ->native(false)
+                    ->helperText(__('Choose which metric to track')),
+
+                DatePicker::make('from_date')
+                    ->live()
+                    ->label(__('Start Date'))
+                    ->required()
+                    ->native(false)
+                    ->displayFormat('Y-m-d')
+                    ->default(now())
+                    ->maxDate(fn ($get) => $get('target_date'))
+                    ->helperText(__('When to start tracking this KPI')),
+
+                DatePicker::make('target_date')
+                    ->live()
+                    ->label(__('Target Date'))
+                    ->required()
+                    ->native(false)
+                    ->displayFormat('Y-m-d')
+                    ->minDate(fn ($get) => $get('from_date') ?? now())
+                    ->helperText(__('When you want to achieve the target')),
+
+                DatePicker::make('comparison_start_date')
+                    ->live()
+                    ->label(__('Comparison Start Date'))
+                    ->native(false)
+                    ->displayFormat('Y-m-d')
+                    ->maxDate(fn ($get) => $get('comparison_end_date'))
+                    ->helperText(__('Start date for comparison period')),
+
+                DatePicker::make('comparison_end_date')
+                    ->live()
+                    ->label(__('Comparison End Date'))
+                    ->native(false)
+                    ->displayFormat('Y-m-d')
+                    ->minDate(fn ($get) => $get('comparison_start_date'))
+                    ->helperText(__('End date for comparison period')),
+
+                Select::make('goal_type')
+                    ->label(__('Goal Type'))
+                    ->options([
+                        KpiGoalType::Increase->value => __('Increase'),
+                        KpiGoalType::Decrease->value => __('Decrease'),
+                    ])
+                    ->required()
+                    ->native(false),
+
+                Select::make('value_type')
+                    ->label(__('Value Type'))
+                    ->options([
+                        KpiValueType::Percentage->value => __('Percentage (%)'),
+                        KpiValueType::Fixed->value => __('Fixed Number'),
+                    ])
+                    ->required()
+                    ->native(false)
+                    ->live(),
+
+                TextInput::make('target_value')
+                    ->label(fn ($get): string => $get('value_type') === KpiValueType::Percentage->value ? __('Target Percentage (%)') : __('Target Value'))
+                    ->required()
+                    ->numeric()
+                    ->minValue(0)
+                    ->suffix(fn ($get): ?string => $get('value_type') === KpiValueType::Percentage->value ? '%' : null),
+            ])
+            ->action(function (array $data): void {
+                $this->saveKpiGoal($data);
+            })
+            ->closeModalByClickingAway(false);
+    }
+
     /**
      * Calculate percentage change between current and previous values.
      */
@@ -148,6 +292,76 @@ final class Dashboard extends Component
         }
 
         return (($current - $previous) / $previous) * 100;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function saveKpiGoal(array $data): void
+    {
+        $sourceType = $data['source_type'];
+        $metricType = $data['metric_type'];
+
+        if ($sourceType === 'campaign') {
+            $campaignId = $data['campaign_id'];
+            $campaignData = collect($this->campaigns)->firstWhere('campaign_id', $campaignId);
+            $sourceName = $campaignData['campaign_name'] ?? $campaignId;
+            $sourceValue = $campaignId;
+        } else {
+            $adGroupName = $data['ad_group_name'];
+            $adGroupData = collect($this->adGroups)->firstWhere('ad_group_name', $adGroupName);
+            $sourceName = $adGroupData ? "{$adGroupData['campaign_name']} → {$adGroupName}" : $adGroupName;
+            $sourceValue = $adGroupName;
+        }
+
+        $kpiCode = 'google_ads_' . $sourceType . '_' . str_replace(['/', ' ', '.', '?', '→'], ['_', '_', '_', '_', '_'], $sourceValue) . '_' . $metricType;
+
+        $format = match ($metricType) {
+            'ctr', 'conversion_rate' => 'percentage',
+            'cost', 'avg_cpc', 'cost_per_conversion' => 'number',
+            'impressions', 'clicks', 'conversions' => 'number',
+            default => 'number',
+        };
+
+        $kpi = Kpi::query()->updateOrCreate(
+            [
+                'code' => $kpiCode,
+                'team_id' => $this->team->id,
+            ],
+            [
+                'name' => "{$sourceName} - {$metricType}",
+                'description' => __('Track :metric for :type :name', [
+                    'metric' => $metricType,
+                    'type' => $sourceType === 'campaign' ? __('campaign') : __('ad group'),
+                    'name' => $sourceName,
+                ]),
+                'data_source' => 'google_ads',
+                'source_type' => $sourceType,
+                'category' => 'conversion',
+                'format' => $format,
+                'page_path' => $sourceValue,
+                'metric_type' => $metricType,
+                'from_date' => $data['from_date'] ?? now(),
+                'target_date' => $data['target_date'],
+                'comparison_start_date' => $data['comparison_start_date'] ?? null,
+                'comparison_end_date' => $data['comparison_end_date'] ?? null,
+                'goal_type' => $data['goal_type'],
+                'value_type' => $data['value_type'],
+                'target_value' => $data['target_value'],
+                'is_active' => true,
+            ],
+        );
+
+        Notification::make()
+            ->title(__('KPI Goal Set Successfully'))
+            ->success()
+            ->body(__('Your goal for **:name** has been saved.', ['name' => $kpi->name]))
+            ->actions([
+                Action::make('view')
+                    ->label(__('View KPI'))
+                    ->url(KpiResource::getUrl('view', ['record' => $kpi->getRouteKey()])),
+            ])
+            ->send();
     }
 
     private function loadGoogleAdsData(): void
