@@ -29,7 +29,7 @@ return new class() extends Migration
             $table->decimal('conversion_rate', 8, 4)->default(0);
             $table->timestamps();
 
-            $table->unique(['team_id', 'date', 'geo_target_constant']);
+            $table->unique(['team_id', 'date', 'geo_target_constant'], 'geo_stats_team_date_geo_unique');
         });
     }
 
