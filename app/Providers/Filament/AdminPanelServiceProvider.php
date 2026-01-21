@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Auth\Register;
 use App\Filament\Pages\EditTeamProfile;
 use App\Filament\Pages\RegisterTeam;
 use App\Http\Middleware\ApplyTenantScopes;
@@ -40,6 +41,7 @@ final class AdminPanelServiceProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(Login::class)
+            ->registration(Register::class)
             ->emailVerification()
             ->profile(null)
             ->userMenuItems([
@@ -62,7 +64,7 @@ final class AdminPanelServiceProvider extends PanelProvider
             ->brandLogo(asset('images/logo.png'))
             ->brandLogoHeight('3rem')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Emerald,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
