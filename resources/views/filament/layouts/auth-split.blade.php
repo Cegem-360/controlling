@@ -23,10 +23,11 @@
         <!-- Left side - Form -->
         <div class="flex w-full flex-col bg-white lg:w-1/2">
             <!-- Logo header -->
-            <div class="px-6 py-6 lg:px-12">
+            <div class="flex items-center justify-between px-6 py-6 lg:px-12">
                 <a href="{{ route('home') }}">
                     <img src="{{ Vite::asset('resources/images/logo.png') }}" alt="{{ config('app.name') }}" class="h-10">
                 </a>
+                <x-language-switcher />
             </div>
             <!-- Main content area - centered -->
             <div class="flex flex-1 flex-col items-center justify-center px-6 pb-6 lg:px-12">
