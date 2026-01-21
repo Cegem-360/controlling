@@ -164,21 +164,6 @@
                 </div>
             @endforeach
 
-            {{-- Add new team card --}}
-            <a href="{{ route('filament.admin.tenant.registration') }}"
-                class="flex flex-col items-center justify-center min-h-70 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all group">
-                <div
-                    class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-700 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30 flex items-center justify-center mb-4 transition">
-                    <svg class="w-8 h-8 text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition"
-                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                </div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Új csapat létrehozása</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-50">Adjon hozzá új weboldalt
-                    a kontrolling rendszerhez</p>
-            </a>
         </div>
     @else
         {{-- Empty state --}}

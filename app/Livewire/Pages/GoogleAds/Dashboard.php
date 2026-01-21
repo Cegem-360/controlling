@@ -287,8 +287,8 @@ final class Dashboard extends Component implements HasActions, HasSchemas
         $current = (float) ($this->stats[$key] ?? 0);
         $previous = (float) ($this->previousStats[$key] ?? 0);
 
-        if ($previous === 0.0) {
-            return $current > 0 ? 100.0 : 0.0;
+        if (abs($previous) < 0.0001) {
+            return $current > 0.0001 ? 100.0 : 0.0;
         }
 
         return (($current - $previous) / $previous) * 100;

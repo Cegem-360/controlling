@@ -15,9 +15,17 @@ use App\Livewire\Pages\SearchConsole\Queries as SearchConsoleQueries;
 use App\Livewire\Pages\Settings;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn (): View|Factory => view('home'))->name('home');
+Route::get('/', function (): View|Factory|RedirectResponse {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+
+    return view('home');
+})->name('home');
 
 // User Dashboard
 Route::middleware(['auth', 'verified'])->group(function (): void {

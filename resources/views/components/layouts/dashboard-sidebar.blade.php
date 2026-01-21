@@ -166,36 +166,6 @@
             </div>
         @endif
 
-        {{-- Teams section --}}
-        @auth
-            @php
-                $teams = auth()->user()->teams;
-                $filamentTenant = null;
-                try {
-                    $filamentTenant = filament()->getTenant();
-                } catch (\Exception $e) {}
-            @endphp
-            @if($teams->count() > 0)
-                <div>
-                    <h3 class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{{ __('My Teams') }}</h3>
-                    <ul class="space-y-1">
-                        @foreach ($teams as $team)
-                            <li>
-                                <a href="{{ route('filament.admin.pages.dashboard', ['tenant' => $team->slug]) }}"
-                                    class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition group
-                                        {{ $filamentTenant && $filamentTenant->id === $team->id ? 'bg-white/10 text-white' : 'text-gray-300 hover:bg-white/5 hover:text-white' }}">
-                                    <span class="w-2 h-2 rounded-full {{ $filamentTenant && $filamentTenant->id === $team->id ? 'bg-emerald-400' : 'bg-gray-500' }}"></span>
-                                    {{ $team->name }}
-                                    <svg class="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                    </svg>
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-        @endauth
 
         {{-- Quick links --}}
         <div>
