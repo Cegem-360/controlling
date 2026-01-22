@@ -6,6 +6,9 @@
         "claude_code",
         "vscode"
     ],
-    "guidelines": [],
+    "guidelines": [
+        "filament/blueprint",
+        "filament/filament"
+    ],
     "herd_mcp": true
 }
