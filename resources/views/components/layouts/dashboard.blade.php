@@ -32,7 +32,7 @@
             <x-layouts.dashboard-sidebar />
 
             {{-- Main content area --}}
-            <div class="flex-1 flex flex-col min-w-0" :class="{ 'lg:ml-60': sidebarOpen }">
+            <div class="flex-1 flex flex-col min-w-0 lg:ml-60" :class="{ 'lg:!ml-0': !sidebarOpen }">
                 {{-- Header --}}
                 <x-layouts.dashboard-header />
 
