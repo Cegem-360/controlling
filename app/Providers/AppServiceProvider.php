@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -35,8 +36,8 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Implicitly grant "Super-Admin" role all permissions
-        Gate::before(function ($user, $ability) {
-            return $user->hasRole('Super-Admin') ? true : null;
+        Gate::before(function (User $user, $ability) {
+            return $user->hasRole('Super-Admin') ?: null;
         });
 
         // Table Columns
