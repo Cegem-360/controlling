@@ -327,7 +327,7 @@ final class Settings extends Component implements HasActions, HasSchemas
     {
         $googleAdsSettings = $this->getGoogleAdsSettings();
 
-        if (! $googleAdsSettings instanceof GoogleAdsSettings || ! $this->team) {
+        if (! $googleAdsSettings instanceof GoogleAdsSettings || ! $this->team instanceof Team) {
             Notification::make()
                 ->title(__('Please connect Google Ads first.'))
                 ->danger()
@@ -338,7 +338,7 @@ final class Settings extends Component implements HasActions, HasSchemas
 
         $recipients = $googleAdsSettings->getEmailRecipients();
 
-        if (empty($recipients)) {
+        if ($recipients === []) {
             Notification::make()
                 ->title(__('No email recipients configured.'))
                 ->body(__('Please add at least one email recipient and save the settings.'))

@@ -48,11 +48,9 @@ it('sends report email to configured recipients', function (): void {
 
     dispatch_sync(new SendScheduledGoogleAdsReportJob());
 
-    Mail::assertSent(GoogleAdsReportMail::class, function (GoogleAdsReportMail $mail) use ($team): bool {
-        return $mail->team->id === $team->id
-            && $mail->hasTo('test@example.com')
-            && $mail->hasTo('admin@example.com');
-    });
+    Mail::assertSent(GoogleAdsReportMail::class, fn (GoogleAdsReportMail $mail): bool => $mail->team->id === $team->id
+        && $mail->hasTo('test@example.com')
+        && $mail->hasTo('admin@example.com'));
 });
 
 it('does not send email when email is disabled', function (): void {

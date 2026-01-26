@@ -421,7 +421,7 @@ final class Settings extends Page
 
         $recipients = $googleAdsSettings->getEmailRecipients();
 
-        if (empty($recipients)) {
+        if ($recipients === []) {
             Notification::make()
                 ->title(__('No email recipients configured.'))
                 ->body(__('Please add at least one email recipient and save the settings.'))

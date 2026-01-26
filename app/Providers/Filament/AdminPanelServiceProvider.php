@@ -51,6 +51,10 @@ final class AdminPanelServiceProvider extends PanelProvider
                     ->url('https://cegem360.eu/admin/profile'),
             ])
             ->renderHook(
+                PanelsRenderHook::TOPBAR_START,
+                fn (): View => view('filament.components.dashboard-button'),
+            )
+            ->renderHook(
                 PanelsRenderHook::USER_MENU_BEFORE,
                 fn (): View => view('filament.components.language-switcher'),
             )

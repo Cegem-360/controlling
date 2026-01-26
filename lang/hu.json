@@ -350,7 +350,6 @@
     "No queries match your search.": "Nincs a keresésnek megfelelő lekérdezés.",
     "You need to create a team before viewing Search Pages.": "A Search Console oldalak megtekintéséhez először létre kell hoznod egy csapatot.",
     "You need to create a team before viewing Search Queries.": "A Search Console lekérdezések megtekintéséhez először létre kell hoznod egy csapatot.",
-
     "Sign in to your account": "Jelentkezz be a fiókodba",
     "Sign in": "Bejelentkezés",
     "Don't have an account?": "Nincs még fiókod?",
@@ -360,9 +359,7 @@
     "Start for free - no credit card required.": "Kezdd el ingyen - nincs szükség bankkártyára.",
     "Continue": "Folytatás",
     "By continuing, you agree to our": "A folytatással elfogadod az",
-    "Terms of Service": "ÁSZF-et",
     "and": "és az",
-    "Privacy Policy": "Adatvédelmi szabályzatot",
     "Already have an account?": "Már van fiókod?",
     "Full name": "Teljes név",
     "Work email": "Munkahelyi e-mail",
@@ -380,5 +377,7 @@
     "KPI Update": "KPI frissítés",
     "ROI increased by 12%": "ROI 12%-kal nőtt",
     "New report": "Új jelentés",
-    "January forecast ready": "Januári előrejelzés kész"
+    "January forecast ready": "Januári előrejelzés kész",
+    "Enter your work email": "Add meg a munkahelyi e-mail címed",
+    "Remember me": "Emlékezz rám"
 }
