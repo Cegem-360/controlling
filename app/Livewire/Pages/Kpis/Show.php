@@ -58,7 +58,7 @@ final class Show extends Component
 
     public function getDataSourceColorClass(): string
     {
-        if (! $this->kpi) {
+        if (! $this->kpi instanceof Kpi) {
             return 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300';
         }
 
@@ -72,7 +72,7 @@ final class Show extends Component
 
     public function getDataSourceLabel(): string
     {
-        if (! $this->kpi) {
+        if (! $this->kpi instanceof Kpi) {
             return '';
         }
 
@@ -88,7 +88,7 @@ final class Show extends Component
 
     public function getMetricLabel(): string
     {
-        if (! $this->kpi || ! $this->kpi->metric_type) {
+        if (! $this->kpi instanceof Kpi || ! $this->kpi->metric_type) {
             return __('Value');
         }
 
@@ -473,7 +473,7 @@ final class Show extends Component
      */
     private function buildTargetDataset(array $actualData, float $targetValue): array
     {
-        $targetData = array_map(function (?float $value) use ($targetValue) {
+        $targetData = array_map(function (?float $value) use ($targetValue): ?float {
             if ($value === null) {
                 return null;
             }

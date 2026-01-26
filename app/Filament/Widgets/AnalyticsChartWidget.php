@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Filament\Widgets;
 
 use App\Models\AnalyticsSession;
+use Carbon\Month;
+use Carbon\WeekDay;
+use DateTimeInterface;
 use Filament\Widgets\ChartWidget;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Override;
 
 final class AnalyticsChartWidget extends ChartWidget
 {
@@ -19,6 +23,7 @@ final class AnalyticsChartWidget extends ChartWidget
 
     protected ?string $maxHeight = '300px';
 
+    #[Override]
     protected function getData(): array
     {
         if (! $this->teamId) {
@@ -28,7 +33,7 @@ final class AnalyticsChartWidget extends ChartWidget
             ];
         }
 
-        $endDate = Carbon::today();
+        $endDate = Date::today();
         $startDate = $endDate->copy()->subDays(14);
 
         $data = AnalyticsSession::query()
@@ -47,20 +52,20 @@ final class AnalyticsChartWidget extends ChartWidget
             'datasets' => [
                 [
                     'label' => __('Sessions'),
-                    'data' => $data->pluck('sessions')->map(fn ($v) => (int) $v)->toArray(),
+                    'data' => $data->pluck('sessions')->map(fn ($v): int => (int) $v)->toArray(),
                     'borderColor' => '#3b82f6',
                     'backgroundColor' => 'rgba(59, 130, 246, 0.1)',
                     'fill' => true,
                 ],
                 [
                     'label' => __('Users'),
-                    'data' => $data->pluck('users')->map(fn ($v) => (int) $v)->toArray(),
+                    'data' => $data->pluck('users')->map(fn ($v): int => (int) $v)->toArray(),
                     'borderColor' => '#10b981',
                     'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
                     'fill' => true,
                 ],
             ],
-            'labels' => $data->pluck('date')->map(fn ($d) => Carbon::parse($d)->format('M d'))->toArray(),
+            'labels' => $data->pluck('date')->map(fn (DateTimeInterface|WeekDay|Month|string|int|float|null $d): string => Date::parse($d)->format('M d'))->toArray(),
         ];
     }
 

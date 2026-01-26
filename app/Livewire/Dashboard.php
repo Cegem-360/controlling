@@ -13,8 +13,8 @@ use App\Models\SearchQuery;
 use App\Models\Team;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -79,7 +79,7 @@ final class Dashboard extends Component
 
     private function loadAnalyticsStats(int $teamId): void
     {
-        $endDate = Carbon::today();
+        $endDate = Date::today();
         $startDate = $endDate->copy()->subDays(30);
         $prevStartDate = $startDate->copy()->subDays(30);
         $prevEndDate = $startDate->copy()->subDay();
@@ -152,8 +152,8 @@ final class Dashboard extends Component
             ->groupBy('date')
             ->orderBy('date')
             ->get()
-            ->map(fn ($row) => [
-                'date' => Carbon::parse($row->date)->format('M d'),
+            ->map(fn ($row): array => [
+                'date' => Date::parse($row->date)->format('M d'),
                 'sessions' => (int) $row->sessions,
                 'users' => (int) $row->users,
             ])
@@ -162,7 +162,7 @@ final class Dashboard extends Component
 
     private function loadSearchConsoleStats(int $teamId): void
     {
-        $endDate = Carbon::today();
+        $endDate = Date::today();
         $startDate = $endDate->copy()->subDays(30);
         $prevStartDate = $startDate->copy()->subDays(30);
         $prevEndDate = $startDate->copy()->subDay();
@@ -230,8 +230,8 @@ final class Dashboard extends Component
             ->groupBy('date')
             ->orderBy('date')
             ->get()
-            ->map(fn ($row) => [
-                'date' => Carbon::parse($row->date)->format('M d'),
+            ->map(fn ($row): array => [
+                'date' => Date::parse($row->date)->format('M d'),
                 'clicks' => (int) $row->clicks,
                 'impressions' => (int) $row->impressions,
             ])
@@ -240,7 +240,7 @@ final class Dashboard extends Component
 
     private function loadGoogleAdsStats(int $teamId): void
     {
-        $endDate = Carbon::today();
+        $endDate = Date::today();
         $startDate = $endDate->copy()->subDays(30);
         $prevStartDate = $startDate->copy()->subDays(30);
         $prevEndDate = $startDate->copy()->subDay();
@@ -314,8 +314,8 @@ final class Dashboard extends Component
             ->groupBy('date')
             ->orderBy('date')
             ->get()
-            ->map(fn ($row) => [
-                'date' => Carbon::parse($row->date)->format('M d'),
+            ->map(fn ($row): array => [
+                'date' => Date::parse($row->date)->format('M d'),
                 'cost' => round((float) $row->cost, 0),
                 'clicks' => (int) $row->clicks,
                 'conversions' => round((float) $row->conversions, 0),
@@ -331,7 +331,7 @@ final class Dashboard extends Component
             ->take(4)
             ->get();
 
-        $this->kpiStats = $kpis->map(function (Kpi $kpi) {
+        $this->kpiStats = $kpis->map(function (Kpi $kpi): array {
             $currentValue = $this->getKpiCurrentValue($kpi);
             $targetValue = (float) $kpi->target_value;
             $progress = $targetValue > 0 ? min(100, ($currentValue / $targetValue) * 100) : 0;
