@@ -8,27 +8,37 @@ use App\Enums\NavigationGroup;
 use App\Jobs\AnalyticsImport;
 use App\Jobs\GoogleAdsImport;
 use App\Jobs\SearchConsoleImport;
+use App\Mail\GoogleAdsReportMail;
 use App\Models\GoogleAdsSettings;
 use App\Models\Settings as SettingsModel;
+use App\Services\GoogleAds\GoogleAdsPdfGenerator;
+use App\Services\GoogleAds\GoogleAdsReportService;
 use App\Services\GoogleAdsOAuthService;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Component;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\HtmlString;
+use Throwable;
 use UnitEnum;
 
 /**
  * @property-read Schema $form
  * @property-read Schema $googleAdsForm
+ * @property-read Schema $emailSettingsForm
  */
 final class Settings extends Page
 {
@@ -41,6 +51,11 @@ final class Settings extends Page
      * @var array<string, mixed> | null
      */
     public ?array $googleAdsData = [];
+
+    /**
+     * @var array<string, mixed> | null
+     */
+    public ?array $emailSettingsData = [];
 
     protected string $view = 'filament.pages.settings';
 
@@ -56,6 +71,14 @@ final class Settings extends Page
         $this->googleAdsForm->fill([
             'customer_id' => $googleAdsSettings?->customer_id,
             'manager_customer_id' => $googleAdsSettings?->manager_customer_id,
+        ]);
+
+        $this->emailSettingsForm->fill([
+            'email_enabled' => $googleAdsSettings?->email_enabled ?? false,
+            'email_recipients' => $googleAdsSettings?->email_recipients ?? [],
+            'email_frequency' => $googleAdsSettings?->email_frequency ?? 'monthly',
+            'email_day_of_week' => $googleAdsSettings?->email_day_of_week ?? 1,
+            'email_day_of_month' => $googleAdsSettings?->email_day_of_month ?? 1,
         ]);
     }
 
@@ -94,6 +117,10 @@ final class Settings extends Page
                     Section::make('Google Ads Configuration')
                         ->description('Configure Google Ads OAuth connection for this team')
                         ->schema($this->getGoogleAdsSchema()),
+
+                    Section::make(__('Google Ads Email Reports'))
+                        ->description(__('Configure automatic email delivery of Google Ads reports'))
+                        ->schema($this->getEmailSettingsSchema()),
                 ])
                     ->livewireSubmitHandler('save')
                     ->footer([
@@ -130,6 +157,52 @@ final class Settings extends Page
                     }),
             ])
             ->statePath('googleAdsData');
+    }
+
+    public function emailSettingsForm(Schema $schema): Schema
+    {
+        $isEmailEnabled = fn (Get $get): bool => $get('email_enabled') === true;
+
+        return $schema
+            ->components([
+                Toggle::make('email_enabled')
+                    ->label(__('Enable automatic email reports'))
+                    ->helperText(__('When enabled, reports will be sent automatically according to the schedule below.'))
+                    ->live(),
+                TagsInput::make('email_recipients')
+                    ->label(__('Email recipients'))
+                    ->placeholder(__('Add email address...'))
+                    ->helperText(__('Press Enter after each email address.'))
+                    ->visible($isEmailEnabled),
+                Select::make('email_frequency')
+                    ->label(__('Frequency'))
+                    ->options([
+                        'weekly' => __('Weekly'),
+                        'monthly' => __('Monthly'),
+                    ])
+                    ->default('monthly')
+                    ->live()
+                    ->visible($isEmailEnabled),
+                Select::make('email_day_of_week')
+                    ->label(__('Day of week'))
+                    ->options([
+                        1 => __('Monday'),
+                        2 => __('Tuesday'),
+                        3 => __('Wednesday'),
+                        4 => __('Thursday'),
+                        5 => __('Friday'),
+                        6 => __('Saturday'),
+                        7 => __('Sunday'),
+                    ])
+                    ->default(1)
+                    ->visible(fn (Get $get): bool => $isEmailEnabled($get) && $get('email_frequency') === 'weekly'),
+                Select::make('email_day_of_month')
+                    ->label(__('Day of month'))
+                    ->options(array_combine(range(1, 28), range(1, 28)))
+                    ->default(1)
+                    ->visible(fn (Get $get): bool => $isEmailEnabled($get) && $get('email_frequency') === 'monthly'),
+            ])
+            ->statePath('emailSettingsData');
     }
 
     public function save(): void
@@ -303,6 +376,91 @@ final class Settings extends Page
             ->send();
     }
 
+    public function saveEmailSettings(): void
+    {
+        $googleAdsSettings = $this->getGoogleAdsSettings();
+
+        if (! $googleAdsSettings instanceof GoogleAdsSettings) {
+            Notification::make()
+                ->title(__('Please connect Google Ads first.'))
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        $data = $this->emailSettingsForm->getState();
+
+        $googleAdsSettings->update([
+            'email_enabled' => $data['email_enabled'] ?? false,
+            'email_recipients' => $data['email_recipients'] ?? [],
+            'email_frequency' => $data['email_frequency'] ?? 'monthly',
+            'email_day_of_week' => $data['email_day_of_week'] ?? 1,
+            'email_day_of_month' => $data['email_day_of_month'] ?? 1,
+        ]);
+
+        Notification::make()
+            ->title(__('Email settings saved'))
+            ->success()
+            ->send();
+    }
+
+    public function sendTestEmail(): void
+    {
+        $googleAdsSettings = $this->getGoogleAdsSettings();
+        $team = Filament::getTenant();
+
+        if (! $googleAdsSettings instanceof GoogleAdsSettings || ! $team) {
+            Notification::make()
+                ->title(__('Please connect Google Ads first.'))
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        $recipients = $googleAdsSettings->getEmailRecipients();
+
+        if (empty($recipients)) {
+            Notification::make()
+                ->title(__('No email recipients configured.'))
+                ->body(__('Please add at least one email recipient and save the settings.'))
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        try {
+            $reportService = resolve(GoogleAdsReportService::class);
+            $pdfGenerator = resolve(GoogleAdsPdfGenerator::class);
+
+            $reportMonth = now()->subMonth();
+            $reportData = $reportService->generateReportData($team, $reportMonth);
+            $filename = $pdfGenerator->generate($reportData);
+            $pdfPath = 'pdfs/' . $filename;
+
+            Mail::to($recipients)
+                ->send(new GoogleAdsReportMail(
+                    team: $team,
+                    pdfPath: $pdfPath,
+                    reportMonth: $reportMonth,
+                ));
+
+            Notification::make()
+                ->title(__('Test email sent successfully'))
+                ->body(__('The test email has been sent to: ') . implode(', ', $recipients))
+                ->success()
+                ->send();
+        } catch (Throwable $e) {
+            Notification::make()
+                ->title(__('Failed to send test email'))
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
+    }
+
     protected function getHeaderActions(): array
     {
         $googleAdsSettings = $this->getGoogleAdsSettings();
@@ -382,6 +540,35 @@ final class Settings extends Page
             )),
             Text::make(__('Click "Connect Google Ads" in the header to authenticate with your Google Ads account.'))
                 ->color('gray'),
+        ];
+    }
+
+    /**
+     * @return array<int, Component>
+     */
+    private function getEmailSettingsSchema(): array
+    {
+        $googleAdsSettings = $this->getGoogleAdsSettings();
+        $isConnected = $googleAdsSettings?->is_connected ?? false;
+
+        if (! $isConnected) {
+            return [
+                Text::make(__('Please connect your Google Ads account first to configure email reports.'))
+                    ->color('gray'),
+            ];
+        }
+
+        return [
+            View::make('filament.schemas.components.email-settings-form'),
+            Actions::make([
+                Action::make('saveEmailSettings')
+                    ->label(__('Save email settings'))
+                    ->action('saveEmailSettings'),
+                Action::make('sendTestEmail')
+                    ->label(__('Send test email'))
+                    ->color('gray')
+                    ->action('sendTestEmail'),
+            ]),
         ];
     }
 }

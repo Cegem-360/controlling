@@ -22,9 +22,8 @@
         <tr>
             <td>{{ Str::limit($adGroup['campaign_name'], 25) }}</td>
             <td>{{ Str::limit($adGroup['ad_group_name'], 30) }}</td>
-            <td class="number bar-cell">
-                <div class="bar-bg" style="width: {{ ($adGroup['impressions'] / $maxImpressions) * 100 }}%"></div>
-                <span class="bar-value">{{ number_format($adGroup['impressions'], 0, ',', ' ') }}</span>
+            <td class="number bar-cell" style="background: linear-gradient(to right, rgba(26, 115, 232, 0.15) {{ ($adGroup['impressions'] / $maxImpressions) * 100 }}%, transparent {{ ($adGroup['impressions'] / $maxImpressions) * 100 }}%);">
+                {{ number_format($adGroup['impressions'], 0, ',', ' ') }}
             </td>
             <td class="number">{{ number_format($adGroup['clicks'], 0, ',', ' ') }}</td>
             <td class="number">{{ number_format($adGroup['avg_cpc'], 2, ',', ' ') }} Ft</td>

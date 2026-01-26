@@ -31,9 +31,9 @@
             background: #1a73e8;
             color: white;
             padding: 15px 20px;
-            margin: -20mm -15mm 20px -15mm;
+            margin-bottom: 20px;
             display: table;
-            width: calc(100% + 30mm);
+            width: 100%;
         }
 
         .header-content {
@@ -44,18 +44,30 @@
         .header h1 {
             font-size: 16px;
             font-weight: bold;
-            margin: 0;
+            margin: 0 0 2px 0;
         }
 
-        .header h1 span {
-            font-weight: normal;
+        .header .subtitle {
+            font-size: 9px;
+            opacity: 0.9;
         }
 
         .header-date {
             display: table-cell;
             text-align: right;
             vertical-align: middle;
-            font-size: 10px;
+        }
+
+        .header-date .date-label {
+            font-size: 7px;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+        .header-date .date-value {
+            font-size: 11px;
+            font-weight: bold;
+            white-space: nowrap;
         }
 
         /* Section titles */
@@ -71,52 +83,76 @@
         /* KPI Cards */
         .kpi-grid {
             width: 100%;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .kpi-row {
             display: table;
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            table-layout: fixed;
         }
 
         .kpi-card {
             display: table-cell;
-            width: 33%;
-            padding: 10px;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
+            width: 33.33%;
+            padding: 12px 15px;
+            background: #ffffff;
+            border-left: 3px solid #1a73e8;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             vertical-align: top;
         }
 
-        .kpi-card + .kpi-card {
-            margin-left: 10px;
+        .kpi-card.highlight {
+            border-left-color: #4caf50;
+            background: rgba(76, 175, 80, 0.08);
+        }
+
+        .kpi-card.cost {
+            border-left-color: #ff9800;
+        }
+
+        .kpi-spacer {
+            display: table-cell;
+            width: 10px;
         }
 
         .kpi-label {
             font-size: 8px;
             color: #666;
             text-transform: uppercase;
-            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
         }
 
         .kpi-value {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            color: #333;
-            margin-bottom: 3px;
+            color: #1a1a1a;
+            margin-bottom: 4px;
         }
 
         .kpi-change {
             font-size: 8px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: inline-block;
         }
 
         .kpi-change.positive {
             color: #0d9488;
+            background: rgba(13, 148, 136, 0.1);
         }
 
         .kpi-change.negative {
             color: #dc2626;
+            background: rgba(220, 38, 38, 0.1);
+        }
+
+        .kpi-change-label {
+            font-size: 7px;
+            color: #999;
+            margin-top: 4px;
         }
 
         /* Tables */
@@ -164,20 +200,7 @@
 
         /* Bar visualization in tables */
         .bar-cell {
-            position: relative;
-        }
-
-        .bar-bg {
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            background: rgba(26, 115, 232, 0.15);
-        }
-
-        .bar-value {
-            position: relative;
-            z-index: 1;
+            text-align: right;
         }
 
         /* Charts */

@@ -26,6 +26,12 @@ final class GoogleAdsSettings extends Model
         'token_expires_at',
         'is_connected',
         'last_sync_at',
+        'email_enabled',
+        'email_recipients',
+        'email_frequency',
+        'email_day_of_week',
+        'email_day_of_month',
+        'last_email_sent_at',
     ];
 
     /**
@@ -67,6 +73,34 @@ final class GoogleAdsSettings extends Model
     }
 
     /**
+     * Check if the report email should be sent today based on frequency settings.
+     */
+    public function shouldSendEmailToday(): bool
+    {
+        if (! $this->email_enabled || empty($this->email_recipients)) {
+            return false;
+        }
+
+        $today = now();
+
+        return match ($this->email_frequency) {
+            'weekly' => $today->dayOfWeekIso === ($this->email_day_of_week ?? 1),
+            'monthly' => $today->day === ($this->email_day_of_month ?? 1),
+            default => false,
+        };
+    }
+
+    /**
+     * Get the list of email recipients.
+     *
+     * @return array<int, string>
+     */
+    public function getEmailRecipients(): array
+    {
+        return $this->email_recipients ?? [];
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -77,6 +111,9 @@ final class GoogleAdsSettings extends Model
             'token_expires_at' => 'datetime',
             'is_connected' => 'boolean',
             'last_sync_at' => 'datetime',
+            'email_enabled' => 'boolean',
+            'email_recipients' => 'array',
+            'last_email_sent_at' => 'datetime',
         ];
     }
 }

@@ -32,9 +32,8 @@
         @foreach($data->deviceStats as $device)
         <tr>
             <td>{{ $device['device'] }}</td>
-            <td class="number bar-cell">
-                <div class="bar-bg" style="width: {{ ($device['impressions'] / $maxDeviceImpressions) * 100 }}%"></div>
-                <span class="bar-value">{{ number_format($device['impressions'], 0, ',', ' ') }}</span>
+            <td class="number bar-cell" style="background: linear-gradient(to right, rgba(26, 115, 232, 0.15) {{ ($device['impressions'] / $maxDeviceImpressions) * 100 }}%, transparent {{ ($device['impressions'] / $maxDeviceImpressions) * 100 }}%);">
+                {{ number_format($device['impressions'], 0, ',', ' ') }}
             </td>
             <td class="number">{{ number_format($device['clicks'], 0, ',', ' ') }}</td>
             <td class="number">{{ number_format($device['avg_cpc'], 2, ',', ' ') }} Ft</td>
@@ -93,9 +92,8 @@
         @foreach($data->genderStats as $gender)
         <tr>
             <td>{{ $gender['gender'] }}</td>
-            <td class="number bar-cell">
-                <div class="bar-bg" style="width: {{ ($gender['impressions'] / $maxGenderImpressions) * 100 }}%"></div>
-                <span class="bar-value">{{ number_format($gender['impressions'], 0, ',', ' ') }}</span>
+            <td class="number bar-cell" style="background: linear-gradient(to right, rgba(26, 115, 232, 0.15) {{ ($gender['impressions'] / $maxGenderImpressions) * 100 }}%, transparent {{ ($gender['impressions'] / $maxGenderImpressions) * 100 }}%);">
+                {{ number_format($gender['impressions'], 0, ',', ' ') }}
             </td>
             <td class="number">{{ number_format($gender['clicks'], 0, ',', ' ') }}</td>
             <td class="number">{{ number_format($gender['avg_cpc'], 2, ',', ' ') }} Ft</td>
@@ -154,9 +152,8 @@
         @foreach($data->ageStats as $age)
         <tr>
             <td>{{ $age['age_range'] }}</td>
-            <td class="number bar-cell">
-                <div class="bar-bg" style="width: {{ ($age['impressions'] / $maxAgeImpressions) * 100 }}%"></div>
-                <span class="bar-value">{{ number_format($age['impressions'], 0, ',', ' ') }}</span>
+            <td class="number bar-cell" style="background: linear-gradient(to right, rgba(26, 115, 232, 0.15) {{ ($age['impressions'] / $maxAgeImpressions) * 100 }}%, transparent {{ ($age['impressions'] / $maxAgeImpressions) * 100 }}%);">
+                {{ number_format($age['impressions'], 0, ',', ' ') }}
             </td>
             <td class="number">{{ number_format($age['clicks'], 0, ',', ' ') }}</td>
             <td class="number">{{ number_format($age['avg_cpc'], 2, ',', ' ') }} Ft</td>

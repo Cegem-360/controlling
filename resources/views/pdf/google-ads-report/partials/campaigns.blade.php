@@ -30,9 +30,8 @@
         @foreach($data->campaigns as $campaign)
         <tr>
             <td>{{ Str::limit($campaign['campaign_name'], 40) }}</td>
-            <td class="number bar-cell">
-                <div class="bar-bg" style="width: {{ ($campaign['impressions'] / $maxImpressions) * 100 }}%"></div>
-                <span class="bar-value">{{ number_format($campaign['impressions'], 0, ',', ' ') }}</span>
+            <td class="number bar-cell" style="background: linear-gradient(to right, rgba(26, 115, 232, 0.15) {{ ($campaign['impressions'] / $maxImpressions) * 100 }}%, transparent {{ ($campaign['impressions'] / $maxImpressions) * 100 }}%);">
+                {{ number_format($campaign['impressions'], 0, ',', ' ') }}
             </td>
             <td class="number">{{ number_format($campaign['clicks'], 0, ',', ' ') }}</td>
             <td class="number">{{ number_format($campaign['avg_cpc'], 2, ',', ' ') }} Ft</td>

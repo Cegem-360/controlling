@@ -33,9 +33,8 @@
         @foreach($data->currentYearMonthly as $month)
         <tr>
             <td>{{ $month['month']->format('Y.') }} {{ $month['month_name'] }}</td>
-            <td class="number bar-cell">
-                <div class="bar-bg" style="width: {{ ($month['impressions'] / $maxCurrentImpressions) * 100 }}%"></div>
-                <span class="bar-value">{{ number_format($month['impressions'], 0, ',', ' ') }}</span>
+            <td class="number bar-cell" style="background: linear-gradient(to right, rgba(26, 115, 232, 0.15) {{ ($month['impressions'] / $maxCurrentImpressions) * 100 }}%, transparent {{ ($month['impressions'] / $maxCurrentImpressions) * 100 }}%);">
+                {{ number_format($month['impressions'], 0, ',', ' ') }}
             </td>
             <td class="number">{{ number_format($month['clicks'], 0, ',', ' ') }}</td>
             <td class="number">{{ number_format($month['avg_cpc'], 2, ',', ' ') }} Ft</td>
@@ -96,9 +95,8 @@
         @foreach($data->previousYearMonthly as $month)
         <tr>
             <td>{{ $month['month']->format('Y.') }} {{ $month['month_name'] }}</td>
-            <td class="number bar-cell">
-                <div class="bar-bg" style="width: {{ ($month['impressions'] / $maxPreviousImpressions) * 100 }}%"></div>
-                <span class="bar-value">{{ number_format($month['impressions'], 0, ',', ' ') }}</span>
+            <td class="number bar-cell" style="background: linear-gradient(to right, rgba(26, 115, 232, 0.15) {{ ($month['impressions'] / $maxPreviousImpressions) * 100 }}%, transparent {{ ($month['impressions'] / $maxPreviousImpressions) * 100 }}%);">
+                {{ number_format($month['impressions'], 0, ',', ' ') }}
             </td>
             <td class="number">{{ number_format($month['clicks'], 0, ',', ' ') }}</td>
             <td class="number">{{ number_format($month['avg_cpc'], 2, ',', ' ') }} Ft</td>

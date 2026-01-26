@@ -31,9 +31,8 @@
         @foreach($data->geographicStats as $location)
         <tr>
             <td>{{ $location['location_name'] }}</td>
-            <td class="number bar-cell">
-                <div class="bar-bg" style="width: {{ ($location['impressions'] / $maxImpressions) * 100 }}%"></div>
-                <span class="bar-value">{{ number_format($location['impressions'], 0, ',', ' ') }}</span>
+            <td class="number bar-cell" style="background: linear-gradient(to right, rgba(26, 115, 232, 0.15) {{ ($location['impressions'] / $maxImpressions) * 100 }}%, transparent {{ ($location['impressions'] / $maxImpressions) * 100 }}%);">
+                {{ number_format($location['impressions'], 0, ',', ' ') }}
             </td>
             <td class="number">{{ number_format($location['clicks'], 0, ',', ' ') }}</td>
             <td class="number">{{ number_format($location['avg_cpc'], 2, ',', ' ') }} Ft</td>
