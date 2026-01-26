@@ -124,15 +124,15 @@ final class Dashboard extends Component
         $this->analyticsStats = [
             'sessions' => [
                 'value' => (int) $currentSessions,
-                'change' => $this->calculateChange($currentSessions, $prevSessions),
+                'change' => $this->calculateChange((float) $currentSessions, (float) $prevSessions),
             ],
             'users' => [
                 'value' => (int) $currentUsers,
-                'change' => $this->calculateChange($currentUsers, $prevUsers),
+                'change' => $this->calculateChange((float) $currentUsers, (float) $prevUsers),
             ],
             'pageviews' => [
                 'value' => (int) $currentPageviews,
-                'change' => $this->calculateChange($currentPageviews, $prevPageviews),
+                'change' => $this->calculateChange((float) $currentPageviews, (float) $prevPageviews),
             ],
             'bounce_rate' => [
                 'value' => round((float) $currentBounceRate, 1),
@@ -202,11 +202,11 @@ final class Dashboard extends Component
         $this->searchConsoleStats = [
             'clicks' => [
                 'value' => (int) $currentClicks,
-                'change' => $this->calculateChange($currentClicks, $prevClicks),
+                'change' => $this->calculateChange((float) $currentClicks, (float) $prevClicks),
             ],
             'impressions' => [
                 'value' => (int) $currentImpressions,
-                'change' => $this->calculateChange($currentImpressions, $prevImpressions),
+                'change' => $this->calculateChange((float) $currentImpressions, (float) $prevImpressions),
             ],
             'ctr' => [
                 'value' => round((float) $currentCtr * 100, 2),
@@ -285,11 +285,11 @@ final class Dashboard extends Component
         $this->googleAdsStats = [
             'cost' => [
                 'value' => round((float) $currentCost, 0),
-                'change' => $this->calculateChange($currentCost, $prevCost),
+                'change' => $this->calculateChange((float) $currentCost, (float) $prevCost),
             ],
             'clicks' => [
                 'value' => (int) $currentClicks,
-                'change' => $this->calculateChange($currentClicks, $prevClicks),
+                'change' => $this->calculateChange((float) $currentClicks, (float) $prevClicks),
             ],
             'impressions' => [
                 'value' => (int) $currentImpressions,
@@ -297,7 +297,7 @@ final class Dashboard extends Component
             ],
             'conversions' => [
                 'value' => round((float) $currentConversions, 0),
-                'change' => $this->calculateChange($currentConversions, $prevConversions),
+                'change' => $this->calculateChange((float) $currentConversions, (float) $prevConversions),
             ],
         ];
 
