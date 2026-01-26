@@ -9,7 +9,9 @@ use App\Livewire\Pages\Analytics\Dashboard as AnalyticsDashboard;
 use App\Livewire\Pages\Analytics\GeneralStats as AnalyticsGeneralStats;
 use App\Livewire\Pages\Analytics\Statistics as AnalyticsStatistics;
 use App\Livewire\Pages\GoogleAds\Dashboard as GoogleAdsDashboard;
+use App\Livewire\Pages\Kpis\Edit as KpisEdit;
 use App\Livewire\Pages\Kpis\Index as KpisIndex;
+use App\Livewire\Pages\Kpis\Show as KpisShow;
 use App\Livewire\Pages\SearchConsole\GeneralStats as SearchConsoleGeneralStats;
 use App\Livewire\Pages\SearchConsole\Pages as SearchConsolePages;
 use App\Livewire\Pages\SearchConsole\Queries as SearchConsoleQueries;
@@ -47,6 +49,8 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 
     // KPIs
     Route::get('/kpis', KpisIndex::class)->name('kpis.index');
+    Route::get('/kpis/{kpi}', KpisShow::class)->name('kpis.show');
+    Route::get('/kpis/{kpi}/edit', KpisEdit::class)->name('kpis.edit');
 
     // Settings
     Route::get('/settings', Settings::class)->name('settings');
