@@ -10,6 +10,7 @@ use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 final class GenerateGoogleAdsReportAction
 {
@@ -28,6 +29,7 @@ final class GenerateGoogleAdsReportAction
                     ->native(false)
                     ->helperText(__('Válaszd ki a hónapot, amire a riportot szeretnéd generálni.')),
             ])
+            ->closeModalByClickingAway(false)
             ->action(function (array $data): void {
                 $month = Carbon::parse($data['month'] . '-01');
                 $team = Filament::getTenant();
@@ -35,7 +37,7 @@ final class GenerateGoogleAdsReportAction
                 GenerateGoogleAdsReportJob::dispatch(
                     teamId: $team->id,
                     month: $month,
-                    userId: auth()->id(),
+                    userId: Auth::id(),
                 );
 
                 Notification::make()
@@ -51,15 +53,12 @@ final class GenerateGoogleAdsReportAction
      */
     private static function getMonthOptions(): array
     {
-        $options = [];
+        return collect(range(0, 11))
+            ->mapWithKeys(function (int $i): array {
+                $date = now()->subMonths($i);
 
-        for ($i = 0; $i < 12; $i++) {
-            $date = now()->subMonths($i);
-            $key = $date->format('Y-m');
-            $label = $date->locale('hu')->translatedFormat('Y. F');
-            $options[$key] = $label;
-        }
-
-        return $options;
+                return [$date->format('Y-m') => $date->locale('hu')->translatedFormat('Y. F')];
+            })
+            ->toArray();
     }
 }
