@@ -7,6 +7,7 @@ namespace App\Livewire\Pages\GoogleAds;
 use App\Enums\KpiGoalType;
 use App\Enums\KpiValueType;
 use App\Filament\Pages\Actions\GenerateGoogleAdsReportAction;
+use App\Filament\Pages\Actions\SendGoogleAdsReportNowAction;
 use App\Filament\Resources\Kpis\KpiResource;
 use App\Models\GoogleAdsAdGroup;
 use App\Models\GoogleAdsCampaign;
@@ -283,6 +284,11 @@ final class Dashboard extends Component implements HasActions, HasSchemas
     public function generateReportAction(): Action
     {
         return GenerateGoogleAdsReportAction::make($this->team);
+    }
+
+    public function sendReportNowAction(): Action
+    {
+        return SendGoogleAdsReportNowAction::make($this->team);
     }
 
     /**
