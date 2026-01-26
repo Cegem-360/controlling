@@ -14,11 +14,13 @@ use DateTimeInterface;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 
 final class KpiProgressWidget extends BaseWidget
 {
     public ?Model $record = null;
 
+    #[Override]
     protected function getStats(): array
     {
         if (! $this->record instanceof Kpi) {

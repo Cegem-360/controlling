@@ -9,6 +9,7 @@ use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
 use Illuminate\Support\Number;
+use Override;
 
 final class SearchPageImporter extends Importer
 {
@@ -57,6 +58,7 @@ final class SearchPageImporter extends Importer
         return $body;
     }
 
+    #[Override]
     public function resolveRecord(): SearchPage
     {
         return SearchPage::query()->firstOrNew([

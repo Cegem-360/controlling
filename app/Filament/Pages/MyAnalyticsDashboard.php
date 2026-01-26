@@ -17,6 +17,7 @@ use BezhanSalleh\GoogleAnalytics\Widgets\SessionsWidget;
 use BezhanSalleh\GoogleAnalytics\Widgets\TopReferrersListWidget;
 use BezhanSalleh\GoogleAnalytics\Widgets\VisitorsWidget;
 use Filament\Pages\Page;
+use Override;
 use UnitEnum;
 
 final class MyAnalyticsDashboard extends Page
@@ -31,11 +32,13 @@ final class MyAnalyticsDashboard extends Page
 
     protected string $view = 'filament.pages.my-analytics-dashboard';
 
+    #[Override]
     public function getHeaderWidgetsColumns(): int
     {
         return 2; // 3 oszlopos grid layout
     }
 
+    #[Override]
     protected function getHeaderWidgets(): array
     {
         return [

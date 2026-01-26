@@ -11,6 +11,7 @@ use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use Override;
 
 final class RegisterTeam extends RegisterTenant
 {
@@ -24,6 +25,7 @@ final class RegisterTeam extends RegisterTenant
         return Gate::allows('create', Team::class);
     }
 
+    #[Override]
     public function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -43,6 +45,7 @@ final class RegisterTeam extends RegisterTenant
         ]);
     }
 
+    #[Override]
     protected function handleRegistration(array $data): Team
     {
         $team = Team::query()->create($data);

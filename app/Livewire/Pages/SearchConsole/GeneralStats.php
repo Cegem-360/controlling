@@ -32,7 +32,7 @@ final class GeneralStats extends Component implements HasActions, HasSchemas
     use WithDataTable;
     use WithSearchConsoleDateRange;
 
-    private const SESSION_KEY = 'search_console_date_range';
+    private const string SESSION_KEY = 'search_console_date_range';
 
     public ?Team $team = null;
 
@@ -192,7 +192,7 @@ final class GeneralStats extends Component implements HasActions, HasSchemas
             ->orderByDesc('total_clicks')
             ->limit(100)
             ->get()
-            ->map(fn ($item): array => $this->mapSearchConsoleStats($item, ['query' => $item->query]))
+            ->map(fn (object $item): array => $this->mapSearchConsoleStats($item, ['query' => $item->query]))
             ->toArray();
     }
 
@@ -211,7 +211,7 @@ final class GeneralStats extends Component implements HasActions, HasSchemas
             ->orderByDesc('total_clicks')
             ->limit(100)
             ->get()
-            ->map(fn ($item): array => $this->mapSearchConsoleStats($item, ['page_url' => $item->page_url]))
+            ->map(fn (object $item): array => $this->mapSearchConsoleStats($item, ['page_url' => $item->page_url]))
             ->toArray();
     }
 

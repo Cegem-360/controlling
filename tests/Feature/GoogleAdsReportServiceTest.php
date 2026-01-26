@@ -6,7 +6,7 @@ use App\DataTransferObjects\GoogleAdsReportData;
 use App\Models\GoogleAdsCampaign;
 use App\Models\Team;
 use App\Services\GoogleAds\GoogleAdsReportService;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Date;
 
 it('generates report data for a team', function (): void {
     $team = Team::factory()->create();
@@ -14,7 +14,7 @@ it('generates report data for a team', function (): void {
     // Create some campaign data
     GoogleAdsCampaign::query()->create([
         'team_id' => $team->id,
-        'date' => Carbon::now()->startOfMonth(),
+        'date' => Date::now()->startOfMonth(),
         'campaign_id' => 'test-campaign-1',
         'campaign_name' => 'Test Campaign',
         'campaign_status' => 'ENABLED',
@@ -30,7 +30,7 @@ it('generates report data for a team', function (): void {
     ]);
 
     $service = new GoogleAdsReportService();
-    $data = $service->generateReportData($team, Carbon::now());
+    $data = $service->generateReportData($team, Date::now());
 
     expect($data)->toBeInstanceOf(GoogleAdsReportData::class);
     expect($data->team->id)->toBe($team->id);
@@ -44,7 +44,7 @@ it('returns empty collections when no data exists', function (): void {
     $team = Team::factory()->create();
 
     $service = new GoogleAdsReportService();
-    $data = $service->generateReportData($team, Carbon::now());
+    $data = $service->generateReportData($team, Date::now());
 
     expect($data)->toBeInstanceOf(GoogleAdsReportData::class);
     expect($data->kpiSummary['impressions'])->toBe(0);
@@ -59,7 +59,7 @@ it('calculates kpi changes correctly', function (): void {
     // Create current month data
     GoogleAdsCampaign::query()->create([
         'team_id' => $team->id,
-        'date' => Carbon::now()->startOfMonth(),
+        'date' => Date::now()->startOfMonth(),
         'campaign_id' => 'test-campaign-1',
         'campaign_name' => 'Test Campaign',
         'campaign_status' => 'ENABLED',
@@ -77,7 +77,7 @@ it('calculates kpi changes correctly', function (): void {
     // Create previous month data
     GoogleAdsCampaign::query()->create([
         'team_id' => $team->id,
-        'date' => Carbon::now()->subMonth()->startOfMonth(),
+        'date' => Date::now()->subMonth()->startOfMonth(),
         'campaign_id' => 'test-campaign-1',
         'campaign_name' => 'Test Campaign',
         'campaign_status' => 'ENABLED',
@@ -93,7 +93,7 @@ it('calculates kpi changes correctly', function (): void {
     ]);
 
     $service = new GoogleAdsReportService();
-    $data = $service->generateReportData($team, Carbon::now());
+    $data = $service->generateReportData($team, Date::now());
 
     $changes = $data->getKpiChanges();
 

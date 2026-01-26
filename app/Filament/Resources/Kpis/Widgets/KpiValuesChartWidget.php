@@ -18,17 +18,21 @@ use Illuminate\Support\Collection;
 
 use function in_array;
 
+use Override;
+
 final class KpiValuesChartWidget extends ChartWidget
 {
-    private const MAX_DAYS = 365;
+    private const int MAX_DAYS = 365;
 
     public ?Model $record = null;
 
+    #[Override]
     public function getHeading(): string
     {
         return 'KPI Progress Over Time';
     }
 
+    #[Override]
     public function getDescription(): ?string
     {
         if (! $this->record instanceof Kpi) {
@@ -57,6 +61,7 @@ final class KpiValuesChartWidget extends ChartWidget
         return null;
     }
 
+    #[Override]
     protected function getData(): array
     {
         $emptyResult = ['datasets' => [], 'labels' => []];
@@ -104,6 +109,7 @@ final class KpiValuesChartWidget extends ChartWidget
         return 'line';
     }
 
+    #[Override]
     protected function getOptions(): array
     {
         return [

@@ -10,6 +10,7 @@ use Filament\Pages\Tenancy\EditTenantProfile;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use Override;
 
 final class EditTeamProfile extends EditTenantProfile
 {
@@ -23,6 +24,7 @@ final class EditTeamProfile extends EditTenantProfile
         return Gate::allows('update', Team::class);
     }
 
+    #[Override]
     public function form(Schema $schema): Schema
     {
         return $schema->components([

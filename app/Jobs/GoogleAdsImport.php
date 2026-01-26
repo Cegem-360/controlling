@@ -34,7 +34,7 @@ final class GoogleAdsImport implements ShouldQueue
     use Batchable;
     use Queueable;
 
-    private const DAYS_TO_IMPORT = 90;
+    private const int DAYS_TO_IMPORT = 90;
 
     public function __construct(
         public readonly int $teamId,

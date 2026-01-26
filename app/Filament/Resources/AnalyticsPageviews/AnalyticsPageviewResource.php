@@ -14,6 +14,7 @@ use App\Models\AnalyticsPageview;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Override;
 use UnitEnum;
 
 final class AnalyticsPageviewResource extends Resource
@@ -34,16 +35,19 @@ final class AnalyticsPageviewResource extends Resource
         return __('Pageviews');
     }
 
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return AnalyticsPageviewForm::configure($schema);
     }
 
+    #[Override]
     public static function table(Table $table): Table
     {
         return AnalyticsPageviewsTable::configure($table);
     }
 
+    #[Override]
     public static function getRelations(): array
     {
         return [

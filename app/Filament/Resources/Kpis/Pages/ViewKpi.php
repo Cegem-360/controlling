@@ -16,11 +16,13 @@ use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Override;
 
 final class ViewKpi extends ViewRecord
 {
     protected static string $resource = KpiResource::class;
 
+    #[Override]
     public function mount(int|string $record): void
     {
         parent::mount($record);
@@ -58,6 +60,7 @@ final class ViewKpi extends ViewRecord
         }
     }
 
+    #[Override]
     public function infolist(Schema $schema): Schema
     {
         return $schema
@@ -132,6 +135,7 @@ final class ViewKpi extends ViewRecord
         ];
     }
 
+    #[Override]
     protected function getHeaderWidgets(): array
     {
         return [

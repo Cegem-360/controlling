@@ -47,7 +47,7 @@ trait WithDataTable
             $aVal = $a[$sortBy] ?? 0;
             $bVal = $b[$sortBy] ?? 0;
 
-            $result = is_string($aVal) ? strcmp((string) $aVal, (string) $bVal) : $aVal <=> $bVal;
+            $result = is_string($aVal) ? strcmp($aVal, (string) $bVal) : $aVal <=> $bVal;
 
             return $sortDir === 'asc' ? $result : -$result;
         });

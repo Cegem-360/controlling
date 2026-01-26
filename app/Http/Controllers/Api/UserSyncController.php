@@ -87,7 +87,7 @@ final class UserSyncController extends Controller
             'is_active' => ['required', 'boolean'],
         ]);
 
-        User::where('email', $validated['email'])
+        User::query()->where('email', $validated['email'])
             ->update(['is_active' => $validated['is_active']]);
 
         return response()->json(['message' => 'User updated']);

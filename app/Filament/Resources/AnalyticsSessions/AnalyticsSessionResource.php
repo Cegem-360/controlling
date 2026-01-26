@@ -14,6 +14,7 @@ use App\Models\AnalyticsSession;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Override;
 use UnitEnum;
 
 final class AnalyticsSessionResource extends Resource
@@ -34,16 +35,19 @@ final class AnalyticsSessionResource extends Resource
         return __('Sessions');
     }
 
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return AnalyticsSessionForm::configure($schema);
     }
 
+    #[Override]
     public static function table(Table $table): Table
     {
         return AnalyticsSessionsTable::configure($table);
     }
 
+    #[Override]
     public static function getRelations(): array
     {
         return [

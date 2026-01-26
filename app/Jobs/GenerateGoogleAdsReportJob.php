@@ -8,7 +8,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Services\GoogleAds\GoogleAdsPdfGenerator;
 use App\Services\GoogleAds\GoogleAdsReportService;
-use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
@@ -26,7 +26,7 @@ final class GenerateGoogleAdsReportJob implements ShouldQueue
 
     public function __construct(
         public readonly int $teamId,
-        public readonly Carbon $month,
+        public readonly CarbonInterface $month,
         public readonly ?int $userId = null,
     ) {}
 
@@ -34,7 +34,7 @@ final class GenerateGoogleAdsReportJob implements ShouldQueue
         GoogleAdsReportService $reportService,
         GoogleAdsPdfGenerator $pdfGenerator,
     ): void {
-        $team = Team::findOrFail($this->teamId);
+        $team = Team::query()->findOrFail($this->teamId);
 
         $data = $reportService->generateReportData($team, $this->month);
         $filename = $pdfGenerator->generate($data);
@@ -44,16 +44,11 @@ final class GenerateGoogleAdsReportJob implements ShouldQueue
 
     private function notifyUser(string $filename): void
     {
-        if ($this->userId === null) {
+        $user = $this->userId !== null ? User::query()->find($this->userId) : null;
+
+        if (! $user instanceof User) {
             return;
         }
-
-        $user = User::find($this->userId);
-        if ($user === null) {
-            return;
-        }
-
-        $pdfUrl = route('pdf.show', ['filename' => $filename]);
 
         Notification::make()
             ->title(__('Google Ads riport elkészült'))
@@ -62,7 +57,7 @@ final class GenerateGoogleAdsReportJob implements ShouldQueue
             ->actions([
                 Action::make('view')
                     ->label(__('Megtekintés'))
-                    ->url($pdfUrl)
+                    ->url(route('pdf.show', ['filename' => $filename]))
                     ->openUrlInNewTab(),
             ])
             ->sendToDatabase($user);

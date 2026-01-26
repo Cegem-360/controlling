@@ -45,7 +45,7 @@ final class Settings extends Component implements HasActions, HasSchemas
     {
         $this->team = Auth::user()->teams()->first();
 
-        if ($this->team) {
+        if ($this->team instanceof Team) {
             $this->form->fill($this->getRecord()?->attributesToArray() ?? []);
         }
     }
@@ -139,7 +139,7 @@ final class Settings extends Component implements HasActions, HasSchemas
             return;
         }
 
-        $oauthService = app(GoogleAdsOAuthService::class);
+        $oauthService = resolve(GoogleAdsOAuthService::class);
         $authUrl = $oauthService->getAuthorizationUrl($this->team);
 
         $this->redirect($authUrl);
@@ -151,7 +151,7 @@ final class Settings extends Component implements HasActions, HasSchemas
             return;
         }
 
-        $oauthService = app(GoogleAdsOAuthService::class);
+        $oauthService = resolve(GoogleAdsOAuthService::class);
         $oauthService->disconnect($this->team);
 
         Notification::make()
@@ -211,7 +211,7 @@ final class Settings extends Component implements HasActions, HasSchemas
     {
         $googleAdsSettings = $this->getGoogleAdsSettings();
 
-        if (! $googleAdsSettings) {
+        if (! $googleAdsSettings instanceof GoogleAdsSettings) {
             return;
         }
 
@@ -278,7 +278,7 @@ final class Settings extends Component implements HasActions, HasSchemas
 
     private function ensureTeamSelected(): bool
     {
-        if ($this->team) {
+        if ($this->team instanceof Team) {
             return true;
         }
 

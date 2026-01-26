@@ -8,6 +8,7 @@ use App\Models\SearchQuery;
 use Carbon\CarbonInterface;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Override;
 
 final class SearchConsoleStatsOverview extends StatsOverviewWidget
 {
@@ -15,6 +16,7 @@ final class SearchConsoleStatsOverview extends StatsOverviewWidget
 
     protected $listeners = ['dateRangeUpdated' => '$refresh'];
 
+    #[Override]
     protected function getStats(): array
     {
         $startDate = $this->getStartDate();

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\DataTransferObjects;
 
 use App\Models\Team;
-use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
 final readonly class GoogleAdsReportData
@@ -26,7 +26,7 @@ final readonly class GoogleAdsReportData
      */
     public function __construct(
         public Team $team,
-        public Carbon $month,
+        public CarbonInterface $month,
         public array $kpiSummary,
         public array $previousMonthKpi,
         public Collection $campaigns,

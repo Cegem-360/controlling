@@ -26,6 +26,14 @@ final class Settings extends Model
     ];
 
     /**
+     * @return BelongsTo<Team, $this>
+     */
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -33,13 +41,5 @@ final class Settings extends Model
         return [
             'last_sync_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Team, $this>
-     */
-    public function team(): BelongsTo
-    {
-        return $this->belongsTo(Team::class);
     }
 }

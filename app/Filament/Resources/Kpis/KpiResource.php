@@ -14,6 +14,7 @@ use App\Models\Kpi;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Override;
 use UnitEnum;
 
 final class KpiResource extends Resource
@@ -34,16 +35,19 @@ final class KpiResource extends Resource
         return __('KPIs');
     }
 
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return KpiForm::configure($schema);
     }
 
+    #[Override]
     public static function table(Table $table): Table
     {
         return KpisTable::configure($table);
     }
 
+    #[Override]
     public static function getRelations(): array
     {
         return [

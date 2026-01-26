@@ -14,6 +14,7 @@ use App\Models\SearchQuery;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Override;
 use UnitEnum;
 
 final class SearchQueryResource extends Resource
@@ -32,16 +33,19 @@ final class SearchQueryResource extends Resource
         return __('Search Queries');
     }
 
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return SearchQueryForm::configure($schema);
     }
 
+    #[Override]
     public static function table(Table $table): Table
     {
         return SearchQueriesTable::configure($table);
     }
 
+    #[Override]
     public static function getRelations(): array
     {
         return [

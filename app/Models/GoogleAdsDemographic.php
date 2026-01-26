@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Observers\TenantAwareObserver;
 use Database\Factories\GoogleAdsDemographicFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,22 +46,22 @@ final class GoogleAdsDemographic extends Model
     /**
      * Get a human-readable gender name.
      */
-    public function getGenderNameAttribute(): string
+    protected function genderName(): Attribute
     {
-        return match ($this->gender) {
+        return Attribute::make(get: fn () => match ($this->gender) {
             'MALE' => __('Male'),
             'FEMALE' => __('Female'),
             'UNDETERMINED' => __('Undetermined'),
             default => $this->gender ?? __('Unknown'),
-        };
+        });
     }
 
     /**
      * Get a human-readable age range name.
      */
-    public function getAgeRangeNameAttribute(): string
+    protected function ageRangeName(): Attribute
     {
-        return match ($this->age_range) {
+        return Attribute::make(get: fn () => match ($this->age_range) {
             'AGE_RANGE_18_24' => '18-24',
             'AGE_RANGE_25_34' => '25-34',
             'AGE_RANGE_35_44' => '35-44',
@@ -69,7 +70,7 @@ final class GoogleAdsDemographic extends Model
             'AGE_RANGE_65_UP' => '65+',
             'AGE_RANGE_UNDETERMINED' => __('Undetermined'),
             default => $this->age_range ?? __('Unknown'),
-        };
+        });
     }
 
     /**

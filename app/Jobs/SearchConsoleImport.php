@@ -25,9 +25,9 @@ final class SearchConsoleImport implements ShouldQueue
     use Batchable;
     use Queueable;
 
-    private const ROW_LIMIT = 25000;
+    private const int ROW_LIMIT = 25000;
 
-    private const DATE_RANGE_DAYS = 90;
+    private const int DATE_RANGE_DAYS = 90;
 
     public function __construct(
         public readonly int $teamId,
@@ -142,7 +142,7 @@ final class SearchConsoleImport implements ShouldQueue
     private function processRows(Collection $rows, string $modelClass, string $keyFieldName): void
     {
         $rows->groupBy(fn ($row): string => implode('|', array_slice($row->getKeys(), 0, 4)))
-            ->each(function ($groupedRows) use ($modelClass, $keyFieldName): void {
+            ->each(function (Collection $groupedRows) use ($modelClass, $keyFieldName): void {
                 $first = $groupedRows->first();
                 $keys = $first->getKeys();
 

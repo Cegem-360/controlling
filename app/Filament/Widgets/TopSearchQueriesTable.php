@@ -9,6 +9,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
 use Illuminate\Database\Eloquent\Builder;
+use Override;
 
 final class TopSearchQueriesTable extends TableWidget
 {
@@ -58,6 +59,7 @@ final class TopSearchQueriesTable extends TableWidget
             ->paginated([10, 25, 50]);
     }
 
+    #[Override]
     protected function getTableHeading(): string
     {
         return sprintf('Top keresési kifejezések (%s)', $this->getDateRangeLabel());

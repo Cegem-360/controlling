@@ -8,6 +8,7 @@ use App\Models\SearchQuery;
 use Carbon\CarbonInterface;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
+use Override;
 
 final class SearchConsoleChart extends ChartWidget
 {
@@ -21,6 +22,7 @@ final class SearchConsoleChart extends ChartWidget
 
     protected ?string $heading = 'Teljesítmény';
 
+    #[Override]
     protected function getData(): array
     {
         $startDate = $this->getStartDate();
@@ -73,6 +75,7 @@ final class SearchConsoleChart extends ChartWidget
         return 'line';
     }
 
+    #[Override]
     protected function getOptions(): array
     {
         return [

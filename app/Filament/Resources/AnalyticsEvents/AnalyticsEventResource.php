@@ -14,6 +14,7 @@ use App\Models\AnalyticsEvent;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Override;
 use UnitEnum;
 
 final class AnalyticsEventResource extends Resource
@@ -34,16 +35,19 @@ final class AnalyticsEventResource extends Resource
         return __('Events');
     }
 
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return AnalyticsEventForm::configure($schema);
     }
 
+    #[Override]
     public static function table(Table $table): Table
     {
         return AnalyticsEventsTable::configure($table);
     }
 
+    #[Override]
     public static function getRelations(): array
     {
         return [

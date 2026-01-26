@@ -6,6 +6,7 @@ namespace App\Livewire\Pages\GoogleAds;
 
 use App\Enums\KpiGoalType;
 use App\Enums\KpiValueType;
+use App\Filament\Pages\Actions\GenerateGoogleAdsReportAction;
 use App\Filament\Resources\Kpis\KpiResource;
 use App\Models\GoogleAdsAdGroup;
 use App\Models\GoogleAdsCampaign;
@@ -279,6 +280,11 @@ final class Dashboard extends Component implements HasActions, HasSchemas
             ->closeModalByClickingAway(false);
     }
 
+    public function generateReportAction(): Action
+    {
+        return GenerateGoogleAdsReportAction::make($this->team);
+    }
+
     /**
      * Calculate percentage change between current and previous values.
      */
@@ -442,7 +448,7 @@ final class Dashboard extends Component implements HasActions, HasSchemas
             ->orderByDesc('total_impressions')
             ->limit(20)
             ->get()
-            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+            ->map(fn (object $item): array => $this->mapAggregatedStats($item, [
                 'campaign_id' => $item->campaign_id,
                 'campaign_name' => $item->campaign_name,
             ]))
@@ -469,7 +475,7 @@ final class Dashboard extends Component implements HasActions, HasSchemas
             ->orderByDesc('total_impressions')
             ->limit(30)
             ->get()
-            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+            ->map(fn (object $item): array => $this->mapAggregatedStats($item, [
                 'campaign_name' => $item->campaign_name,
                 'ad_group_name' => $item->ad_group_name,
             ]))
@@ -493,7 +499,7 @@ final class Dashboard extends Component implements HasActions, HasSchemas
             ->groupBy('date')
             ->orderBy('date', 'desc')
             ->get()
-            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+            ->map(fn (object $item): array => $this->mapAggregatedStats($item, [
                 'date' => $item->date->format('Y-m-d'),
                 'date_formatted' => $item->date->translatedFormat('Y. M j.'),
                 'day_name' => $item->date->translatedFormat('l'),
@@ -518,7 +524,7 @@ final class Dashboard extends Component implements HasActions, HasSchemas
             ->groupBy('hour')
             ->orderBy('hour')
             ->get()
-            ->map(fn ($item): array => $this->mapAggregatedStats($item, ['hour' => $item->hour]))
+            ->map(fn (object $item): array => $this->mapAggregatedStats($item, ['hour' => $item->hour]))
             ->toArray();
     }
 
@@ -539,7 +545,7 @@ final class Dashboard extends Component implements HasActions, HasSchemas
             ->groupBy('device')
             ->orderByDesc('total_impressions')
             ->get()
-            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+            ->map(fn (object $item): array => $this->mapAggregatedStats($item, [
                 'device' => $this->getDeviceName($item->device),
             ]))
             ->toArray();
@@ -563,7 +569,7 @@ final class Dashboard extends Component implements HasActions, HasSchemas
             ->groupBy('gender')
             ->orderByDesc('total_impressions')
             ->get()
-            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+            ->map(fn (object $item): array => $this->mapAggregatedStats($item, [
                 'gender' => $this->getGenderName($item->gender),
             ]))
             ->toArray();
@@ -581,7 +587,7 @@ final class Dashboard extends Component implements HasActions, HasSchemas
             ->groupBy('age_range')
             ->orderByDesc('total_impressions')
             ->get()
-            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+            ->map(fn (object $item): array => $this->mapAggregatedStats($item, [
                 'age_range' => $this->getAgeRangeName($item->age_range),
             ]))
             ->toArray();
@@ -605,7 +611,7 @@ final class Dashboard extends Component implements HasActions, HasSchemas
             ->orderByDesc('total_impressions')
             ->limit(20)
             ->get()
-            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+            ->map(fn (object $item): array => $this->mapAggregatedStats($item, [
                 'location_name' => $item->location_name,
             ]))
             ->toArray();
@@ -634,7 +640,7 @@ final class Dashboard extends Component implements HasActions, HasSchemas
             ->groupBy(DB::raw($yearExpr), DB::raw($monthExpr))
             ->orderByRaw("{$yearExpr} desc, {$monthExpr} desc")
             ->get()
-            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+            ->map(fn (object $item): array => $this->mapAggregatedStats($item, [
                 'month' => now()->setMonth((int) $item->month)->translatedFormat('Y. F'),
             ]))
             ->toArray();
@@ -652,7 +658,7 @@ final class Dashboard extends Component implements HasActions, HasSchemas
             ->groupBy(DB::raw($yearExpr), DB::raw($monthExpr))
             ->orderByRaw("{$yearExpr} desc, {$monthExpr} desc")
             ->get()
-            ->map(fn ($item): array => $this->mapAggregatedStats($item, [
+            ->map(fn (object $item): array => $this->mapAggregatedStats($item, [
                 'month' => now()->subYear()->setMonth((int) $item->month)->translatedFormat('Y. F'),
             ]))
             ->toArray();

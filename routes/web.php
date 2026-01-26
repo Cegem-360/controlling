@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function (): View|Factory|RedirectResponse {
     if (Auth::check()) {
-        return redirect()->route('dashboard');
+        return to_route('dashboard');
     }
 
     return view('home');

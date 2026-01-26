@@ -5,16 +5,22 @@ declare(strict_types=1);
 namespace App\Filament\Pages\Actions;
 
 use App\Jobs\GenerateGoogleAdsReportJob;
-use Carbon\Carbon;
+use App\Models\Team;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 
 final class GenerateGoogleAdsReportAction
 {
-    public static function make(): Action
+    /**
+     * Create the generate report action.
+     *
+     * @param  Team|null  $team  When provided, uses this team. Otherwise falls back to Filament tenant.
+     */
+    public static function make(?Team $team = null): Action
     {
         return Action::make('generateReport')
             ->label(__('Havi riport generálása'))
@@ -30,15 +36,15 @@ final class GenerateGoogleAdsReportAction
                     ->helperText(__('Válaszd ki a hónapot, amire a riportot szeretnéd generálni.')),
             ])
             ->closeModalByClickingAway(false)
-            ->action(function (array $data): void {
-                $month = Carbon::parse($data['month'] . '-01');
-                $team = Filament::getTenant();
+            ->action(function (array $data) use ($team): void {
+                $month = Date::parse($data['month'] . '-01');
+                $resolvedTeam = $team ?? Filament::getTenant();
 
-                GenerateGoogleAdsReportJob::dispatch(
-                    teamId: $team->id,
+                dispatch(new GenerateGoogleAdsReportJob(
+                    teamId: $resolvedTeam->id,
                     month: $month,
                     userId: Auth::id(),
-                );
+                ));
 
                 Notification::make()
                     ->title(__('Riport generálása elindult'))

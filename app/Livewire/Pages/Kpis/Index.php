@@ -113,7 +113,7 @@ final class Index extends Component
             $aVal = $a[$sortBy] ?? 0;
             $bVal = $b[$sortBy] ?? 0;
 
-            $result = is_string($aVal) ? strcmp((string) $aVal, (string) $bVal) : $aVal <=> $bVal;
+            $result = is_string($aVal) ? strcmp($aVal, (string) $bVal) : $aVal <=> $bVal;
 
             return $sortDir === 'asc' ? $result : -$result;
         });
@@ -143,7 +143,7 @@ final class Index extends Component
 
     private function loadKpisData(): void
     {
-        if (! $this->team) {
+        if (! $this->team instanceof Team) {
             return;
         }
 

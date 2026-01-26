@@ -34,7 +34,7 @@ final class GlobalSettings extends Page
 
     protected static ?int $navigationSort = 100;
 
-    protected static bool $isScopedToTenant = false;
+    private static bool $isScopedToTenant = false;
 
     public static function canAccess(): bool
     {

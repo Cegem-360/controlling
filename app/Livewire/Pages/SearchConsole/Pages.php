@@ -33,9 +33,9 @@ final class Pages extends Component implements HasActions, HasSchemas
     use WithDataTable;
     use WithSearchConsoleDateRange;
 
-    private const SESSION_KEY = 'search_console_pages_date_range';
+    private const string SESSION_KEY = 'search_console_pages_date_range';
 
-    private const SEARCH_FIELDS = ['page_url', 'device'];
+    private const array SEARCH_FIELDS = ['page_url', 'device'];
 
     public ?Team $team = null;
 

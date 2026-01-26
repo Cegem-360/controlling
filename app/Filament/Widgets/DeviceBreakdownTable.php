@@ -9,6 +9,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
 use Illuminate\Database\Eloquent\Builder;
+use Override;
 
 final class DeviceBreakdownTable extends TableWidget
 {
@@ -50,6 +51,7 @@ final class DeviceBreakdownTable extends TableWidget
             ->paginated(false);
     }
 
+    #[Override]
     protected function getTableHeading(): string
     {
         return sprintf('Eszközök (%s)', $this->getDateRangeLabel());

@@ -7,6 +7,7 @@ namespace App\Filament\Pages;
 use App\Enums\NavigationGroup;
 use App\Filament\Widgets\GeneralStatsOverview;
 use Filament\Pages\Page;
+use Override;
 use UnitEnum;
 
 final class AnalyticsGeneralStats extends Page
@@ -17,16 +18,19 @@ final class AnalyticsGeneralStats extends Page
 
     protected static ?int $navigationSort = -5;
 
+    #[Override]
     public static function getNavigationLabel(): string
     {
         return __('General Analytics');
     }
 
+    #[Override]
     public function getTitle(): string
     {
         return __('General Analytics Dashboard');
     }
 
+    #[Override]
     protected function getHeaderWidgets(): array
     {
         return [

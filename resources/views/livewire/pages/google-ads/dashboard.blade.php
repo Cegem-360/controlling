@@ -7,7 +7,8 @@
                 <p class="mt-1 text-gray-600 dark:text-gray-400">{{ $this->getDateRangeLabel() }}</p>
             </div>
             @if ($team)
-                <div>
+                <div class="flex items-center gap-2">
+                    {{ $this->generateReportAction }}
                     {{ $this->setKpiGoalAction }}
                 </div>
             @endif

@@ -11,6 +11,7 @@ use App\Filament\Resources\Permissions\Tables\PermissionsTable;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Override;
 use Spatie\Permission\Models\Permission;
 use UnitEnum;
 
@@ -34,11 +35,13 @@ final class PermissionResource extends Resource
         return __('Permissions');
     }
 
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return PermissionForm::configure($schema);
     }
 
+    #[Override]
     public static function table(Table $table): Table
     {
         return PermissionsTable::configure($table);

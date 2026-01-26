@@ -29,8 +29,7 @@ final class GoogleAdsOAuthController extends Controller
         } catch (Exception $e) {
             Log::error('Google Ads OAuth redirect failed', ['error' => $e->getMessage()]);
 
-            return redirect()
-                ->route('filament.admin.pages.settings', ['tenant' => $team])
+            return to_route('filament.admin.pages.settings', ['tenant' => $team])
                 ->with('error', __('Failed to initiate Google Ads connection: :message', ['message' => $e->getMessage()]));
         }
     }
@@ -41,35 +40,31 @@ final class GoogleAdsOAuthController extends Controller
     public function callback(Request $request): RedirectResponse
     {
         $teamId = (int) $request->get('state');
-        $team = Team::find($teamId);
+        $team = Team::query()->find($teamId);
 
         if ($request->has('error')) {
             Log::error('Google Ads OAuth callback error', ['error' => $request->get('error')]);
 
-            return redirect()
-                ->route('filament.admin.pages.settings', ['tenant' => $team])
+            return to_route('filament.admin.pages.settings', ['tenant' => $team])
                 ->with('error', __('Google Ads connection was denied or failed.'));
         }
 
         $code = $request->get('code');
 
         if (! $code || ! $team) {
-            return redirect()
-                ->route('filament.admin.pages.dashboard')
+            return to_route('filament.admin.pages.dashboard')
                 ->with('error', __('Invalid OAuth callback parameters.'));
         }
 
         try {
             $this->oauthService->handleCallback($code, $teamId);
 
-            return redirect()
-                ->route('filament.admin.pages.settings', ['tenant' => $team])
+            return to_route('filament.admin.pages.settings', ['tenant' => $team])
                 ->with('success', __('Google Ads account connected successfully!'));
         } catch (Exception $e) {
             Log::error('Google Ads OAuth callback failed', ['error' => $e->getMessage()]);
 
-            return redirect()
-                ->route('filament.admin.pages.settings', ['tenant' => $team])
+            return to_route('filament.admin.pages.settings', ['tenant' => $team])
                 ->with('error', __('Failed to connect Google Ads: :message', ['message' => $e->getMessage()]));
         }
     }
@@ -82,14 +77,12 @@ final class GoogleAdsOAuthController extends Controller
         try {
             $this->oauthService->disconnect($team);
 
-            return redirect()
-                ->route('filament.admin.pages.settings', ['tenant' => $team])
+            return to_route('filament.admin.pages.settings', ['tenant' => $team])
                 ->with('success', __('Google Ads account disconnected successfully.'));
         } catch (Exception $e) {
             Log::error('Google Ads disconnect failed', ['error' => $e->getMessage()]);
 
-            return redirect()
-                ->route('filament.admin.pages.settings', ['tenant' => $team])
+            return to_route('filament.admin.pages.settings', ['tenant' => $team])
                 ->with('error', __('Failed to disconnect Google Ads: :message', ['message' => $e->getMessage()]));
         }
     }

@@ -9,6 +9,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
 use Illuminate\Database\Eloquent\Builder;
+use Override;
 
 final class UserSourcesTable extends TableWidget
 {
@@ -37,6 +38,7 @@ final class UserSourcesTable extends TableWidget
             ->paginated([10, 25, 50]);
     }
 
+    #[Override]
     protected function getTableHeading(): string
     {
         return 'Aktív felhasználók / Első felhasználóhoz tartozó forrás';

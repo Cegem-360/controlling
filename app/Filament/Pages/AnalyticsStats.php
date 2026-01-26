@@ -19,6 +19,7 @@ use Google\Service\AnalyticsData\Dimension;
 use Google\Service\AnalyticsData\Metric;
 use Google\Service\AnalyticsData\Row;
 use Google\Service\AnalyticsData\RunReportRequest;
+use Override;
 use UnitEnum;
 
 final class AnalyticsStats extends Page
@@ -51,6 +52,7 @@ final class AnalyticsStats extends Page
         ];
     }
 
+    #[Override]
     protected function getHeaderWidgets(): array
     {
         return [

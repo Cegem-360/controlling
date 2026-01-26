@@ -13,7 +13,7 @@ use RuntimeException;
 
 final class GoogleAdsOAuthService
 {
-    private const SCOPES = ['https://www.googleapis.com/auth/adwords'];
+    private const array SCOPES = ['https://www.googleapis.com/auth/adwords'];
 
     /**
      * Get the OAuth authorization URL.
@@ -39,7 +39,7 @@ final class GoogleAdsOAuthService
             throw new RuntimeException('OAuth error: ' . ($token['error_description'] ?? $token['error']));
         }
 
-        $settings = GoogleAdsSettings::query()->updateOrCreate(
+        return GoogleAdsSettings::query()->updateOrCreate(
             ['team_id' => $teamId],
             [
                 'access_token' => $token['access_token'],
@@ -48,8 +48,6 @@ final class GoogleAdsOAuthService
                 'is_connected' => true,
             ],
         );
-
-        return $settings;
     }
 
     /**
@@ -142,6 +140,6 @@ final class GoogleAdsOAuthService
 
     private function getRedirectUri(): string
     {
-        return config('services.google_ads.redirect_uri') ?? route('google-ads.oauth.callback');
+        return config('services.google_ads.redirect_uri', route('google-ads.oauth.callback'));
     }
 }

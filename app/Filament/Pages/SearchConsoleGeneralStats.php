@@ -13,6 +13,7 @@ use Carbon\CarbonInterface;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Override;
 use UnitEnum;
 
 final class SearchConsoleGeneralStats extends Page
@@ -33,11 +34,13 @@ final class SearchConsoleGeneralStats extends Page
 
     protected static ?int $navigationSort = -10;
 
+    #[Override]
     public static function getNavigationLabel(): string
     {
         return __('General Search Console');
     }
 
+    #[Override]
     public function getTitle(): string
     {
         return __('General Search Console Dashboard');
@@ -77,6 +80,7 @@ final class SearchConsoleGeneralStats extends Page
         ];
     }
 
+    #[Override]
     protected function getHeaderWidgets(): array
     {
         return [

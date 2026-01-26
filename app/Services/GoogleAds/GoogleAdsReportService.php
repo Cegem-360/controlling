@@ -12,13 +12,14 @@ use App\Models\GoogleAdsDeviceStat;
 use App\Models\GoogleAdsGeographicStat;
 use App\Models\GoogleAdsHourlyStat;
 use App\Models\Team;
-use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
 final class GoogleAdsReportService
 {
-    public function generateReportData(Team $team, Carbon $month): GoogleAdsReportData
+    public function generateReportData(Team $team, CarbonInterface $month): GoogleAdsReportData
     {
         $startDate = $month->copy()->startOfMonth();
         $endDate = $month->copy()->endOfMonth();
@@ -51,7 +52,7 @@ final class GoogleAdsReportService
     /**
      * @return array<string, mixed>
      */
-    private function getKpiSummary(Team $team, Carbon $startDate, Carbon $endDate): array
+    private function getKpiSummary(Team $team, CarbonInterface $startDate, CarbonInterface $endDate): array
     {
         $stats = GoogleAdsCampaign::query()
             ->where('team_id', $team->id)
@@ -86,7 +87,7 @@ final class GoogleAdsReportService
     /**
      * @return Collection<int, array<string, mixed>>
      */
-    private function getCampaigns(Team $team, Carbon $startDate, Carbon $endDate): Collection
+    private function getCampaigns(Team $team, CarbonInterface $startDate, CarbonInterface $endDate): Collection
     {
         return GoogleAdsCampaign::query()
             ->where('team_id', $team->id)
@@ -120,7 +121,7 @@ final class GoogleAdsReportService
     /**
      * @return Collection<int, array<string, mixed>>
      */
-    private function getAdGroups(Team $team, Carbon $startDate, Carbon $endDate): Collection
+    private function getAdGroups(Team $team, CarbonInterface $startDate, CarbonInterface $endDate): Collection
     {
         return GoogleAdsAdGroup::query()
             ->where('team_id', $team->id)
@@ -155,7 +156,7 @@ final class GoogleAdsReportService
     /**
      * @return Collection<int, array<string, mixed>>
      */
-    private function getDailyStats(Team $team, Carbon $startDate, Carbon $endDate): Collection
+    private function getDailyStats(Team $team, CarbonInterface $startDate, CarbonInterface $endDate): Collection
     {
         return GoogleAdsCampaign::query()
             ->where('team_id', $team->id)
@@ -173,8 +174,8 @@ final class GoogleAdsReportService
             ->orderBy('date', 'desc')
             ->get()
             ->map(fn ($item): array => [
-                'date' => Carbon::parse($item->date),
-                'day_name' => Carbon::parse($item->date)->locale('hu')->dayName,
+                'date' => Date::parse($item->date),
+                'day_name' => Date::parse($item->date)->locale('hu')->dayName,
                 'impressions' => (int) $item->impressions,
                 'clicks' => (int) $item->clicks,
                 'cost' => round((float) $item->cost, 2),
@@ -189,7 +190,7 @@ final class GoogleAdsReportService
     /**
      * @return Collection<int, array<string, mixed>>
      */
-    private function getHourlyStats(Team $team, Carbon $startDate, Carbon $endDate): Collection
+    private function getHourlyStats(Team $team, CarbonInterface $startDate, CarbonInterface $endDate): Collection
     {
         return GoogleAdsHourlyStat::query()
             ->where('team_id', $team->id)
@@ -222,7 +223,7 @@ final class GoogleAdsReportService
     /**
      * @return Collection<int, array<string, mixed>>
      */
-    private function getDeviceStats(Team $team, Carbon $startDate, Carbon $endDate): Collection
+    private function getDeviceStats(Team $team, CarbonInterface $startDate, CarbonInterface $endDate): Collection
     {
         return GoogleAdsDeviceStat::query()
             ->where('team_id', $team->id)
@@ -255,7 +256,7 @@ final class GoogleAdsReportService
     /**
      * @return Collection<int, array<string, mixed>>
      */
-    private function getGenderStats(Team $team, Carbon $startDate, Carbon $endDate): Collection
+    private function getGenderStats(Team $team, CarbonInterface $startDate, CarbonInterface $endDate): Collection
     {
         return GoogleAdsDemographic::query()
             ->where('team_id', $team->id)
@@ -289,7 +290,7 @@ final class GoogleAdsReportService
     /**
      * @return Collection<int, array<string, mixed>>
      */
-    private function getAgeStats(Team $team, Carbon $startDate, Carbon $endDate): Collection
+    private function getAgeStats(Team $team, CarbonInterface $startDate, CarbonInterface $endDate): Collection
     {
         return GoogleAdsDemographic::query()
             ->where('team_id', $team->id)
@@ -323,7 +324,7 @@ final class GoogleAdsReportService
     /**
      * @return Collection<int, array<string, mixed>>
      */
-    private function getGeographicStats(Team $team, Carbon $startDate, Carbon $endDate): Collection
+    private function getGeographicStats(Team $team, CarbonInterface $startDate, CarbonInterface $endDate): Collection
     {
         return GoogleAdsGeographicStat::query()
             ->where('team_id', $team->id)
@@ -356,7 +357,7 @@ final class GoogleAdsReportService
     /**
      * @return Collection<int, array<string, mixed>>
      */
-    private function getMonthlyStats(Team $team, Carbon $startDate, Carbon $endDate): Collection
+    private function getMonthlyStats(Team $team, CarbonInterface $startDate, CarbonInterface $endDate): Collection
     {
         return GoogleAdsCampaign::query()
             ->where('team_id', $team->id)
@@ -374,8 +375,8 @@ final class GoogleAdsReportService
             ->orderByRaw('strftime(\'%Y-%m\', date) DESC')
             ->get()
             ->map(fn ($item): array => [
-                'month' => Carbon::parse($item->month . '-01'),
-                'month_name' => Carbon::parse($item->month . '-01')->locale('hu')->monthName,
+                'month' => Date::parse($item->month . '-01'),
+                'month_name' => Date::parse($item->month . '-01')->locale('hu')->monthName,
                 'impressions' => (int) $item->impressions,
                 'clicks' => (int) $item->clicks,
                 'cost' => round((float) $item->cost, 2),

@@ -11,6 +11,7 @@ use App\Filament\Resources\Roles\Tables\RolesTable;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Override;
 use Spatie\Permission\Models\Role;
 use UnitEnum;
 
@@ -34,11 +35,13 @@ final class RoleResource extends Resource
         return __('Roles');
     }
 
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return RoleForm::configure($schema);
     }
 
+    #[Override]
     public static function table(Table $table): Table
     {
         return RolesTable::configure($table);

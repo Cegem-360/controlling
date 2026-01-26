@@ -17,6 +17,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Override;
 
 final class TeamResource extends Resource
 {
@@ -51,16 +52,19 @@ final class TeamResource extends Resource
         return __('Teams');
     }
 
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return TeamForm::configure($schema);
     }
 
+    #[Override]
     public static function table(Table $table): Table
     {
         return TeamsTable::configure($table);
     }
 
+    #[Override]
     public static function getRelations(): array
     {
         return [

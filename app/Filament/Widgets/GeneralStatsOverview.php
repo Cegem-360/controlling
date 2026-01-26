@@ -14,9 +14,11 @@ use Google\Service\AnalyticsData;
 use Google\Service\AnalyticsData\DateRange;
 use Google\Service\AnalyticsData\Metric;
 use Google\Service\AnalyticsData\RunReportRequest;
+use Override;
 
 final class GeneralStatsOverview extends StatsOverviewWidget
 {
+    #[Override]
     protected function getStats(): array
     {
         $stats = $this->loadStats();

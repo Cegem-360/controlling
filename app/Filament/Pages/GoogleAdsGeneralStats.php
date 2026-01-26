@@ -18,6 +18,7 @@ use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Override;
 use UnitEnum;
 
 final class GoogleAdsGeneralStats extends Page
@@ -54,11 +55,13 @@ final class GoogleAdsGeneralStats extends Page
 
     protected static ?int $navigationSort = -10;
 
+    #[Override]
     public static function getNavigationLabel(): string
     {
         return __('Google Ads Dashboard');
     }
 
+    #[Override]
     public function getTitle(): string
     {
         return __('Google Ads Dashboard');

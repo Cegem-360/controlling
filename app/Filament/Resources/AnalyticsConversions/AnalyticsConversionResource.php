@@ -14,6 +14,7 @@ use App\Models\AnalyticsConversion;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Override;
 use UnitEnum;
 
 final class AnalyticsConversionResource extends Resource
@@ -34,16 +35,19 @@ final class AnalyticsConversionResource extends Resource
         return __('Conversions');
     }
 
+    #[Override]
     public static function form(Schema $schema): Schema
     {
         return AnalyticsConversionForm::configure($schema);
     }
 
+    #[Override]
     public static function table(Table $table): Table
     {
         return AnalyticsConversionsTable::configure($table);
     }
 
+    #[Override]
     public static function getRelations(): array
     {
         return [

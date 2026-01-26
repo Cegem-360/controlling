@@ -179,7 +179,7 @@ final class Settings extends Page
             return;
         }
 
-        $oauthService = app(GoogleAdsOAuthService::class);
+        $oauthService = resolve(GoogleAdsOAuthService::class);
         $authUrl = $oauthService->getAuthorizationUrl($team);
 
         $this->redirect($authUrl);
@@ -198,7 +198,7 @@ final class Settings extends Page
             return;
         }
 
-        $oauthService = app(GoogleAdsOAuthService::class);
+        $oauthService = resolve(GoogleAdsOAuthService::class);
         $oauthService->disconnect($team);
 
         Notification::make()
@@ -291,7 +291,7 @@ final class Settings extends Page
     {
         $googleAdsSettings = $this->getGoogleAdsSettings();
 
-        if (! $googleAdsSettings) {
+        if (! $googleAdsSettings instanceof GoogleAdsSettings) {
             return;
         }
 

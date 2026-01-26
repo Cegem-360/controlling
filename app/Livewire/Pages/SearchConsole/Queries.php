@@ -33,9 +33,9 @@ final class Queries extends Component implements HasActions, HasSchemas
     use WithDataTable;
     use WithSearchConsoleDateRange;
 
-    private const SESSION_KEY = 'search_console_queries_date_range';
+    private const string SESSION_KEY = 'search_console_queries_date_range';
 
-    private const SEARCH_FIELDS = ['query', 'country', 'device'];
+    private const array SEARCH_FIELDS = ['query', 'country', 'device'];
 
     public ?Team $team = null;
 

@@ -111,7 +111,7 @@ it('can delete kpi', function (): void {
         ->test(EditKpi::class, ['record' => $kpi->getRouteKey(), 'tenant' => $team])
         ->callAction('delete');
 
-    expect(Kpi::find($kpi->id))->toBeNull();
+    expect(Kpi::query()->find($kpi->id))->toBeNull();
 });
 
 it('can search kpis in table', function (): void {

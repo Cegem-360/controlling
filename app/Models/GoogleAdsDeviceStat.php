@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Observers\TenantAwareObserver;
 use Database\Factories\GoogleAdsDeviceStatFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -44,15 +45,15 @@ final class GoogleAdsDeviceStat extends Model
     /**
      * Get a human-readable device name.
      */
-    public function getDeviceNameAttribute(): string
+    protected function deviceName(): Attribute
     {
-        return match ($this->device) {
+        return Attribute::make(get: fn () => match ($this->device) {
             'MOBILE' => __('Mobile'),
             'DESKTOP' => __('Desktop'),
             'TABLET' => __('Tablet'),
             'CONNECTED_TV' => __('Connected TV'),
             default => $this->device,
-        };
+        });
     }
 
     /**
