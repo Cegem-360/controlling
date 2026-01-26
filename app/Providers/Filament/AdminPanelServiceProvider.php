@@ -90,6 +90,7 @@ final class AdminPanelServiceProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->databaseNotifications()
             ->plugins([
                 // Register your Filament plugins here
                 GoogleAnalyticsPlugin::make(),

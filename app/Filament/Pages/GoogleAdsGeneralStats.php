@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Enums\NavigationGroup;
+use App\Filament\Pages\Actions\GenerateGoogleAdsReportAction;
 use App\Filament\Pages\Actions\SetGoogleAdsKpiGoalAction;
 use App\Models\GoogleAdsAdGroup;
 use App\Models\GoogleAdsCampaign;
@@ -92,6 +93,7 @@ final class GoogleAdsGeneralStats extends Page
     protected function getHeaderActions(): array
     {
         return [
+            GenerateGoogleAdsReportAction::make(),
             SetGoogleAdsKpiGoalAction::make(
                 fn (): array => $this->campaigns,
                 fn (): array => $this->adGroups,

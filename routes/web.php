@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\GoogleAdsOAuthController;
+use App\Http\Controllers\PdfViewerController;
 use App\Livewire\Dashboard;
 use App\Livewire\Pages\Analytics\Dashboard as AnalyticsDashboard;
 use App\Livewire\Pages\Analytics\GeneralStats as AnalyticsGeneralStats;
@@ -63,6 +64,14 @@ Route::get('/language/{locale}', function (string $locale) {
 
     return redirect($redirectUrl)->withCookie($cookie);
 })->name('language.switch');
+
+// PDF Viewer (Public)
+Route::get('/pdf/{filename}', [PdfViewerController::class, 'show'])
+    ->where('filename', '.*\.pdf')
+    ->name('pdf.show');
+Route::get('/pdf/{filename}/stream', [PdfViewerController::class, 'stream'])
+    ->where('filename', '.*\.pdf')
+    ->name('pdf.stream');
 // Google Ads OAuth Routes
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/google-ads/auth/redirect/{team}', [GoogleAdsOAuthController::class, 'redirect'])
