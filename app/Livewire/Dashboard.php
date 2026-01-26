@@ -351,7 +351,7 @@ final class Dashboard extends Component
 
     private function getKpiCurrentValue(Kpi $kpi): float
     {
-        if (! $kpi->from_date || ! $kpi->target_date) {
+        if (! $kpi->from_date || ! $kpi->target_date || ! $kpi->metric_type) {
             return 0;
         }
 
