@@ -6,7 +6,6 @@ namespace App\Filament\Pages\Actions;
 
 use App\Enums\KpiGoalType;
 use App\Enums\KpiValueType;
-use App\Filament\Resources\Kpis\KpiResource;
 use App\Models\Kpi;
 use Closure;
 use Filament\Actions\Action;
@@ -182,7 +181,7 @@ final class SetSearchConsoleKpiGoalAction
                     ->actions([
                         Action::make('view')
                             ->label(__('View KPI'))
-                            ->url(KpiResource::getUrl('view', ['record' => $kpi->getRouteKey(), 'tenant' => Filament::getTenant()])),
+                            ->url(route('kpis.show', $kpi)),
                     ])
                     ->send();
             })

@@ -89,7 +89,7 @@ final class SendGoogleAdsReportNowJob implements ShouldQueue
             ->actions([
                 Action::make('view')
                     ->label(__('View'))
-                    ->url(route('pdf.show', ['filename' => $filename]))
+                    ->url(route('pdf.show', ['filename' => $filename]), true)
                     ->openUrlInNewTab(),
             ])
             ->sendToDatabase($user);

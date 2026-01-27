@@ -8,7 +8,6 @@ use App\Enums\KpiGoalType;
 use App\Enums\KpiValueType;
 use App\Filament\Pages\Actions\GenerateGoogleAdsReportAction;
 use App\Filament\Pages\Actions\SendGoogleAdsReportNowAction;
-use App\Filament\Resources\Kpis\KpiResource;
 use App\Models\GoogleAdsAdGroup;
 use App\Models\GoogleAdsCampaign;
 use App\Models\GoogleAdsDemographic;
@@ -371,7 +370,7 @@ final class Dashboard extends Component implements HasActions, HasSchemas
             ->actions([
                 Action::make('view')
                     ->label(__('View KPI'))
-                    ->url(KpiResource::getUrl('view', ['record' => $kpi->getRouteKey(), 'tenant' => $this->team])),
+                    ->url(route('kpis.show', $kpi)),
             ])
             ->send();
     }
