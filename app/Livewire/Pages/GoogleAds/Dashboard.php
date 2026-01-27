@@ -326,7 +326,7 @@ final class Dashboard extends Component implements HasActions, HasSchemas
             $sourceValue = $adGroupName;
         }
 
-        $kpiCode = 'google_ads_' . $sourceType . '_' . str_replace(['/', ' ', '.', '?', '→'], ['_', '_', '_', '_', '_'], $sourceValue) . '_' . $metricType;
+        $kpiCode = 'google_ads_' . $sourceType . '_' . str_replace(['/', ' ', '.', '?', '→'], ['_', '_', '_', '_', '_'], (string) $sourceValue) . '_' . $metricType;
 
         $format = match ($metricType) {
             'ctr', 'conversion_rate' => 'percentage',

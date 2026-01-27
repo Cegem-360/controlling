@@ -359,20 +359,25 @@ final class GoogleAdsReportService
      */
     private function getMonthlyStats(Team $team, CarbonInterface $startDate, CarbonInterface $endDate): Collection
     {
+        $driver = DB::getDriverName();
+        $monthExpr = $driver === 'sqlite'
+            ? 'strftime(\'%Y-%m\', date)'
+            : 'DATE_FORMAT(date, \'%Y-%m\')';
+
         return GoogleAdsCampaign::query()
             ->where('team_id', $team->id)
             ->whereBetween('date', [$startDate, $endDate])
-            ->selectRaw('
-                strftime(\'%Y-%m\', date) as month,
+            ->selectRaw("
+                {$monthExpr} as month,
                 SUM(impressions) as impressions,
                 SUM(clicks) as clicks,
                 SUM(cost) as cost,
                 SUM(conversions) as conversions,
                 AVG(ctr) as ctr,
                 AVG(conversion_rate) as conversion_rate
-            ')
-            ->groupByRaw('strftime(\'%Y-%m\', date)')
-            ->orderByRaw('strftime(\'%Y-%m\', date) DESC')
+            ")
+            ->groupByRaw($monthExpr)
+            ->orderByRaw("{$monthExpr} DESC")
             ->get()
             ->map(fn ($item): array => [
                 'month' => Date::parse($item->month . '-01'),
