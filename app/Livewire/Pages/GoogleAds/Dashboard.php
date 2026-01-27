@@ -371,7 +371,7 @@ final class Dashboard extends Component implements HasActions, HasSchemas
             ->actions([
                 Action::make('view')
                     ->label(__('View KPI'))
-                    ->url(KpiResource::getUrl('view', ['record' => $kpi->getRouteKey()])),
+                    ->url(KpiResource::getUrl('view', ['record' => $kpi->getRouteKey(), 'tenant' => $this->team])),
             ])
             ->send();
     }
