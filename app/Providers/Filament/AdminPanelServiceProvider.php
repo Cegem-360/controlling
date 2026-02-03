@@ -11,7 +11,6 @@ use App\Filament\Pages\RegisterTeam;
 use App\Http\Middleware\ApplyTenantScopes;
 use App\Http\Middleware\SetLocale;
 use App\Models\Team;
-use BezhanSalleh\GoogleAnalytics\GoogleAnalyticsPlugin;
 use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -97,7 +96,7 @@ final class AdminPanelServiceProvider extends PanelProvider
             ->databaseNotifications()
             ->plugins([
                 // Register your Filament plugins here
-                GoogleAnalyticsPlugin::make(),
+                // GoogleAnalyticsPlugin::make(),
             ]);
     }
 }
